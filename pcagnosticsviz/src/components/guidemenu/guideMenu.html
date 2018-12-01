@@ -1,0 +1,50 @@
+<div class = "contain">
+    <div class="sidebar-header">
+        <h2>Feature</h2>
+        <div class="features">
+            <div id="typeselectcontain">
+            <label for="typeselect">Feature type</label>
+            <select class="typeselect" id="typeselect" ng-model="prop.type"
+                    ng-options="type for type in props"
+                    ng-change="typeChange()">
+            </select>
+            </div>
+            <div>
+            <label for="markselect">Mark</label>
+            <select class="markselect" id="markselect" ng-model="prop.mark"
+                    ng-options="type for type in marks"
+                    ng-change="markChange()"></select>
+            </div>
+        </div>
+    </div>
+    <div class="thum">
+        <div class="scroll-y">
+            <vl-plot-group
+                    ng-if="prop.previewcharts"
+                    class="main-vl-plot-group card guideplot no-shrink"
+                    ng-class="{'square':prop.dim, 'active': prop.pos== $index}"
+                    ng-repeat="chart in prop.previewcharts| limitTo: limit : limitup"
+                    ng-click="previewSlider($index)"
+                    chart="chart"
+                    show-bookmark="false"
+                    show-debug="false"
+                    show-select="false"
+                    show-axis-prop="true"
+                    show-sort="false"
+                    show-transpose="false"
+                    enable-pills-preview="true"
+                    always-scrollable="false"
+                    overflow="false"
+                    show-label="false"
+                    tooltip="true"
+                    toggle-shelf="false"
+                    priority="priority * $index"
+            ></vl-plot-group>
+            <a ng-click="increaseLimit()">
+                <div class="vis-list-more" ng-show="limit < prop.previewcharts.length">
+                    Load more...
+                </div>
+            </a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,64 @@
+.pane.guidemenu {
+  max-width: 300px;
+  background-color: #301d6e;
+  .contain {
+    display: flex;
+    flex-direction: column;
+    margin: 5px;
+    height: calc(100% - 10px);
+  }
+  .headermenu {
+    height: 50px;
+    padding: 20px;
+  }
+
+  h2 {
+    color: white;
+  }
+  .vl-plot {
+    min-width: 150px;
+    align-items: center;
+  }
+  .thum {
+    display: flex;
+    flex: 1;
+    min-height: 0px;
+    .guideplot {
+      margin-left: 15px;
+      margin-right: 15px;
+      min-width: 80px;
+      align-items: center;
+    }
+    .active {
+      margin: 5px;
+    }
+  }
+  .scroll-y {
+    flex: 1;
+  }
+  .menuitem {
+    max-height: 80px;
+  }
+
+  .features{
+    display: flex;
+    margin: 10px 0px;
+    #typeselectcontain {
+      flex-grow: 1;
+      margin-right:10px;
+    }
+    div {
+      display: flex;
+      flex-direction: column;
+      select {
+        width: 100%;
+      }
+    }
+    label {
+      display: block;
+      color: white;
+    }
+  }
+
+}
+
