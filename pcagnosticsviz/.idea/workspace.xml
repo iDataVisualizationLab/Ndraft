@@ -3,9 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="9ef1efaf-404e-482d-b692-aec0c9559f21" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/bower_components/compassql/compassql.js" afterPath="$PROJECT_DIR$/bower_components/compassql/compassql.js" />
-      <change beforePath="$PROJECT_DIR$/bower_components/vega-lite/src/mark.ts" afterPath="$PROJECT_DIR$/bower_components/vega-lite/src/mark.ts" />
-      <change beforePath="$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js" afterPath="$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -53,7 +50,7 @@
       <file leaf-file-name="PCAplot.service.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="234">
+            <state relative-caret-position="16932">
               <caret line="996" column="48" lean-forward="false" selection-start-line="996" selection-start-column="48" selection-end-line="996" selection-end-column="48" />
               <folding />
             </state>
@@ -63,7 +60,7 @@
       <file leaf-file-name="guiMenu.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="166">
+            <state relative-caret-position="731">
               <caret line="43" column="16" lean-forward="false" selection-start-line="43" selection-start-column="16" selection-end-line="43" selection-end-column="16" />
               <folding />
             </state>
@@ -93,7 +90,7 @@
       <file leaf-file-name="spec.service.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/app/spec/spec.service.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="268">
+            <state relative-caret-position="9418">
               <caret line="554" column="25" lean-forward="false" selection-start-line="554" selection-start-column="25" selection-end-line="554" selection-end-column="25" />
               <folding />
             </state>
@@ -103,7 +100,7 @@
       <file leaf-file-name="vlui.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="147">
+            <state relative-caret-position="139502">
               <caret line="8188" column="12" lean-forward="false" selection-start-line="8188" selection-start-column="12" selection-end-line="8188" selection-end-column="12" />
               <folding />
             </state>
@@ -114,16 +111,9 @@
         <entry file="file://$PROJECT_DIR$/bower_components/compassql/compassql.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="266">
-              <caret line="3160" column="27" lean-forward="false" selection-start-line="3160" selection-start-column="27" selection-end-line="3160" selection-end-column="27" />
+              <caret line="3187" column="65" lean-forward="false" selection-start-line="3187" selection-start-column="65" selection-end-line="3187" selection-end-column="65" />
               <folding />
             </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="spec.js" pinned="false" current-in-tab="false">
-        <entry file="mock://src/constraint/spec.js">
-          <provider selected="true" editor-type-id="vmFileEditor">
-            <state />
           </provider>
         </entry>
       </file>
@@ -468,7 +458,86 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <expand>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
+              <item name="bower_components" type="cbb8eebc:String" user="bower_components" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
+              <item name="bower_components" type="cbb8eebc:String" user="bower_components" />
+              <item name="vega-lite" type="cbb8eebc:String" user="vega-lite" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
+              <item name="bower_components" type="cbb8eebc:String" user="bower_components" />
+              <item name="z-schema" type="cbb8eebc:String" user="z-schema" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
+              <item name="bower_components" type="cbb8eebc:String" user="bower_components" />
+              <item name="z-schema" type="cbb8eebc:String" user="z-schema" />
+              <item name="test" type="cbb8eebc:String" user="test" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
+              <item name="src" type="cbb8eebc:String" user="src" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
+              <item name="src" type="cbb8eebc:String" user="src" />
+              <item name="app" type="cbb8eebc:String" user="app" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
+              <item name="src" type="cbb8eebc:String" user="src" />
+              <item name="app" type="cbb8eebc:String" user="app" />
+              <item name="main" type="cbb8eebc:String" user="main" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
+              <item name="src" type="cbb8eebc:String" user="src" />
+              <item name="app" type="cbb8eebc:String" user="app" />
+              <item name="PCAplot" type="cbb8eebc:String" user="PCAplot" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
+              <item name="src" type="cbb8eebc:String" user="src" />
+              <item name="components" type="cbb8eebc:String" user="components" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
+              <item name="src" type="cbb8eebc:String" user="src" />
+              <item name="components" type="cbb8eebc:String" user="components" />
+              <item name="d3-biplot" type="cbb8eebc:String" user="d3-biplot" />
+            </path>
+            <path>
+              <item name="Root" type="cbb8eebc:String" user="Root" />
+              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
+              <item name="src" type="cbb8eebc:String" user="src" />
+              <item name="components" type="cbb8eebc:String" user="components" />
+              <item name="d3-guideplot" type="cbb8eebc:String" user="d3-guideplot" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -630,86 +699,7 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope">
-        <subPane subId="Project Files">
-          <expand>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
-              <item name="bower_components" type="cbb8eebc:String" user="bower_components" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
-              <item name="bower_components" type="cbb8eebc:String" user="bower_components" />
-              <item name="vega-lite" type="cbb8eebc:String" user="vega-lite" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
-              <item name="bower_components" type="cbb8eebc:String" user="bower_components" />
-              <item name="z-schema" type="cbb8eebc:String" user="z-schema" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
-              <item name="bower_components" type="cbb8eebc:String" user="bower_components" />
-              <item name="z-schema" type="cbb8eebc:String" user="z-schema" />
-              <item name="test" type="cbb8eebc:String" user="test" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
-              <item name="src" type="cbb8eebc:String" user="src" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
-              <item name="src" type="cbb8eebc:String" user="src" />
-              <item name="app" type="cbb8eebc:String" user="app" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
-              <item name="src" type="cbb8eebc:String" user="src" />
-              <item name="app" type="cbb8eebc:String" user="app" />
-              <item name="main" type="cbb8eebc:String" user="main" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
-              <item name="src" type="cbb8eebc:String" user="src" />
-              <item name="app" type="cbb8eebc:String" user="app" />
-              <item name="PCAplot" type="cbb8eebc:String" user="PCAplot" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
-              <item name="src" type="cbb8eebc:String" user="src" />
-              <item name="components" type="cbb8eebc:String" user="components" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
-              <item name="src" type="cbb8eebc:String" user="src" />
-              <item name="components" type="cbb8eebc:String" user="components" />
-              <item name="d3-biplot" type="cbb8eebc:String" user="d3-biplot" />
-            </path>
-            <path>
-              <item name="Root" type="cbb8eebc:String" user="Root" />
-              <item name="voyager2" type="cbb8eebc:String" user="voyager2" />
-              <item name="src" type="cbb8eebc:String" user="src" />
-              <item name="components" type="cbb8eebc:String" user="components" />
-              <item name="d3-guideplot" type="cbb8eebc:String" user="d3-guideplot" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -820,37 +810,37 @@
       <workItem from="1543703534487" duration="37727000" />
       <workItem from="1543968557209" duration="3483000" />
       <workItem from="1543984438141" duration="3702000" />
-      <workItem from="1544033082055" duration="3842000" />
+      <workItem from="1544033082055" duration="3988000" />
+      <workItem from="1544044224452" duration="249000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="901164000" />
+    <option name="totallyTimeSpent" value="901559000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1273" y="0" width="1294" height="1047" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32896176" sideWeight="0.5032415" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32896176" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="npm" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32896176" sideWeight="0.49675852" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32896176" sideWeight="0.49675852" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="JSON Viewer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Gulp" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="TypeScript" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25364667" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25769854" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="TypeScript" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
@@ -1075,13 +1065,11 @@
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/bower_components/compassql/src/enumerator.ts</url>
           <line>26</line>
-          <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="3" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/bower_components/compassql/compassql.js</url>
           <line>3153</line>
-          <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>
@@ -1113,7 +1101,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="119">
           <caret line="7" column="47" lean-forward="false" selection-start-line="7" selection-start-column="47" selection-end-line="7" selection-end-column="47" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1121,7 +1108,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="476">
           <caret line="28" column="19" lean-forward="false" selection-start-line="28" selection-start-column="13" selection-end-line="28" selection-end-column="19" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1347,7 +1333,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="476">
           <caret line="28" column="19" lean-forward="false" selection-start-line="28" selection-start-column="13" selection-end-line="28" selection-end-column="19" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1355,7 +1340,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="170">
           <caret line="10" column="47" lean-forward="false" selection-start-line="10" selection-start-column="47" selection-end-line="10" selection-end-column="47" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1407,7 +1391,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-21139">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1423,7 +1406,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="234">
+        <state relative-caret-position="16932">
           <caret line="996" column="48" lean-forward="false" selection-start-line="996" selection-start-column="48" selection-end-line="996" selection-end-column="48" />
           <folding />
         </state>
@@ -1431,7 +1414,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="166">
+        <state relative-caret-position="731">
           <caret line="43" column="16" lean-forward="false" selection-start-line="43" selection-start-column="16" selection-end-line="43" selection-end-column="16" />
           <folding />
         </state>
@@ -1447,7 +1430,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="147">
+        <state relative-caret-position="139502">
           <caret line="8188" column="12" lean-forward="false" selection-start-line="8188" selection-start-column="12" selection-end-line="8188" selection-end-column="12" />
           <folding />
         </state>
@@ -1455,7 +1438,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/app/spec/spec.service.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="268">
+        <state relative-caret-position="9418">
           <caret line="554" column="25" lean-forward="false" selection-start-line="554" selection-start-column="25" selection-end-line="554" selection-end-column="25" />
           <folding />
         </state>
@@ -1464,7 +1447,7 @@
     <entry file="file://$PROJECT_DIR$/bower_components/compassql/compassql.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="266">
-          <caret line="3160" column="27" lean-forward="false" selection-start-line="3160" selection-start-column="27" selection-end-line="3160" selection-end-column="27" />
+          <caret line="3187" column="65" lean-forward="false" selection-start-line="3187" selection-start-column="65" selection-end-line="3187" selection-end-column="65" />
           <folding />
         </state>
       </provider>
