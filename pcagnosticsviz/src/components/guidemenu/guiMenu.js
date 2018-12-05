@@ -23,7 +23,7 @@ angular.module('pcagnosticsviz')
                 //$scope.marks = ['tick', 'bar','area','boxplot'];
                 //$scope.props = ['PCA1', 'skewness', 'outlier', 'PCA2'];
                 $scope.typeChange =function (){
-                    const tolog = {level_explore: $scope.prop.dim, abtraction: $scope.prop.mark, visual_feature: $scope.prop.type};
+                    var tolog = {level_explore: $scope.prop.dim, abtraction: $scope.prop.mark, visual_feature: $scope.prop.type};
                     Logger.logInteraction(Logger.actions.FEATURE_SELECT, $scope.prop.type,{
                         val:{PS:tolog,spec:this.vlSpec,query:this.query},
                         time:new Date().getTime()});
@@ -35,14 +35,14 @@ angular.module('pcagnosticsviz')
                 };
                 $scope.previewSlider = function (index){
                     $scope.prop.pos =index;
-                    const tolog = {level_explore: $scope.prop.dim, abtraction: $scope.prop.mark, visual_feature: $scope.prop.type};
+                    var tolog = {level_explore: $scope.prop.dim, abtraction: $scope.prop.mark, visual_feature: $scope.prop.type};
                     Logger.logInteraction(Logger.actions.FEATURE_QUICKNAVIGATION,index, {
                         val:{PS:tolog,spec:this.vlSpec,query:this.query},
                         time:new Date().getTime()});
                     //console.log($scope.prop.pos);
                 };
                 $scope.markChange =function (){
-                    const tolog = {level_explore: $scope.prop.dim, abtraction: $scope.prop.mark, visual_feature: $scope.prop.type};
+                    var tolog = {level_explore: $scope.prop.dim, abtraction: $scope.prop.mark, visual_feature: $scope.prop.type};
                     Logger.logInteraction(Logger.actions.TYPEPLOT_SELECT, $scope.prop.mark,{
                         val:{PS:tolog,spec:this.vlSpec,query:this.query},
                         time:new Date().getTime()});

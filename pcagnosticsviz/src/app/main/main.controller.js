@@ -54,10 +54,10 @@ angular.module('pcagnosticsviz')
 
     // log event
   $scope.onMouseOverLog = function ($event) {
-      let regionAction =undefined;
-      $event.originalEvent.path.find(d=>{
+      var regionAction =undefined;
+      $event.originalEvent.path.find(function(d) {
           if (d.tagName.toLowerCase()=='div') {
-              var temp = $scope.contain['div'].find(c => d.classList.contains(c.key));
+              var temp = $scope.contain['div'].find(function(c){return d.classList.contains(c.key)});
               regionAction = (temp==undefined)?undefined:temp.val;
               return temp;
           }

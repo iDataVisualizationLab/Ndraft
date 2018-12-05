@@ -982,7 +982,7 @@ angular.module('pcagnosticsviz')
 
         var guideon = function(prop,mspec){
             if (this) {
-                const tolog = {level_explore: prop.dim, abtraction: prop.mark, visual_feature: prop.type};
+                var tolog = {level_explore: prop.dim, abtraction: prop.mark, visual_feature: prop.type};
                 Logger.logInteraction(Logger.actions.GUIDEPLOT_SELECT, this.shorthand,{
                     val: {PS: tolog, spec: this.vlSpec, query: this.query},
                     time: new Date().getTime()
@@ -1093,7 +1093,7 @@ angular.module('pcagnosticsviz')
                 ranking: getranking(type),
                 plot: drawGuideexplore,
                 dim: dim};
-            const tolog = {level_explore: prop.dim, abtraction: prop.mark, visual_feature: prop.type};
+            var tolog = {level_explore: prop.dim, abtraction: prop.mark, visual_feature: prop.type};
             Logger.logInteraction(Logger.actions.EXPANDED_SELECT,this.shorthand,{val:{PS:tolog,spec:this.vlSpec,query:this.query}, time:new Date().getTime()});
             guideon(prop);
             PCAplot.updateguide(prop);
