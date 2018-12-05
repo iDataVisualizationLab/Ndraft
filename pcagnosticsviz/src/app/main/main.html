@@ -1,8 +1,11 @@
-<div ng-controller="MainCtrl" class="flex-root vflex full-width full-height">
+<div ng-controller="MainCtrl" class="flex-root vflex full-width full-height"
+     ng-mousedown="onMouseDownLog($event)"
+     ng-mouseenter="onMouseEnterLog($event)"
+     ng-mouseover="onMouseOverLog($event)">
   <div class="full-width no-shrink">
     <div class="card top-card no-right-margin no-top-margin">
       <div class="hflex">
-        <div id="logo"></div>
+        <div id="logo" ng-click="Logger.export()"></div>
         <div class="pane">
           <div class="controls">
             <a ng-show="Bookmarks.isSupported" class="command" ng-click="showModal('bookmark-list')">

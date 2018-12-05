@@ -1,6 +1,6 @@
 'use strict';
 angular.module('pcagnosticsviz')
-    .directive('slideGraph', function(PCAplot,Spec,Pills){
+    .directive('slideGraph', function(PCAplot,Spec,Pills,Logger){
         //template: "<svg id =\'bi-plot\' width=\'100%\' class=\"\"></svg>",
         return {
             templateUrl: 'components/d3-slidegraph/slide-graph.html',
@@ -31,6 +31,9 @@ angular.module('pcagnosticsviz')
 
                 scope.prev = function() {
                     scope.pos = Math.max(scope.pos - 1, 0);
+                    Logger.logInteraction(Logger.actions.MAINVIEW_NAVIGATION, scope.pos,{
+                        val:{spec:this.charts[scope.pos].vlSpec,query:this.charts[scope.pos].query},
+                        time:new Date().getTime()});
                     setTransform();
                 };
 
@@ -38,6 +41,9 @@ angular.module('pcagnosticsviz')
                     scope.pos = Math.min(scope.pos + 1, itemCount - 1);
                     if (scope.pos > scope.limit-1)
                         scope.limit = scope.pos+2;
+                    Logger.logInteraction(Logger.actions.MAINVIEW_NAVIGATION, scope.pos,{
+                        val:{spec:this.charts[scope.pos].vlSpec,query:this.charts[scope.pos].query},
+                        time:new Date().getTime()});
                     setTransform();
                 };
 

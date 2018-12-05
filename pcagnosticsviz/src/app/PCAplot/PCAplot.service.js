@@ -2,7 +2,7 @@
 
 angular.module('pcagnosticsviz')
 // TODO: rename to Query once it's compvare independent from Polestar
-    .factory('PCAplot', function(ANY,Dataset,_, vg, vl, cql, ZSchema, consts,FilterManager ,Pills,NotifyingService,Alternatives,Chart,Config,Schema,util,GuidePill) {
+    .factory('PCAplot', function(ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,Chart,Config,Schema,util,GuidePill) {
         var keys =  _.keys(Schema.schema.definitions.Encoding.properties).concat([ANY+0]);
         function instantiate() {
             return {
@@ -112,7 +112,7 @@ angular.module('pcagnosticsviz')
                             q3 = ss.quantile(row, 0.75),
                             iqr = (q3 - q1) * 3;
                         //iqr = Dataset.schema.fieldSchema(d).stats.stdev*1.35;
-                        console.log('q1: '+q1+'q3: '+q3+'iqr: '+iqr);
+                        // console.log('q1: '+q1+'q3: '+q3+'iqr: '+iqr);
                         Dataset.schema.fieldSchema(d).stats.q1 = q1;
                         Dataset.schema.fieldSchema(d).stats.q3 = q3;
                         Dataset.schema.fieldSchema(d).stats.q1iqr = Math.max(q1 - iqr, ss.min(row));
@@ -983,6 +983,13 @@ angular.module('pcagnosticsviz')
         }
 
         var guideon = function(prop,mspec){
+            if (this) {
+                const tolog = {level_explore: prop.dim, abtraction: prop.mark, visual_feature: prop.type};
+                Logger.logInteraction(Logger.actions.GUIDEPLOT_SELECT, this.shorthand,{
+                    val: {PS: tolog, spec: this.vlSpec, query: this.query},
+                    time: new Date().getTime()
+                });
+            }
             //console.log(prop);
             //prop.charts = Dataset.schema.fieldSchemas.sort(prop.ranking)
             PCAplot.types =  support[prop.dim].types;
@@ -1059,6 +1066,12 @@ angular.module('pcagnosticsviz')
             PCAplot.chart.vlSpec.config.displayModeBar = false;
             PCAplot.chart.vlSpec.config.colorbar = false;
             PCAplot.chart.vlSpec.config.staticPlot= true;
+            PCAplot.chart.query={
+                groupBy: 'encoding',
+                orderBy: ['feature'],
+                chooseBy: ['abstraction']
+                //chooseBy: ['aggregationQuality', 'effectiveness'],
+                };
             PCAplot.chart.prop = {
                 mspec:spec,
                 type: type,
@@ -1082,6 +1095,8 @@ angular.module('pcagnosticsviz')
                 ranking: getranking(type),
                 plot: drawGuideexplore,
                 dim: dim};
+            const tolog = {level_explore: prop.dim, abtraction: prop.mark, visual_feature: prop.type};
+            Logger.logInteraction(Logger.actions.EXPANDED_SELECT,this.shorthand,{val:{PS:tolog,spec:this.vlSpec,query:this.query}, time:new Date().getTime()});
             guideon(prop);
             PCAplot.updateguide(prop);
         };
@@ -1171,6 +1186,12 @@ angular.module('pcagnosticsviz')
                             var temc = Chart.getChart(topItem);
                             temc.vlSpec.config.typer = {type: d.type,mark: mark2mark(mspec.vlSpec.mark, PCAplot.dim)
                                 ,dim: d.v.fieldDefs.length-1, fieldDefs:d.v.fieldDefs};
+                            temc.query={
+                                groupBy: 'encoding',
+                                orderBy: ['feature'],
+                                chooseBy: ['abstraction'],
+                                //chooseBy: ['aggregationQuality', 'effectiveness'],
+                            };
                             return temc;
 
                         });
@@ -1241,7 +1262,14 @@ angular.module('pcagnosticsviz')
                     var output = cql.query(query, Dataset.schema);
                     PCAplot.query = output.query;
                     var topItem = output.result.getTopSpecQueryModel();
-                    return Chart.getChart(topItem);
+                    var charttemp = Chart.getChart(topItem);
+                    charttemp.query={
+                        groupBy: 'encoding',
+                        orderBy: ['feature'],
+                        chooseBy: ['abstraction'],
+                        //chooseBy: ['aggregationQuality', 'effectiveness'],
+                    };
+                    return charttemp;
 
                 });
             PCAplot.alternatives = [{'charts': charts}];
@@ -1278,6 +1306,12 @@ angular.module('pcagnosticsviz')
                     scale: {useRawDomain: true},
                     displayModeBar: false,
                     colorbar: false,
+                };
+                thum.query={
+                    groupBy: 'encoding',
+                    orderBy: ['feature'],
+                    chooseBy: ['abstraction'],
+                    //chooseBy: ['aggregationQuality', 'effectiveness'],
                 };
                 if (d.fieldSet[0].type!="temporal"){
                     thum.vlSpec.config.axis.ticks = false;
@@ -1344,17 +1378,18 @@ angular.module('pcagnosticsviz')
             };
 
             mark2plot(type,spec,object);
-            /*switch (type) {
-                case 'bar': barplot(spec, object); break;
-                case 'tick': dashplot(spec, object); break;
-                case 'area': areaplot(spec, object); break;
-                case 'boxplot': boxplot(spec, object); break;
-            }*/
 
             var query = getQuery(spec);
             var output = cql.query(query, Dataset.schema);
             var topItem = output.result.getTopSpecQueryModel();
-            return Chart.getChart(topItem);
+            var charttemp = Chart.getChart(topItem);
+            charttemp.query={
+                groupBy: 'encoding',
+                orderBy: ['feature'],
+                chooseBy: ['abstraction'],
+                //chooseBy: ['aggregationQuality', 'effectiveness'],
+            };
+            return charttemp;
         };
         // PCAplot.alternatives = Alternatives.getHistograms(null, PCAplot.chart, null);
 

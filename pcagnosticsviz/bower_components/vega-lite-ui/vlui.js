@@ -3196,7 +3196,7 @@
             logging: true,
             logLevel: 'INFO',
             logPrintLevel: 'INFO',
-            logToWebSql: false, // in user studies, set this to true
+            logToWebSql: true, // in user studies, set this to true
             hideMoreFn: true, // hide belowFold functions and "more" & "less" toggles in functionselect during user studies
             defaultConfigSet: 'large',
             appId: 'vlui',
@@ -7570,7 +7570,7 @@
      */
     angular.module('vlui')
         .filter('reportUrl', ['compactJSONFilter', '_', 'consts', function (compactJSONFilter, _, consts) {
-            function voyagerReport(params) {
+            function psvizReport(params) {
                 var url = 'https://docs.google.com/forms/d/1T9ZA14F3mmzrHR7JJVUKyPXzrMqF54CjLIOjv2E7ZEM/viewform?';
 
                 if (params.fields) {
@@ -7616,7 +7616,7 @@
                 return url;
             }
 
-            return consts.appId === 'voyager' ? voyagerReport : vluiReport;
+            return consts.appId === 'psviz' ? psvizReport : vluiReport;
         }]);
 }());
 
@@ -8123,8 +8123,17 @@
                 FILTER_CHANGE: {category:'FILTER', id: 'FILTER_CHANGE', level: service.levels.INFO},
                 FILTER_CLEAR: {category:'FILTER', id: 'FILTER_CLEAR', level: service.levels.INFO},
 
-                // Voyager 2
+                // psviz
                 SPEC_SELECT: {category:'pcagnosticsviz', id: 'SPEC_SELECT', level: service.levels.INFO},
+                GUIDEPLOT_SELECT: {category: 'GUIDEPLOT', id: 'GUIDEPLOT_SELECT', level: service.levels.INFO},
+                EXPANDED_SELECT: {category: 'EXPANDED', id: 'EXPANDED_SELECT', level: service.levels.INFO},
+                FEATURE_QUICKNAVIGATION: {category: 'NAVIGATION', id: 'FEATURE_QUICKNAVIGATION', level: service.levels.INFO},
+                MAINVIEW_NAVIGATION: {category: 'NAVIGATION', id: 'MAINVIEW_NAVIGATION', level: service.levels.INFO},
+                FEATURE_SELECT: {category: 'FEATURE', id: 'FEATURE_SELECT', level: service.levels.INFO},
+                ABSTRACT_SELECT: {category: 'ABTRACT', id: 'ABSTRACT_SELECT', level: service.levels.INFO},
+                DIMENTION_SELECT: {category: 'DIMENSION', id: 'DIMENTION_SELECT', level: service.levels.INFO},
+                TYPEPLOT_SELECT: {category: 'TYPEPLOT', id: 'TYPEPLOT_SELECT', level: service.levels.INFO},
+                MOUSE_OVER: {category: 'MOUSE', id: 'MOUSE_OVER', level: service.levels.INFO},
 
                 // Alternatives
                 SET_ALTERNATIVES_TYPE: {category:'ALTERNATIVES', id: 'SET_ALTERNATIVES_TYPE', level: service.levels.INFO},
@@ -8221,7 +8230,7 @@
                 }
                 var value = data ? data.value : undefined;
                 if(action.level.rank >= service.levels[consts.logLevel || 'INFO'].rank) {
-                    Analytics.trackEvent(action.category, action.id, label, value);
+                    // Analytics.trackEvent(action.category, action.id, label, value);
 
                     if (consts.logToWebSql) {
                         var row = {

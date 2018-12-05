@@ -9,7 +9,7 @@ describe('Filter: reportUrl', function () {
   var reportUrl;
 
   beforeEach(module('vlui', function($provide) {
-    $provide.constant('consts', {report: 'voyager'});
+    $provide.constant('consts', {report: 'psviz'});
   }));
 
   beforeEach(inject(function ($filter) {

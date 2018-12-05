@@ -10,7 +10,7 @@
  */
 angular.module('vlui')
   .filter('reportUrl', function (compactJSONFilter, _, consts) {
-    function voyagerReport(params) {
+    function psvizReport(params) {
       var url = 'https://docs.google.com/forms/d/1T9ZA14F3mmzrHR7JJVUKyPXzrMqF54CjLIOjv2E7ZEM/viewform?';
 
       if (params.fields) {
@@ -56,5 +56,5 @@ angular.module('vlui')
       return url;
     }
 
-    return consts.appId === 'voyager' ? voyagerReport : vluiReport;
+    return consts.appId === 'psviz' ? psvizReport : vluiReport;
   });

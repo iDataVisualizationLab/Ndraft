@@ -86,7 +86,7 @@ angular.module('vlui')
       FILTER_CHANGE: {category:'FILTER', id: 'FILTER_CHANGE', level: service.levels.INFO},
       FILTER_CLEAR: {category:'FILTER', id: 'FILTER_CLEAR', level: service.levels.INFO},
 
-      // Voyager 2
+      // PSviz
       SPEC_SELECT: {category:'pcagnosticsviz', id: 'SPEC_SELECT', level: service.levels.INFO},
 
       // Alternatives
@@ -183,8 +183,8 @@ angular.module('vlui')
         return;
       }
       var value = data ? data.value : undefined;
-      if(action.level.rank >= service.levels[consts.logLevel || 'INFO'].rank) {
-        Analytics.trackEvent(action.category, action.id, label, value);
+      // if(action.level.rank >= service.levels[consts.logLevel || 'INFO'].rank) {
+      //   Analytics.trackEvent(action.category, action.id, label, value);
 
         if (consts.logToWebSql) {
           var row = {

@@ -60,7 +60,7 @@ angular.module('pcagnosticsviz', [
       initialSpec: window.initialSpec || undefined,
       debugInList: false,
       logLevel: 'DEBUG',
-      logToWebSql: true, // log user interactions (for user study)
+      logToWebSql: false, // log user interactions (for user study)
       maxAnyShelf: 4
     });
   })

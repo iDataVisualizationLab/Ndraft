@@ -3,7 +3,14 @@
 angular.module('pcagnosticsviz')
   .controller('MainCtrl', function($scope, $document, Spec, Dataset, Wildcards,  Config, consts, Chronicle, Logger, Bookmarks, Modals, FilterManager,NotifyingService,PCAplot) {
     $scope.Spec = Spec;
-
+    $scope.contain = {"bi-plot":'Overview',
+        "div":[{key:'guideplot',val:'Exemplar'},
+            {key:'thumplot',val:'Feature pannel'},
+            {key:'slideGraph',val:'Mainview view'},
+            {key:'alternatives-pane',val:'Expanded views'},
+            {key:'guidemenu',val:'Feature pannel'}],
+        'h3':'headertext',
+        "body":'body'};
     $scope.Dataset = Dataset;
     $scope.Wildcards = Wildcards;
     $scope.Config = Config;
@@ -44,6 +51,26 @@ angular.module('pcagnosticsviz')
       }
     };
 
+
+    // log event
+  $scope.onMouseOverLog = function ($event) {
+      let regionAction =undefined;
+      $event.originalEvent.path.find(d=>{
+          if (d.tagName.toLowerCase()=='div') {
+              var temp = $scope.contain['div'].find(c => d.classList.contains(c.key));
+              regionAction = (temp==undefined)?undefined:temp.val;
+              return temp;
+          }
+          else{
+              regionAction = $scope.contain[d.tagName.toLowerCase()];
+                return regionAction;
+          }});
+      if (regionAction!='body')
+          Logger.logInteraction(Logger.actions.MOUSE_OVER,regionAction, {val:{region:regionAction,
+                  position: {screenX:$event.screenX,
+                      screenY: $event.screenY,}},time:new Date()});
+  };
+     // end log
     $scope.scrollToTop = function() {
       $document.find('.vis-pane-container').scrollTop(0);
     };
@@ -100,7 +127,6 @@ angular.module('pcagnosticsviz')
     // initialize undo after we have a dataset
     Dataset.update(Dataset.dataset).then(function() {
       Config.updateDataset(Dataset.dataset);
-        console.log(Config);
       if (consts.initialSpec) {
           Spec.parseSpec(consts.initialSpec);
           PCAplot.parseSpec(consts.initialSpec);
