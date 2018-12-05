@@ -9,11 +9,11 @@ export enum Mark {
   CIRCLE = 'circle' as any,
   SQUARE = 'square' as any,
   ERRORBAR = 'errorBar' as any,
-BOXPLOT = 'boxplot' as any,
+  BOXPLOT = 'boxplot' as any,
   HEXAGON = 'hexagon' as any,
-LEADER = 'leader' as any,
-CONTOUR  = 'contour' as any,
-SCATTER3D  = 'scatter3D' as any
+  LEADER = 'leader' as any,
+  CONTOUR  = 'contour' as any,
+  SCATTER3D  = 'scatter3D' as any
 }
 
 export const AREA = Mark.AREA;

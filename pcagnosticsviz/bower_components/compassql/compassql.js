@@ -1954,7 +1954,8 @@ exports.DEFAULT_QUERY_CONFIG = {
         scale: { useRawDomain: true }
     },
     propertyPrecedence: property_1.DEFAULT_PROPERTY_PRECEDENCE,
-    marks: [mark_1.Mark.POINT, mark_1.Mark.BAR, mark_1.Mark.LINE, mark_1.Mark.AREA, mark_1.Mark.TICK],
+    // marks: [mark_1.Mark.TICK, mark_1.Mark.POINT, mark_1.Mark.AREA, mark_1.Mark.BOXPLOT, mark_1.Mark.SCATTER3D, mark_1.Mark.HEXAGON, mark_1.Mark.CONTOUR],
+    marks: [mark_1.Mark.POINT, mark_1.Mark.BAR, mark_1.Mark.LINE, mark_1.Mark.AREA, mark_1.Mark.TICK, mark_1.Mark.AREA],
     channels: [channel_1.X, channel_1.Y, channel_1.ROW, channel_1.COLUMN, channel_1.SIZE, channel_1.COLOR],
     aggregates: [undefined, aggregate_1.AggregateOp.MEAN],
     timeUnits: [undefined, timeunit_1.TimeUnit.YEAR, timeunit_1.TimeUnit.MONTH, timeunit_1.TimeUnit.DATE, timeunit_1.TimeUnit.MINUTES, timeunit_1.TimeUnit.SECONDS],
@@ -2656,11 +2657,13 @@ exports.SPEC_CONSTRAINTS = [
             var mark = specM.getMark();
             switch (mark) {
                 case mark_1.Mark.AREA:
+                case mark_1.Mark.CONTOUR:
                 case mark_1.Mark.LINE:
                     return specM.channelUsed(channel_1.Channel.X) && specM.channelUsed(channel_1.Channel.Y);
                 case mark_1.Mark.TEXT:
                     return specM.channelUsed(channel_1.Channel.TEXT);
                 case mark_1.Mark.BAR:
+                case mark_1.Mark.BOXPLOT:
                 case mark_1.Mark.CIRCLE:
                 case mark_1.Mark.SQUARE:
                 case mark_1.Mark.TICK:
@@ -2670,6 +2673,14 @@ exports.SPEC_CONSTRAINTS = [
                     // This allows generating a point plot if channel was not an enum spec.
                     return !specM.enumSpecIndex.hasProperty(property_1.Property.CHANNEL) ||
                         specM.channelUsed(channel_1.Channel.X) || specM.channelUsed(channel_1.Channel.Y);
+                case mark_1.Mark.SCATTER3D:
+                    // This allows generating a point plot if channel was not an enum spec.
+                    return !specM.enumSpecIndex.hasProperty(property_1.Property.CHANNEL) ||
+                        specM.channelUsed(channel_1.Channel.X) && specM.channelUsed(channel_1.Channel.Y)&& specM.channelUsed(channel_1.Channel.COLUMN);
+                case mark_1.Mark.RADAR:
+                    // This allows generating a point plot if channel was not an enum spec.
+                    return !specM.enumSpecIndex.hasProperty(property_1.Property.CHANNEL) ||
+                        specM.channelUsed(channel_1.Channel.X) && specM.channelUsed(channel_1.Channel.Y)&& specM.channelUsed(channel_1.Channel.COLUMN);
             }
             /* istanbul ignore next */
             throw new Error('hasAllRequiredChannelsForMark not implemented for mark' + mark);
@@ -8330,6 +8341,11 @@ exports.channelMappingReduce = channelMappingReduce;
     Mark[Mark["CIRCLE"] = 'circle'] = "CIRCLE";
     Mark[Mark["SQUARE"] = 'square'] = "SQUARE";
     Mark[Mark["ERRORBAR"] = 'errorBar'] = "ERRORBAR";
+    Mark[Mark["BOXPLOT"] = 'boxplot'] = "BOXPLOT";
+    Mark[Mark["HEXAGON"] = 'hexagon'] = "HEXAGON";
+    Mark[Mark["LEADER"] = 'leader'] = "LEADER";
+    Mark[Mark["CONTOUR"] = 'contour'] = "CONTOUR";
+    Mark[Mark["SCATTER3D"] = 'scatter3D'] = "SCATTER3D";
 })(exports.Mark || (exports.Mark = {}));
 var Mark = exports.Mark;
 exports.AREA = Mark.AREA;
@@ -8342,6 +8358,11 @@ exports.RULE = Mark.RULE;
 exports.CIRCLE = Mark.CIRCLE;
 exports.SQUARE = Mark.SQUARE;
 exports.ERRORBAR = Mark.ERRORBAR;
+exports.BOXPLOT = Mark.BOXPLOT;
+exports.HEXAGON = Mark.HEXAGON;
+exports.LEADER = Mark.LEADER;
+exports.CONTOUR = Mark.CONTOUR;
+exports.SCATTER3D = Mark.SCATTER3D;
 exports.PRIMITIVE_MARKS = [exports.AREA, exports.BAR, exports.LINE, exports.POINT, exports.TEXT, exports.TICK, exports.RULE, exports.CIRCLE, exports.SQUARE];
 
 },{}],50:[function(require,module,exports){

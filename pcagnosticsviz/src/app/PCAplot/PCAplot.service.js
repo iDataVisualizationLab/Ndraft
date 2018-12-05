@@ -4,6 +4,7 @@ angular.module('pcagnosticsviz')
 // TODO: rename to Query once it's compvare independent from Polestar
     .factory('PCAplot', function(ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,Chart,Config,Schema,util,GuidePill) {
         var keys =  _.keys(Schema.schema.definitions.Encoding.properties).concat([ANY+0]);
+        var colordot = '#4682b4';
         function instantiate() {
             return {
                 data: Config.data,
@@ -68,7 +69,7 @@ angular.module('pcagnosticsviz')
                 var color = d3.scale.category10();
                 var x = d3.scale.linear().range([0, width]); // switch to match how R biplot shows it
                 var y = d3.scale.linear().range([height, 0]);
-                var rdot = 3;
+                var rdot = 2;
                 // sub space
                 var submarign = {top: 5, right: 5, bottom: 5, left: 5};
                 var subgSize = {
@@ -387,11 +388,10 @@ angular.module('pcagnosticsviz')
                         .attr("cy", function (d) {
                             return y(d.pc2);
                         })
-                        .style("fill", function (d) {
-                            return '#4682b4';
-                        })
+                        .style("fill", colordot)
                         .style("stroke", "black")
-                        .style("stroke-width", 0.5)
+                        .style("stroke-width", 0.2)
+                        .style("stroke-opacity", 0.5)
                         .style("fill-opacity", 0.6)
                         .on('mouseover', onMouseOverAttribute)
                         .on('mouseleave', onMouseLeave);
@@ -406,9 +406,7 @@ angular.module('pcagnosticsviz')
                         .attr("cy", function (d) {
                             return y(d.pc2);
                         })
-                        .style("fill", function (d) {
-                            return '#4682b4';
-                        })
+                        .style("fill", colordot)
                         .style("stroke", "black")
                         .style("stroke-width", 0.5)
                         .style("fill-opacity", 0.6)
