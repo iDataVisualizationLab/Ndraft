@@ -8,4 +8,7 @@ angular.module('pcagnosticsviz')
                     .style('fill','#ffffff')
                     .attr('width',$('.biplot').width())
                     .attr('height',$('.biplot').width());
+                // var menu = d3.select("#bi-plot");
+                // menu.append('text').text('toggle zoom');
+                // menu.append('rect')
         }});

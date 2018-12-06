@@ -189,30 +189,34 @@ angular.module('pcagnosticsviz')
         Spec.alternatives = [];
 
 
-        /*if (Spec.isSpecific || Spec.isEmptyPlot) {
+        if (Spec.isSpecific || Spec.isEmptyPlot) {
           Spec.chart = Chart.getChart(topItem);
           Spec.charts = null;
 
           if (Dataset.schema) {
             if (query.spec.encodings.length > 0) {
-              Spec.alternatives = Alternatives.getAlternatives(query, Spec.chart, topItem);
-
+              //Spec.alternatives = Alternatives.getAlternatives(query, Spec.chart, topItem);
+              //   if (Spec.spec.config.typer){
+                Spec.chart.vlSpec.config.typer = Spec.chart.vlSpec.config.typer|| {type: PCAplot.prop.type,mark: Spec.chart.vlSpec.mark//PCAplot.mark2mark(Spec.chart.vlSpec.mark, PCAplot.dim)
+                    ,dim: PCAplot.dim};
+                    PCAplot.madeprop(Spec.chart.vlSpec);
+                //PCAplot.alternativeupdate(Spec.chart);
             } else {
-              Spec.alternatives = Alternatives.getHistograms(query, Spec.chart, topItem);
+              //Spec.alternatives = Alternatives.getHistograms(query, Spec.chart, topItem);
             }
           }
         } else if (topItem) {
-          Spec.charts = output.result.items.map(Chart.getChart);
+          //Spec.charts = output.result.items.map(Chart.getChart);
           Spec.chart = Chart.getChart(null);
         } else {
           Spec.charts = null;
           Spec.chart = null;
-        }*/
-        if (Spec.isSpecific) {
-            /*PCAplot.alternativeupdate(Spec.spec);*/
-            Spec.charts = null;
-            Spec.chart = null;
         }
+        // if (Spec.isSpecific) {
+        //     /*PCAplot.alternativeupdate(Spec.spec);*/
+        //     Spec.charts = null;
+        //     Spec.chart = null;
+        // }
       // }
         //console.log(Spec.alternatives);
       return Spec;
@@ -549,16 +553,17 @@ angular.module('pcagnosticsviz')
         var output = cql.query(query, Dataset.schema);
         var result = output.result;
 
-        if (result.getTopSpecQueryModel().getMark() === spec.mark) {
-          // make a copy and replace mark with '?'
-          spec = util.duplicate(spec);
-          //delete spec.config.cell;
-          spec.mark = ANY;
-        }
+        // if (result.getTopSpecQueryModel().getMark() === spec.mark) {
+        //   // make a copy and replace mark with '?'
+        //   spec = util.duplicate(spec);
+        //   //delete spec.config.cell;
+        //   spec.mark = ANY;
+        // }
 
-        if (spec.config.typer){
-            PCAplot.madeprop(spec);
-        }
+        // if (spec.config.typer){
+        //   console.log(spec);
+        //     PCAplot.madeprop(spec);
+        // }
 
         Spec.parseSpec(spec);
 
@@ -601,9 +606,8 @@ angular.module('pcagnosticsviz')
              PCAplot.dim = dim;
         }
         PCAplot.plot(data,dim);
-        console.log(dim);
 
-        if (PCAplot.mspec!=null) PCAplot.alternativeupdate();
+        //if (PCAplot.mspec!=null) PCAplot.alternativeupdate();
         return Spec.update(spec);
       },
       reset: function() {

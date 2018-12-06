@@ -41,7 +41,7 @@
                   class="main-vl-plot-group card no-shrink guideplot"
                   ng-repeat="chart in PCAplot.charts"
                   ng-class="{square: PCAplot.dim}"
-                  ng-click="chart.guideon(chart.prop)"
+                  ng-click="PCAplot.prop2spec(chart.prop)"
                   chart="chart"
                   show-bookmark="false"
                   show-debug="false"

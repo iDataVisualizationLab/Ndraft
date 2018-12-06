@@ -46,6 +46,9 @@ angular.module('pcagnosticsviz')
         }, {
             types : ['com'],
             marks :['scatter3D','radar'],
+        }, {
+            types : ['com'],
+            marks :['radar'],
         }];
         //PCAplot.updateplot = function (data){};
         PCAplot.plot =function(dataor,dimension) {
@@ -83,12 +86,13 @@ angular.module('pcagnosticsviz')
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom)
                 ;
+                var menu = svg_main.select('#bi-plot');
                 var svg = svg_main.select("#bi-plot-g")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-                svg_main
-                    .call(d3.behavior.zoom().on("zoom", function () {
-                        svg.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")")
-                    }));
+                // svg_main
+                //     .call(d3.behavior.zoom().on("zoom", function () {
+                //             svg.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
+                //     }));
                 svg_main.select('.overlay')
                     .attr('width',width+margin.left+margin.right)
                     .attr('height',height+margin.top+margin.bottom)
@@ -305,7 +309,7 @@ angular.module('pcagnosticsviz')
                     .enter().append('text')
                     .text(function (d) {
                         return d
-                    })
+                    }).attr('class','legendtop')
                     .attr('text-anchor', 'end')
                     .attr('y', height + margin.bottom / 2)
                     .attr('x', width);
@@ -924,10 +928,10 @@ angular.module('pcagnosticsviz')
                 var object1 = Dataset.schema.fieldSchema(pca1_max);
                 var object2 = Dataset.schema.fieldSchema(pca2_max);
 
-                drawGuideplot(object1, 'PCA1');
-                drawGuideplot(object2, 'PCA2');
-                drawGuideplot(mostskew, 'skewness');
-                drawGuideplot(mostoutlie, 'outlier');
+                drawGuideplot([object1], 'PCA1');
+                drawGuideplot([object2], 'PCA2');
+                drawGuideplot([mostskew], 'skewness');
+                drawGuideplot([mostoutlie], 'outlier');
             }
             else {
                 PCAplot.charts.length=0;
@@ -1019,21 +1023,24 @@ angular.module('pcagnosticsviz')
                 }
                 return thum;});
             var pos = 0;
-            if(prop.dim!=PCAplot.dim){
+            //if(prop.dim!=PCAplot.dim){
                 var axis = prop.mspec.config.typer.fieldDefs;
                 pos = PCAplot.data[prop.dim].findIndex(function(d){
                     var f= true;
                     var ff=false;
-                    d.fieldDefs.forEach(function(i){
-                        axis.forEach(function(fi){ff=ff||(fi.field==i.field)});
-                        f = f&&ff;});
+                    if (d.fieldDefs)
+                        d.fieldDefs.forEach(function(i){
+                            axis.forEach(function(fi){ff=ff||(fi.field==i.field)});
+                            f = f&&ff;});
+                    else {
+                        f = f&&(d.field==axis[0].field);
+                    }
+
                     return f; });
-                console.log(pos+': '+axis);
-            }
+            //}
             PCAplot.mspec = prop.charts[pos];
             prop.pos = [pos];
             PCAplot.limit = pos>10?pos:10;
-
 
             PCAplot.updateguide(prop);
         };
@@ -1058,6 +1065,7 @@ angular.module('pcagnosticsviz')
             mark2plot (type2mark(type),spec,object);
             var query = getQuery(spec);
             var output = cql.query(query, Dataset.schema);
+            spec.config.typer = spec.config.typer|| {dim: PCAplot.dim,mark:spec.mark,type: type,fieldDefs:object};
             PCAplot.query = output.query;
             var topItem = output.result.getTopSpecQueryModel();
             PCAplot.chart = Chart.getChart(topItem);
@@ -1077,11 +1085,13 @@ angular.module('pcagnosticsviz')
                 ranking: getranking(type),
                 plot: drawGuideexplore,
                 dim: PCAplot.dim};
-
-            PCAplot.chart.guideon = guideon;
+            //PCAplot.chart.guideon = guideon;
                 PCAplot.charts.push(PCAplot.chart);
         };
-
+        PCAplot.prop2spec = function (prop) {
+            PCAplot.prop = prop;
+            angular.element('.markselect').scope().spec = prop.mspec;
+        };
         PCAplot.madeprop = function (spec){
             var type = spec.config.typer.type;
             var dim = spec.config.typer.dim;
@@ -1096,7 +1106,8 @@ angular.module('pcagnosticsviz')
             var tolog = {level_explore: prop.dim, abtraction: prop.mark, visual_feature: prop.type};
             Logger.logInteraction(Logger.actions.EXPANDED_SELECT,this.shorthand,{val:{PS:tolog,spec:this.vlSpec,query:this.query}, time:new Date().getTime()});
             guideon(prop);
-            PCAplot.updateguide(prop);
+            //PCAplot.updateguide(prop);
+            PCAplot.alternativeupdate();
         };
 
         PCAplot.alternativeupdate = function(mspec){
@@ -1391,7 +1402,8 @@ angular.module('pcagnosticsviz')
         };
         // PCAplot.alternatives = Alternatives.getHistograms(null, PCAplot.chart, null);
 
-        function barplot(spec,object) {
+        function barplot(spec,objectin) {
+            var object = objectin[0]||objectin;
             spec.mark = "bar";
             spec.encoding = {
                 x: {field: object.field, type: object.type},
@@ -1411,14 +1423,16 @@ angular.module('pcagnosticsviz')
             //console.log(spec);
         }
 
-        function dashplot(spec,object) {
+        function dashplot(spec,objectin) {
+            var object = objectin[0]||objectin;
             spec.mark = "tick";
             spec.encoding = {
                 x: {field: object.field, type: object.type}
             };
         }
 
-        function areaplot(spec,object) {
+        function areaplot(spec,objectin) {
+            var object = objectin[0]||objectin;
             spec.mark = "area";
             spec.encoding = {
                 x: {field: object.field, type: object.type},
@@ -1431,7 +1445,8 @@ angular.module('pcagnosticsviz')
                 spec.encoding.y.type = "quantitative";
             }
         }
-        function boxplot(spec,object) {
+        function boxplot(spec,objectin) {
+            var object = objectin[0]||objectin;
             spec.mark = "boxplot";
             spec.encoding = {
                 x: { field: object.field, type: object.type}
@@ -1658,6 +1673,7 @@ angular.module('pcagnosticsviz')
 
 
         };
+        PCAplot.mark2mark = mark2mark;
         PCAplot.reset = function(hard) {
             var spec = instantiate();
             spec.transform.filter = FilterManager.reset(null, hard);
