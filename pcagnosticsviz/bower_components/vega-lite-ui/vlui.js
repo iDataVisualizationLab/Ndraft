@@ -999,7 +999,13 @@
                     "rule",
                     "circle",
                     "square",
-                    "errorBar"
+                    "errorBar",
+                    "boxplot",
+                    "hexagon",
+                    "leader",
+                    "contour",
+                    "scatter3D",
+                    "radar",
                 ]
             },
             "Encoding": {

@@ -1954,8 +1954,8 @@ exports.DEFAULT_QUERY_CONFIG = {
         scale: { useRawDomain: true }
     },
     propertyPrecedence: property_1.DEFAULT_PROPERTY_PRECEDENCE,
-    // marks: [mark_1.Mark.TICK, mark_1.Mark.POINT, mark_1.Mark.AREA, mark_1.Mark.BOXPLOT, mark_1.Mark.SCATTER3D, mark_1.Mark.HEXAGON, mark_1.Mark.CONTOUR],
-    marks: [mark_1.Mark.POINT, mark_1.Mark.BAR, mark_1.Mark.LINE, mark_1.Mark.AREA, mark_1.Mark.TICK, mark_1.Mark.AREA],
+    marks: [mark_1.Mark.TICK, mark_1.Mark.BAR, mark_1.Mark.POINT, mark_1.Mark.AREA, mark_1.Mark.BOXPLOT, mark_1.Mark.SCATTER3D, mark_1.Mark.HEXAGON, mark_1.Mark.CONTOUR],
+    // marks: [mark_1.Mark.POINT, mark_1.Mark.BAR, mark_1.Mark.LINE, mark_1.Mark.AREA, mark_1.Mark.TICK, mark_1.Mark.AREA],
     channels: [channel_1.X, channel_1.Y, channel_1.ROW, channel_1.COLUMN, channel_1.SIZE, channel_1.COLOR],
     aggregates: [undefined, aggregate_1.AggregateOp.MEAN],
     timeUnits: [undefined, timeunit_1.TimeUnit.YEAR, timeunit_1.TimeUnit.MONTH, timeunit_1.TimeUnit.DATE, timeunit_1.TimeUnit.MINUTES, timeunit_1.TimeUnit.SECONDS],
@@ -2659,6 +2659,8 @@ exports.SPEC_CONSTRAINTS = [
                 case mark_1.Mark.AREA:
                 case mark_1.Mark.CONTOUR:
                 case mark_1.Mark.LINE:
+                case mark_1.Mark.HEXAGON:
+                case mark_1.Mark.LEADER:
                     return specM.channelUsed(channel_1.Channel.X) && specM.channelUsed(channel_1.Channel.Y);
                 case mark_1.Mark.TEXT:
                     return specM.channelUsed(channel_1.Channel.TEXT);
@@ -2674,13 +2676,9 @@ exports.SPEC_CONSTRAINTS = [
                     return !specM.enumSpecIndex.hasProperty(property_1.Property.CHANNEL) ||
                         specM.channelUsed(channel_1.Channel.X) || specM.channelUsed(channel_1.Channel.Y);
                 case mark_1.Mark.SCATTER3D:
-                    // This allows generating a point plot if channel was not an enum spec.
-                    return !specM.enumSpecIndex.hasProperty(property_1.Property.CHANNEL) ||
-                        specM.channelUsed(channel_1.Channel.X) && specM.channelUsed(channel_1.Channel.Y)&& specM.channelUsed(channel_1.Channel.COLUMN);
                 case mark_1.Mark.RADAR:
                     // This allows generating a point plot if channel was not an enum spec.
-                    return !specM.enumSpecIndex.hasProperty(property_1.Property.CHANNEL) ||
-                        specM.channelUsed(channel_1.Channel.X) && specM.channelUsed(channel_1.Channel.Y)&& specM.channelUsed(channel_1.Channel.COLUMN);
+                    return specM.channelUsed(channel_1.Channel.X) && specM.channelUsed(channel_1.Channel.Y)&& specM.channelUsed(channel_1.Channel.COLUMN);
             }
             /* istanbul ignore next */
             throw new Error('hasAllRequiredChannelsForMark not implemented for mark' + mark);
@@ -3054,6 +3052,7 @@ exports.SPEC_CONSTRAINTS = [
                     return true;
                 case mark_1.Mark.BAR:
                 case mark_1.Mark.TICK:
+                case mark_1.Mark.BOXPLOT:
                     // Bar and tick should not use size.
                     if (specM.channelUsed(channel_1.Channel.SIZE)) {
                         return false;
@@ -3068,6 +3067,11 @@ exports.SPEC_CONSTRAINTS = [
                 case mark_1.Mark.POINT:
                 case mark_1.Mark.SQUARE:
                 case mark_1.Mark.RULE:
+                case mark_1.Mark.HEXAGON:
+                case mark_1.Mark.LEADER:
+                case mark_1.Mark.CONTOUR:
+                case mark_1.Mark.SCATTER3D:
+                case mark_1.Mark.RADAR:
                     return true;
             }
             /* istanbul ignore next */
@@ -6051,7 +6055,13 @@ var MarkScore;
                     bar: -2,
                     line: -2,
                     area: -2,
-                    rule: -2.5
+                    rule: -2.5,
+                    boxplot:-0.5,
+                    hexagon:-0.5,
+                    leader:-0.5,
+                    contour:-0.5,
+                    scatter3D:-0.5,
+                    radar:-0.5
                 };
                 util_1.forEach(occludedQQMark, function (score, mark) {
                     var feature = featurize(xType, yType, true, mark);
@@ -6066,7 +6076,13 @@ var MarkScore;
                     bar: -2,
                     line: -2,
                     area: -2,
-                    rule: -2.5
+                    rule: -2.5,
+                    boxplot:-0.5,
+                    hexagon:-0.5,
+                    leader:-0.5,
+                    contour:-0.5,
+                    scatter3D:-0.5,
+                    radar:-0.5
                 };
                 util_1.forEach(noOccludedQQMark, function (score, mark) {
                     var feature = featurize(xType, yType, false, mark);
@@ -6085,7 +6101,13 @@ var MarkScore;
                     bar: -2,
                     line: -2,
                     area: -2,
-                    rule: -2.5
+                    rule: -2.5,
+                    boxplot:-0.5,
+                    hexagon:-0.5,
+                    leader:-0.5,
+                    contour:-0.5,
+                    scatter3D:-0.5,
+                    radar:-0.5
                 };
                 util_1.forEach(occludedDimensionMeasureMark, function (score, mark) {
                     var feature = featurize(xType, yType, true, mark);
@@ -6104,7 +6126,13 @@ var MarkScore;
                     bar: -2,
                     line: -2,
                     area: -2,
-                    rule: -2.5
+                    rule: -2.5,
+                    boxplot:-0.5,
+                    hexagon:-0.5,
+                    leader:-0.5,
+                    contour:-0.5,
+                    scatter3D:-0.5,
+                    radar:-0.5
                 };
                 util_1.forEach(occludedDimensionMeasureMark, function (score, mark) {
                     var feature = featurize(xType, yType, true, mark);
@@ -6125,7 +6153,13 @@ var MarkScore;
                     line: -2,
                     area: -2,
                     // Non-sense to use rule here
-                    rule: -2.5
+                    rule: -2.5,
+                    boxplot:-0.5,
+                    hexagon:-0.5,
+                    leader:-0.5,
+                    contour:-0.5,
+                    scatter3D:-0.5,
+                    radar:-0.5
                 };
                 util_1.forEach(noOccludedQxN, function (score, mark) {
                     var feature = featurize(xType, yType, false, mark);
@@ -6145,7 +6179,13 @@ var MarkScore;
                     line: -0.5,
                     area: -0.5,
                     // Non-sense to use rule here
-                    rule: -2.5
+                    rule: -2.5,
+                    boxplot:-0.5,
+                    hexagon:-0.5,
+                    leader:-0.5,
+                    contour:-0.5,
+                    scatter3D:-0.5,
+                    radar:-0.5
                 };
                 util_1.forEach(noOccludedQxBinQ, function (score, mark) {
                     var feature = featurize(xType, yType, false, mark);
@@ -6166,7 +6206,13 @@ var MarkScore;
                     tick: -0.35,
                     text: -0.4,
                     // Non-sense to use rule here
-                    rule: -2.5
+                    rule: -2.5,
+                    boxplot:-0.5,
+                    hexagon:-0.5,
+                    leader:-0.5,
+                    contour:-0.5,
+                    scatter3D:-0.5,
+                    radar:-0.5
                 };
                 util_1.forEach(noOccludedQxBinQ, function (score, mark) {
                     var feature = featurize(xType, yType, false, mark);
@@ -6188,7 +6234,13 @@ var MarkScore;
                     bar: -2,
                     line: -2,
                     area: -2,
-                    rule: -2.5
+                    rule: -2.5,
+                    boxplot:-0.5,
+                    hexagon:-0.5,
+                    leader:-0.5,
+                    contour:-0.5,
+                    scatter3D:-0.5,
+                    radar:-0.5
                 };
                 // No difference between has occlusion and no occlusion
                 // as most of the time, it will be the occluded case.
@@ -6211,7 +6263,13 @@ var MarkScore;
                     bar: -2,
                     line: -2,
                     area: -2,
-                    rule: -2.5
+                    rule: -2.5,
+                    boxplot:-0.5,
+                    hexagon:-0.5,
+                    leader:-0.5,
+                    contour:-0.5,
+                    scatter3D:-0.5,
+                    radar:-0.5
                 };
                 // No difference between has occlusion and no occlusion
                 // as most of the time, it will be the occluded case.
@@ -6245,7 +6303,13 @@ var MarkScore;
                     bar: -2,
                     line: -2,
                     area: -2,
-                    rule: -2.5
+                    rule: -2.5,
+                    boxplot:-0.5,
+                    hexagon:-0.5,
+                    leader:-0.5,
+                    contour:-0.5,
+                    scatter3D:-0.5,
+                    radar:-0.5
                 };
                 // No difference between has occlusion and no occlusion
                 util_1.forEach(ddMark, function (score, mark) {
@@ -7996,7 +8060,9 @@ function getSupportedMark(channel) {
         case exports.COLUMN:
             return {
                 point: true, tick: true, rule: true, circle: true, square: true,
-                bar: true, line: true, area: true, text: true
+                bar: true, line: true, area: true, text: true, boxplot: true,
+                hexagon: true, leader: true, scatter3D: true, contour: true,
+                radar: true
             };
         case exports.X2:
         case exports.Y2:
@@ -8346,6 +8412,7 @@ exports.channelMappingReduce = channelMappingReduce;
     Mark[Mark["LEADER"] = 'leader'] = "LEADER";
     Mark[Mark["CONTOUR"] = 'contour'] = "CONTOUR";
     Mark[Mark["SCATTER3D"] = 'scatter3D'] = "SCATTER3D";
+    Mark[Mark["RADAR"] = 'radar'] = "RADAR";
 })(exports.Mark || (exports.Mark = {}));
 var Mark = exports.Mark;
 exports.AREA = Mark.AREA;
@@ -8363,6 +8430,7 @@ exports.HEXAGON = Mark.HEXAGON;
 exports.LEADER = Mark.LEADER;
 exports.CONTOUR = Mark.CONTOUR;
 exports.SCATTER3D = Mark.SCATTER3D;
+exports.RADAR = Mark.RADAR;
 exports.PRIMITIVE_MARKS = [exports.AREA, exports.BAR, exports.LINE, exports.POINT, exports.TEXT, exports.TICK, exports.RULE, exports.CIRCLE, exports.SQUARE];
 
 },{}],50:[function(require,module,exports){

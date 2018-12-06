@@ -2404,6 +2404,11 @@ function orient(mark, encoding, markConfig) {
         case mark_1.BAR:
         case mark_1.BOXPLOT:
         case mark_1.AREA:
+        case mark_1.HEXAGON:
+        case mark_1.LEADER:
+        case mark_1.SCATTER3D:
+        case mark_1.CONTOUR:
+        case mark_1.RADAR:
             if (yIsRange) {
                 return config_1.Orient.VERTICAL;
             }
@@ -8626,7 +8631,7 @@ exports.isDataRefDomain = isDataRefDomain;
         var scatter3D;
         (function (scatter3D) {
             function markType() {
-                return 'rect';
+                return 'scatter3D';
             }
             scatter3D.markType = markType;
             function properties(model) {

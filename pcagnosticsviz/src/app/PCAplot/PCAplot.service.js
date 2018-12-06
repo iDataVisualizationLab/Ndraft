@@ -1453,7 +1453,7 @@ angular.module('pcagnosticsviz')
             spec.encoding = {
                 x: { field: objects[0].field, type: objects[0].type},
                 y: { field: objects[1].field, type: objects[1].type},
-                x2: { field: objects[2].field, type: objects[2].type},
+                column: { field: objects[2].field, type: objects[2].type},
             };
         }
         function radarplot(spec,objects){
@@ -1461,7 +1461,7 @@ angular.module('pcagnosticsviz')
             spec.encoding = {
                 x: { field: objects[0].field, type: objects[0].type},
                 y: { field: objects[1].field, type: objects[1].type},
-                x2: { field: objects[2].field, type: objects[2].type},
+                column: { field: objects[2].field, type: objects[2].type},
             };
             //spec.layer = objects.map(function(o){return {encoding:{x: { field: o.field, type: o.type}}}});
         }

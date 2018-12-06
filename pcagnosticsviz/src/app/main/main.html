@@ -41,7 +41,7 @@
                   class="main-vl-plot-group card no-shrink guideplot"
                   ng-repeat="chart in PCAplot.charts"
                   ng-class="{square: PCAplot.dim}"
-                  ng-dblclick="chart.guideon(chart.prop)"
+                  ng-click="chart.guideon(chart.prop)"
                   chart="chart"
                   show-bookmark="false"
                   show-debug="false"
@@ -89,7 +89,8 @@
       </div>
     </div>
     <!--<div class="pane encoding-pane" ng-hide = "PCAplot.prop && !showEncoding">-->
-    <div class="pane encoding-pane" ng-hide = "true">
+    <div class="pane encoding-pane">
+    <!--<div class="pane encoding-pane" ng-hide = "true">-->
       <!-- true shelf -->
       <shelves
         spec="Spec.spec"
