@@ -53,8 +53,8 @@ angular.module('pcagnosticsviz')
         encoding: 'Showing views with different encodings',
       },
       autoGroupBy: null,
+        switchmode: true,
     };
-
 
 
     Spec._removeEmptyFieldDefs = function(spec) {
@@ -197,10 +197,13 @@ angular.module('pcagnosticsviz')
             if (query.spec.encodings.length > 0) {
               //Spec.alternatives = Alternatives.getAlternatives(query, Spec.chart, topItem);
               //   if (Spec.spec.config.typer){
-                Spec.chart.vlSpec.config.typer = Spec.chart.vlSpec.config.typer|| {type: PCAplot.prop.type,mark: Spec.chart.vlSpec.mark//PCAplot.mark2mark(Spec.chart.vlSpec.mark, PCAplot.dim)
-                    ,dim: PCAplot.dim};
+                if (Spec.switchmode){
+                    //Spec.chart.vlSpec.config.typer = oldtype||newtype;
                     PCAplot.madeprop(Spec.chart.vlSpec);
-                //PCAplot.alternativeupdate(Spec.chart);
+                    //Spec.switchmode = false;
+                }else {
+                    PCAplot.alternativeupdate(Spec.chart);
+                }
             } else {
               //Spec.alternatives = Alternatives.getHistograms(query, Spec.chart, topItem);
             }
@@ -541,18 +544,24 @@ angular.module('pcagnosticsviz')
 
       },
       select: function(spec) {
-        var specQuery = getSpecQuery(spec);
-        specQuery.mark = '?';
-       var copyspec =  util.duplicate(specQuery);
-       delete copyspec.config.cell;
-        //console.log(copyspec);
-        var query = {
-          spec: copyspec,
-          chooseBy: 'effectiveness'
-        };
-        var output = cql.query(query, Dataset.schema);
-        var result = output.result;
+       //  var specQuery = getSpecQuery(spec);
+       //  specQuery.mark = '?';
+       // var copyspec =  util.duplicate(specQuery);
+       // delete copyspec.config.cell;
+       //  //console.log(copyspec);
+       //  var query = {
+       //    spec: copyspec,
+       //    chooseBy: 'effectiveness'
+       //  };
+       //  var output = cql.query(query, Dataset.schema);
+       //  var result = output.result;
 
+        var oldtype = Spec.spec.config.typer;
+        var newtype = spec.config.typer;
+          if (newtype==undefined)
+              return ;
+        if (oldtype!=undefined)
+          Spec.switchmode = (oldtype.dim!=newtype.dim)||(oldtype.type!=newtype.type)||(oldtype.mark!=newtype.mark);
         // if (result.getTopSpecQueryModel().getMark() === spec.mark) {
         //   // make a copy and replace mark with '?'
         //   spec = util.duplicate(spec);
@@ -606,7 +615,7 @@ angular.module('pcagnosticsviz')
              PCAplot.dim = dim;
         }
         PCAplot.plot(data,dim);
-
+          spec = PCAplot.checksupport(spec,fields);
         //if (PCAplot.mspec!=null) PCAplot.alternativeupdate();
         return Spec.update(spec);
       },
@@ -647,7 +656,9 @@ angular.module('pcagnosticsviz')
         }
 
         // Finally, update the encoding only once to prevent glitches
+        Spec.switchmode = (Spec.spec.encoding !=encoding);
         Spec.spec.encoding = encoding;
+          // Spec.spec = PCAplot.checksupport(Spec.spec);
       },
       rescale: function (channelId, scaleType) {
         var fieldDef = Spec.spec.encoding[channelId];

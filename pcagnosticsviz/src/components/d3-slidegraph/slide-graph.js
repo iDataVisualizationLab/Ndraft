@@ -26,6 +26,7 @@ angular.module('pcagnosticsviz')
                     setTransform();
                     //PCAplot.alternativeupdate( scope.charts[scope.pos]);
                     PCAplot.mspec = scope.charts[scope.pos];
+                    scope.charts[scope.pos].vlSpec.config.typer = PCAplot.prop.mspec.config.typer;
                     Pills.select(scope.charts[scope.pos].vlSpec);
                 },true);
 
