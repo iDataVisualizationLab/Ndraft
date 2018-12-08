@@ -2,15 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9ef1efaf-404e-482d-b692-aec0c9559f21" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/scripts/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/scripts/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/scripts/vendor.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/scripts/vendor.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/main/main.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/main/main.controller.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/main/main.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/main/main.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/spec/spec.service.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/spec/spec.service.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/d3-slidegraph/slide-graph.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/d3-slidegraph/slide-graph.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -44,7 +36,7 @@
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="HTML" value="69" />
-          <entry key="JavaScript" value="5099" />
+          <entry key="JavaScript" value="5500" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.js.language.service.starts">
@@ -60,7 +52,7 @@
         <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="259">
-              <caret line="1118" column="48" selection-start-line="1118" selection-start-column="48" selection-end-line="1118" selection-end-column="48" />
+              <caret line="1166" column="20" selection-start-line="1166" selection-start-column="20" selection-end-line="1166" selection-end-column="20" />
             </state>
           </provider>
         </entry>
@@ -114,8 +106,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/components/d3-slidegraph/slide-graph.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="25" column="30" selection-start-line="25" selection-start-column="30" selection-end-line="25" selection-end-column="30" />
+            <state relative-caret-position="115">
+              <caret line="15" column="32" selection-start-line="15" selection-start-column="32" selection-end-line="15" selection-end-column="32" />
             </state>
           </provider>
         </entry>
@@ -149,7 +141,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>main</find>
       <find>PCAplot.mspec</find>
       <find>mspec</find>
       <find>madeprop</find>
@@ -167,18 +158,19 @@
       <find>prop2spec</find>
       <find>slide</find>
       <find>guideon</find>
-      <find>charts</find>
       <find>charts.p</find>
       <find>switc</find>
       <find>.typer</find>
       <find>PCAplot.prop2spec</find>
       <find>preview</find>
       <find>drawGuideplot</find>
-      <find>check</find>
-      <find>checkRender</find>
       <find>PCAplot.upda</find>
       <find>prop2</find>
       <find>GENERATE</find>
+      <find>check</find>
+      <find>checkRender</find>
+      <find>charts</find>
+      <find>findinList</find>
     </findStrings>
     <replaceStrings>
       <replace>AE43AF</replace>
@@ -807,7 +799,7 @@
       <workItem from="1544044224452" duration="4252000" />
       <workItem from="1544053434102" duration="64736000" />
       <workItem from="1544194078455" duration="353000" />
-      <workItem from="1544194480805" duration="28012000" />
+      <workItem from="1544194480805" duration="30611000" />
     </task>
     <servers />
   </component>
@@ -820,7 +812,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="998663000" />
+    <option name="totallyTimeSpent" value="1001262000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1273" y="0" width="1294" height="1047" extended-state="0" />
@@ -885,7 +877,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1327</line>
+          <line>1343</line>
           <option name="timeStamp" value="430" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
@@ -1020,7 +1012,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1586</line>
+          <line>1588</line>
           <option name="timeStamp" value="548" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
@@ -1050,7 +1042,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1730</line>
+          <line>1732</line>
           <option name="timeStamp" value="599" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
@@ -1076,7 +1068,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1178</line>
+          <line>1194</line>
           <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="610" />
         </line-breakpoint>
@@ -1094,7 +1086,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1181</line>
+          <line>1197</line>
           <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="618" />
         </line-breakpoint>
@@ -1106,7 +1098,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1188</line>
+          <line>1204</line>
           <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="620" />
         </line-breakpoint>
@@ -1118,7 +1110,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1396</line>
+          <line>1398</line>
           <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="626" />
         </line-breakpoint>
@@ -1157,6 +1149,12 @@
           <line>1137</line>
           <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="639" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>1145</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="640" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
@@ -1470,17 +1468,17 @@
     <entry file="http://localhost:3000/app/PCAplot/PCAplot.service.js">
       <provider selected="true" editor-type-id="httpFileEditor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/components/d3-slidegraph/slide-graph.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="25" column="30" selection-start-line="25" selection-start-column="30" selection-end-line="25" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="249">
           <caret line="30" column="33" lean-forward="true" selection-start-line="30" selection-start-column="33" selection-end-line="30" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components/d3-slidegraph/slide-graph.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="115">
+          <caret line="15" column="32" selection-start-line="15" selection-start-column="32" selection-end-line="15" selection-end-column="32" />
         </state>
       </provider>
     </entry>
@@ -1494,7 +1492,7 @@
     <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="259">
-          <caret line="1118" column="48" selection-start-line="1118" selection-start-column="48" selection-end-line="1118" selection-end-column="48" />
+          <caret line="1166" column="20" selection-start-line="1166" selection-start-column="20" selection-end-line="1166" selection-end-column="20" />
         </state>
       </provider>
     </entry>

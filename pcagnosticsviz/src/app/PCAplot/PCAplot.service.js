@@ -5,7 +5,7 @@ angular.module('pcagnosticsviz')
     .factory('PCAplot', function(ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,Chart,Config,Schema,util,GuidePill) {
         var keys =  _.keys(Schema.schema.definitions.Encoding.properties).concat([ANY+0]);
         var colordot = '#4682b4';
-        var states = {IDLE:0,GENERATE_GUIDE:1,GENERATE_ALTERNATIVE:2,FREE:3};
+        var states = {IDLE:0,GENERATE_GUIDE:1,GENERATE_ALTERNATIVE:2,FREE:3, UPDATEPOSITION:4};
         function instantiate() {
             return {
                 data: Config.data,
@@ -1143,7 +1143,13 @@ angular.module('pcagnosticsviz')
                     }
                     PCAplot.prop.fieldDefs = typer.fieldDefs;
                 } else if(PCAplot.state === states.FREE){
-                    PCAplot.state = states.GENERATE_ALTERNATIVE;
+                    var pos = findinList(fields);
+                    if (PCAplot.prop.pos !== pos){
+                        PCAplot.prop.pos = pos;
+
+                    }else {
+                        PCAplot.state = states.GENERATE_ALTERNATIVE;
+                    }
                     PCAplot.prop.fieldDefs = typer.fieldDefs;
                 }
             }else if (fields.length){
@@ -1157,7 +1163,17 @@ angular.module('pcagnosticsviz')
             }
             return spec;
         };
-
+        function findinList(fields,charts) {
+            return (charts||PCAplot.prop.charts).findIndex(function(d){
+                var countcheck = 0;
+                d.fieldSet.forEach(function(fi){
+                    fields.forEach(function(f){
+                        countcheck += (fi.field === f);
+                    });
+                });
+                return (countcheck === fields.length);
+            });
+        }
         PCAplot.alternativeupdate = function(mspec){
             mspec = _.cloneDeep(mspec || PCAplot.prop.mspec);
             if (PCAplot.dataref.length ===0|| PCAplot.dataref== null){
@@ -1376,22 +1392,8 @@ angular.module('pcagnosticsviz')
                 }
                 return thum;});
             if (PCAplot.prop.type!=nprop.type){
-                var pos = 0;
-                var axis = nprop.fieldDefs;
-                var lengthmatch = axis.length;
-                pos = PCAplot.data[nprop.dim].findIndex(function(d){
-                    var f= 0;
-                    var ff=false;
-                    if (d.fieldDefs)
-                        d.fieldDefs.forEach(function(i){
-                            axis.forEach(function(fi){ff=(fi.field===i.field)});
-                            f = f+~~ff;});
-                    else {
-                        f = ~~(d.field===axis[0].field);
-                    }
-                    return ((f>lengthmatch)||(f===lengthmatch)); });
-                pos = pos===-1?0:pos;
-                nprop.pos = pos;
+                var fields = nprop.fieldDefs.map(function(f){f.field});
+                nprop.pos = findinList(fields,nprop.charts);
             }
             //PCAplot.prop2spec;
             PCAplot.updateguide(nprop);
