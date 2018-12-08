@@ -92,7 +92,12 @@ angular.module('pcagnosticsviz')
       $scope.setAlternativeType(null, true);
     });
 
-      $scope.$watch('PCAplot');
+      $scope.$watch(function(){
+          return PCAplot.mspec;
+      },function(newmspec){
+         console.log('logging....');
+         console.log(newmspec);
+      });
 
     // undo/redo support
     $scope.canUndo = false;

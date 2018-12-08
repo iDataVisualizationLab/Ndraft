@@ -5,6 +5,7 @@ angular.module('pcagnosticsviz')
     .factory('PCAplot', function(ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,Chart,Config,Schema,util,GuidePill) {
         var keys =  _.keys(Schema.schema.definitions.Encoding.properties).concat([ANY+0]);
         var colordot = '#4682b4';
+        var states = {IDLE:0,GENERATE_GUIDE:1,GENERATE_ALTERNATIVE:2,FREE:3};
         function instantiate() {
             return {
                 data: Config.data,
@@ -35,6 +36,7 @@ angular.module('pcagnosticsviz')
             dataref:[],
             limit: 10,
             mspec:null,
+            state:states.IDLE,
         };
         PCAplot.mark2plot = mark2plot;
         var support =[{
@@ -582,7 +584,7 @@ angular.module('pcagnosticsviz')
                         var proIwant = d3.selectAll("schema-list-item")
                             .data(Dataset.schema.fieldSchemas)
                             .filter(function (it) {
-                                return it.field == d.brand;
+                                return it.field=== d.brand;
                             })
                             .select('div')
                             .attr('class', 'schema-list-item ng-pristine ng-untouched ng-valid ui-droppable ui-droppable-disabled ng-empty');
@@ -1023,23 +1025,23 @@ angular.module('pcagnosticsviz')
                 return thum;});
             var pos = 0;
             //if(prop.dim!=PCAplot.dim){
-                var axis = prop.mspec.config.typer.fieldDefs;
+                var axis = prop.fieldDefs;
                 var lengthmatch = axis.length;
-                pos = PCAplot.data[prop.dim].findIndex(function(d){
-                    var f= 0;
-                    var ff=false;
-                    if (d.fieldDefs)
-                        d.fieldDefs.forEach(function(i){
-                            axis.forEach(function(fi){ff=(ff||(fi.field==i.field))});
-                            f = f+~~ff;});
-                    else {
-                        f = f+~~(d.field==axis[0].field);
-                    }
-
-                    return ((f>lengthmatch)||(f==lengthmatch)); });
+            pos = PCAplot.data[prop.dim].findIndex(function(d){
+                var f= 0;
+                var ff=false;
+                if (d.fieldDefs)
+                    d.fieldDefs.forEach(function(i){
+                        axis.forEach(function(fi){ff=(fi.field===i.field)});
+                        f = f+~~ff;});
+                else {
+                    f = ~~(d.field===axis[0].field);
+                }
+                return ((f>lengthmatch)||(f===lengthmatch)); });
+            console.log(pos);
             //}
-            PCAplot.mspec = prop.charts[pos];
-            prop.pos = [pos];
+            PCAplot.prop.mspec = prop.charts[pos];
+            prop.pos = pos;
             PCAplot.limit = pos>10?pos:10;
 
             PCAplot.updateguide(prop);
@@ -1065,7 +1067,7 @@ angular.module('pcagnosticsviz')
             mark2plot (type2mark(type),spec,object);
             var query = getQuery(spec);
             var output = cql.query(query, Dataset.schema);
-            spec.config.typer = spec.config.typer|| {dim: PCAplot.dim,mark:spec.mark,type: type,fieldDefs:object};
+            //spec.config.typer = spec.config.typer|| {dim: PCAplot.dim,mark:spec.mark,type: type,fieldDefs:object};
             PCAplot.query = output.query;
             var topItem = output.result.getTopSpecQueryModel();
             PCAplot.chart = Chart.getChart(topItem);
@@ -1079,55 +1081,86 @@ angular.module('pcagnosticsviz')
                 //chooseBy: ['aggregationQuality', 'effectiveness'],
                 };
             PCAplot.chart.prop = {
-                mspec:spec,
+                mspec:_.cloneDeep(PCAplot.chart),
                 type: type,
                 mark: spec.mark,
                 ranking: getranking(type),
                 plot: drawGuideexplore,
-                dim: PCAplot.dim};
+                dim: PCAplot.dim,
+                fieldDefs: object,};
             PCAplot.chart.guideon = guideon;
                 PCAplot.charts.push(PCAplot.chart);
         };
         PCAplot.prop2spec = function (prop) {
+            PCAplot.state = states.GENERATE_GUIDE;
             PCAplot.prop = prop;
-            Pills.select(prop.mspec)
+            Pills.select(prop.mspec.vlSpec);
             // angular.element('.markselect').scope().spec = prop.mspec;
         };
         PCAplot.madeprop = function (spec){
-            var type = spec.config.typer.type;
-            var dim = spec.config.typer.dim;
-            var mark = spec.config.typer.mark;
+            var type = PCAplot.prop.type;
+            var dim = PCAplot.prop.dim;
+            var mark = PCAplot.prop.mark;
             var prop = {
-                mspec:spec,
+                mspec: spec,
                 type: type,
                 mark: mark,
                 ranking: getranking(type),
                 plot: drawGuideexplore,
+                fieldDefs: PCAplot.prop.fieldDefs,
                 dim: dim};
-            var tolog = {level_explore: prop.dim, abtraction: prop.mark, visual_feature: prop.type};
-            Logger.logInteraction(Logger.actions.EXPANDED_SELECT,this.shorthand,{val:{PS:tolog,spec:this.vlSpec,query:this.query}, time:new Date().getTime()});
-            guideon(prop);
+            switch (PCAplot.state){
+                case states.GENERATE_GUIDE:
+                    guideon(prop);
+                    var tolog = {level_explore: prop.dim, abtraction: prop.mark, visual_feature: prop.type};
+                    Logger.logInteraction(Logger.actions.EXPANDED_SELECT,this.shorthand,{val:{PS:tolog,spec:this.vlSpec,query:this.query}, time:new Date().getTime()});
+                case states.GENERATE_ALTERNATIVE:
+                    PCAplot.alternativeupdate();
+                    PCAplot.state = states.FREE;
+                default: return;
+            }
             //PCAplot.updateguide(prop);
-            PCAplot.alternativeupdate();
+            //PCAplot.alternativeupdate();
         };
-
-        PCAplot.checksupport = function (spec,fields) {
-            var typer = spec.config.typer;
-            if (PCAplot.dim != typer.dim)
-            {
-                spec.config.typer.type = type2type(typer.type,typer.dim,PCAplot.dim);
-                spec.mark = type2mark(spec.config.typer.type);
-                spec.config.typer.mark = spec.mark;
-                spec.config.typer.dim = PCAplot.dim;
-                spec.config.typer.fieldDefs = fields.map(function(f) {return Dataset.schema.fieldSchema(f)});
-                //PCAplot.updateSpec(prop);
+        function spec2typer(spec,fields){
+            var typer ={};
+            typer.mark = spec.mark;
+            typer.dim = fields.length;
+            typer.fieldDefs = fields.map(function(f) {return Dataset.schema.fieldSchema(f)});
+            return typer;
+        }
+        PCAplot.checkRender = function (spec,fields) { // convert spec to mpec
+            var typer = spec2typer(spec,fields);
+            var type = type2type(typer.type,typer.dim,PCAplot.dim);
+            if (PCAplot.prop!= null ) {
+                if ((spec.mark !== PCAplot.prop.mark) ||(PCAplot.dim !== PCAplot.prop.dim))
+                {
+                    PCAplot.state = states.GENERATE_GUIDE;
+                    if ((PCAplot.dim !== PCAplot.prop.dim)&&(typer.mark==='__ANY__')){
+                        spec.mark = type2mark(type);
+                        PCAplot.prop.mark = spec.mark;
+                        PCAplot.prop.type = type;
+                    }
+                    PCAplot.prop.fieldDefs = typer.fieldDefs;
+                } else if(PCAplot.state === states.FREE){
+                    PCAplot.state = states.GENERATE_ALTERNATIVE;
+                    PCAplot.prop.fieldDefs = typer.fieldDefs;
+                }
+            }else if (fields.length){
+                PCAplot.state = states.GENERATE_GUIDE;
+                spec.mark = type2mark(type);
+                PCAplot.prop = {};
+                PCAplot.prop.mark = spec.mark;
+                PCAplot.prop.type = type;
+                PCAplot.prop.fieldDefs = typer.fieldDefs;
+                PCAplot.prop.dim = PCAplot.dim;
             }
             return spec;
-        }
+        };
 
         PCAplot.alternativeupdate = function(mspec){
-            mspec = _.cloneDeep(mspec || PCAplot.mspec);
-            if (PCAplot.dataref.length ==0|| PCAplot.dataref== null){
+            mspec = _.cloneDeep(mspec || PCAplot.prop.mspec);
+            if (PCAplot.dataref.length ===0|| PCAplot.dataref== null){
                 var data = [];
                 var datarefn = [];
                 var idlabel=[];
@@ -1138,12 +1171,12 @@ angular.module('pcagnosticsviz')
                 var newdata=[];
                 data.forEach(function(d){
                     for (var e in d[d.field]) {
-                        if (d[d.field][e].invalid!=1){
+                        //if (d[d.field][e].invalid!=1){ FIXME
                             idlabel.push([d.field,e]);
-                            newdata.push(d[d.field][e]);}
+                            newdata.push(d[d.field][e]);//}
                     }
                 });
-                data = newdata.filter(function(d){return !d.invalid});
+                data = newdata;//.filter(function(d){return !d.invalid});
                 data.forEach(function(d,i){d.label = idlabel[i]});
                 datarefn = _.cloneDeep(data);
                 PCAplot.dataref = datarefn.map(function(d){
@@ -1160,8 +1193,8 @@ angular.module('pcagnosticsviz')
                     var f = false;
                     fieldsets.forEach(function (it) {
                         d.fieldDefs.forEach(function (m) {
-                            f = (f || (m.field == it));
-                        })
+                            f = (f || (m.field=== it));
+                        });
                         ff = ff && f;
                     })
                     return ff;
@@ -1208,8 +1241,8 @@ angular.module('pcagnosticsviz')
                             PCAplot.query = output.query;
                             var topItem = output.result.getTopSpecQueryModel();
                             var temc = Chart.getChart(topItem);
-                            temc.vlSpec.config.typer = {type: d.type,mark: mark2mark(mspec.vlSpec.mark, PCAplot.dim)
-                                ,dim: d.v.fieldDefs.length-1, fieldDefs:d.v.fieldDefs};
+                            // temc.vlSpec.config.typer = {type: d.type,mark: mark2mark(mspec.vlSpec.mark, PCAplot.dim)
+                            //     ,dim: d.v.fieldDefs.length-1, fieldDefs:d.v.fieldDefs};
                             temc.query={
                                 groupBy: 'encoding',
                                 orderBy: ['feature'],
@@ -1230,14 +1263,14 @@ angular.module('pcagnosticsviz')
                 var ff= false;
                 var f=false;
                 fieldsets.forEach(function(it){
-                    d.fieldDefs.forEach(function(m){f=(f||(m.field==it)); })
+                    d.fieldDefs.forEach(function(m){f=(f||(m.field===it)); })
                     ff=ff||f;});
                 return ff;});
             possible = possible.filter(function (d){
                 var ff= true;
                 var f=false;
                 fieldsets.forEach(function(it){
-                    d.fieldDefs.forEach(function(m){f=(f||(m.field==it)); })
+                    d.fieldDefs.forEach(function(m){f=(f||(m.field===it)); })
                     ff=ff&&f;});
                 return !ff;});
             var topitem = support[1].types.map(function (d) {
@@ -1260,7 +1293,7 @@ angular.module('pcagnosticsviz')
                     return Dataset.schema.fieldSchema(f);});
                 Array.prototype.push.apply(newf,d.fieldDefs.filter(function(fe){
                     var ff = true;
-                    fieldsets.forEach(function(fs){ff=ff&&fs!=fe.field});
+                    fieldsets.forEach(function(fs){ff=ff&&fs!==fe.field});
                     return ff;
                 }));
                 d.fieldDefs=newf});
@@ -1342,24 +1375,49 @@ angular.module('pcagnosticsviz')
                     thum.vlSpec.config.axis.ticks = false;
                 }
                 return thum;});
-            nprop.pos = 0;
+            if (PCAplot.prop.type!=nprop.type){
+                var pos = 0;
+                var axis = nprop.fieldDefs;
+                var lengthmatch = axis.length;
+                pos = PCAplot.data[nprop.dim].findIndex(function(d){
+                    var f= 0;
+                    var ff=false;
+                    if (d.fieldDefs)
+                        d.fieldDefs.forEach(function(i){
+                            axis.forEach(function(fi){ff=(fi.field===i.field)});
+                            f = f+~~ff;});
+                    else {
+                        f = ~~(d.field===axis[0].field);
+                    }
+                    return ((f>lengthmatch)||(f===lengthmatch)); });
+                pos = pos===-1?0:pos;
+                nprop.pos = pos;
+            }
             //PCAplot.prop2spec;
             PCAplot.updateguide(nprop);
         };
         var ran = 0;
-        function mark2mark(oldmark,dim){
+        function mark2mark(oldmark,dim,newdim){
+            newdim = (newdim===undefined)?dim+1:newdim;
             var pos = 0;
             support[dim].marks.forEach(function(d,i){
                 if (d==oldmark){
                     pos= i; return ;}});
-            return support[dim+1].marks[pos>support[dim+1].marks.length-1?0:pos];
+            return support[dim+1].marks[pos>support[newdim].marks.length-1?0:pos];
         }
         function type2type(oldtype,olddim,newdim){
-            var pos = 0;
-            support[olddim].types.forEach(function(d,i){
-                if (d==oldtype){
-                    pos= i; return ;}});
-            return support[newdim].types[pos>support[newdim].types.length-1?0:pos];
+            if (oldtype===undefined){
+                return support[newdim].types[0];
+            }else {
+                var pos = 0;
+                support[olddim].types.forEach(function (d, i) {
+                    if (d === (oldtype)) {
+                        pos = i;
+                        return;
+                    }
+                });
+                return support[newdim].types[pos > support[newdim].types.length - 1 ? 0 : pos];
+            }
         }
         function type2mark (type){
             switch (type) {
@@ -1626,10 +1684,10 @@ angular.module('pcagnosticsviz')
         }
 
         PCAplot.updateguide= function(prop) {
-            var oldtyper = prop.mspec.config.typer;
+            //var oldtyper = prop.mspec.config.typer;
             prop = _.cloneDeep(prop || PCAplot.prop);
             prop.mspec.config={};
-            prop.mspec.config.typer = oldtyper||PCAplot.prop.mspec.config.typer;
+            // prop.mspec.config.typer = oldtyper||PCAplot.prop.mspec.config.typer;
             // delete prop.mspec.model;
             PCAplot.prop = prop;
         };
@@ -1711,6 +1769,7 @@ angular.module('pcagnosticsviz')
             PCAplot.alternatives=[];
             PCAplot.dataref = [];
             PCAplot.mspec = null;
+            PCAplot.state = states.IDLE;
 
             //PCAplot.plot(Dataset.data);
         };

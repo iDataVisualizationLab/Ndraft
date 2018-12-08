@@ -53,7 +53,6 @@ angular.module('pcagnosticsviz')
         encoding: 'Showing views with different encodings',
       },
       autoGroupBy: null,
-        switchmode: true,
     };
 
 
@@ -124,7 +123,37 @@ angular.module('pcagnosticsviz')
      */
     Spec.update = function(spec) {
 
-      spec = _.cloneDeep(spec || Spec.spec);
+        try {PCAplot.calscagnotic(Dataset.schema.fieldSchemas.map(function(d){return d.field}));}
+        catch(e){}
+        var dim = 0;
+        var fields = [];
+        for (var key in spec.encoding) {
+            if (spec.encoding[key].field!== undefined && spec.encoding[key].field !== "*") {
+                dim++;
+                fields.push(spec.encoding[key].field);
+            }
+        }
+        dim = (dim<1)?0:(dim-1);
+        var data;
+        if (dim==0)
+            data = Dataset.data;
+        if( dim==1) {
+            //PCAplot.calscagnotic(fields);
+            data = Dataset.schema.fieldSchemas.map(function(d){
+                var tem = {field: d.field};
+                tem[d.field] = d.scag;
+                return tem;});
+        }
+
+        //if (PCAplot.mainfield != fields[0]){
+        if (PCAplot.dim != dim && dim <2){
+            PCAplot.firstrun = true;
+            //PCAplot.mainfield = fields[0];
+            PCAplot.dim = dim;
+        }
+        PCAplot.plot(data,dim);
+        spec = PCAplot.checkRender(spec,fields);
+        spec = _.cloneDeep(spec || Spec.spec);
 
 
       Spec._removeEmptyFieldDefs(spec);
@@ -173,7 +202,6 @@ angular.module('pcagnosticsviz')
       //   });
       // } else {
         vg.util.extend(spec.config, Config.small());
-        //PCAplot.Config = Config;
         if (!Dataset.schema) { return Spec; }
 
         var query = Spec.cleanQuery = getQuery(spec);
@@ -197,13 +225,7 @@ angular.module('pcagnosticsviz')
             if (query.spec.encodings.length > 0) {
               //Spec.alternatives = Alternatives.getAlternatives(query, Spec.chart, topItem);
               //   if (Spec.spec.config.typer){
-                if (Spec.switchmode){
-                    //Spec.chart.vlSpec.config.typer = oldtype||newtype;
-                    PCAplot.madeprop(Spec.chart.vlSpec);
-                    //Spec.switchmode = false;
-                }else {
-                    PCAplot.alternativeupdate(Spec.chart);
-                }
+                    PCAplot.madeprop(Spec.chart);
             } else {
               //Spec.alternatives = Alternatives.getHistograms(query, Spec.chart, topItem);
             }
@@ -556,12 +578,6 @@ angular.module('pcagnosticsviz')
        //  var output = cql.query(query, Dataset.schema);
        //  var result = output.result;
 
-        var oldtype = Spec.spec.config.typer;
-        var newtype = spec.config.typer;
-          if (newtype==undefined)
-              return ;
-        if (oldtype!=undefined)
-          Spec.switchmode = (oldtype.dim!=newtype.dim)||(oldtype.type!=newtype.type)||(oldtype.mark!=newtype.mark);
         // if (result.getTopSpecQueryModel().getMark() === spec.mark) {
         //   // make a copy and replace mark with '?'
         //   spec = util.duplicate(spec);
@@ -586,36 +602,7 @@ angular.module('pcagnosticsviz')
       preview: Spec.preview,
       previewQuery: Spec.previewQuery,
       update: function(spec) {
-        try {PCAplot.calscagnotic(Dataset.schema.fieldSchemas.map(function(d){return d.field}));}
-        catch(e){}
-        var dim = 0;
-        var fields = [];
-        for (var key in spec.encoding) {
-            if (spec.encoding[key].field!= undefined && spec.encoding[key].field != "*") {
-                dim++;
-                fields.push(spec.encoding[key].field);
-            }
-        }
-        dim = (dim<1)?0:(dim-1);
-        var data;
-        if (dim==0)
-            data = Dataset.data;
-        if( dim==1) {
-            //PCAplot.calscagnotic(fields);
-            data = Dataset.schema.fieldSchemas.map(function(d){
-              var tem = {field: d.field};
-              tem[d.field] = d.scag;
-              return tem;});
-        }
-
-        //if (PCAplot.mainfield != fields[0]){
-         if (PCAplot.dim != dim && dim <2){
-          PCAplot.firstrun = true;
-          //PCAplot.mainfield = fields[0];
-             PCAplot.dim = dim;
-        }
-        PCAplot.plot(data,dim);
-          spec = PCAplot.checksupport(spec,fields);
+        //spec = PCAplot.checksupport(spec,fields);
         //if (PCAplot.mspec!=null) PCAplot.alternativeupdate();
         return Spec.update(spec);
       },
@@ -656,7 +643,6 @@ angular.module('pcagnosticsviz')
         }
 
         // Finally, update the encoding only once to prevent glitches
-        Spec.switchmode = (Spec.spec.encoding !=encoding);
         Spec.spec.encoding = encoding;
           // Spec.spec = PCAplot.checksupport(Spec.spec);
       },
