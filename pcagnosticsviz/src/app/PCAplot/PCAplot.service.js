@@ -55,7 +55,7 @@ angular.module('pcagnosticsviz')
             getmark: getmark
         }, {
             types : ['com'],
-            marks :['scatter3D','radar'],
+            marks :['scatter3D'],
             option : 'auto',
             getmark: getmark
         }, {
