@@ -1133,7 +1133,7 @@ angular.module('pcagnosticsviz')
             return typer;
         }
         function wrongMarkDim(mark,dim){
-            return support[dim].marks.find(function(m){return m===mark})===-1;
+            return support[dim].marks.find(function(m){return m===mark})===undefined;
         }
         PCAplot.checkRender = function (spec,fields) { // convert spec to mpec
             var typer = spec2typer(spec,fields);

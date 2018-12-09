@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9ef1efaf-404e-482d-b692-aec0c9559f21" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/d3-slidegraph/slide-graph.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/d3-slidegraph/slide-graph.js" afterDir="false" />
-    </list>
+    <list default="true" id="9ef1efaf-404e-482d-b692-aec0c9559f21" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -53,8 +49,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="327">
-              <caret line="1147" column="55" selection-start-line="1147" selection-start-column="55" selection-end-line="1147" selection-end-column="55" />
+            <state relative-caret-position="21">
+              <caret line="1135" column="12" selection-start-line="1135" selection-start-column="12" selection-end-line="1135" selection-end-column="12" />
             </state>
           </provider>
         </entry>
@@ -171,9 +167,9 @@
       <find>made</find>
       <find>check</find>
       <find>limitDefault</find>
-      <find>limit</find>
       <find>getmark</find>
       <find>chec</find>
+      <find>limit</find>
     </findStrings>
     <replaceStrings>
       <replace>AE43AF</replace>
@@ -817,7 +813,7 @@
       <workItem from="1544044224452" duration="4252000" />
       <workItem from="1544053434102" duration="64736000" />
       <workItem from="1544194078455" duration="353000" />
-      <workItem from="1544194480805" duration="73336000" />
+      <workItem from="1544194480805" duration="73866000" />
     </task>
     <servers />
   </component>
@@ -830,11 +826,10 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1043987000" />
+    <option name="totallyTimeSpent" value="1044517000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1189" y="0" width="1294" height="1047" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24959481" />
       <window_info id="Structure" order="1" weight="0.25" />
@@ -1091,18 +1086,6 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1138</line>
-          <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="628" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/src/app/spec/spec.service.js</url>
-          <line>228</line>
-          <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="630" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
           <line>1119</line>
           <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="634" />
@@ -1184,6 +1167,12 @@
           <line>28</line>
           <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="685" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>1135</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="686" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
@@ -1531,8 +1520,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="327">
-          <caret line="1147" column="55" selection-start-line="1147" selection-start-column="55" selection-end-line="1147" selection-end-column="55" />
+        <state relative-caret-position="21">
+          <caret line="1135" column="12" selection-start-line="1135" selection-start-column="12" selection-end-line="1135" selection-end-column="12" />
         </state>
       </provider>
     </entry>
