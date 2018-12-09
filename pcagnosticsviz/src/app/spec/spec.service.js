@@ -53,6 +53,7 @@ angular.module('pcagnosticsviz')
         encoding: 'Showing views with different encodings',
       },
       autoGroupBy: null,
+        isSelected:false,
     };
 
 
@@ -122,7 +123,7 @@ angular.module('pcagnosticsviz')
      * Takes a full spec, validates it and then rebuilds all members of the chart object.
      */
     Spec.update = function(spec) {
-
+        if (Spec.previewedSpec!=null && !Spec.isSelected) return Spec;
         try {PCAplot.calscagnotic(Dataset.schema.fieldSchemas.map(function(d){return d.field}));}
         catch(e){}
         var dim = 0;
@@ -244,6 +245,7 @@ angular.module('pcagnosticsviz')
         // }
       // }
         //console.log(Spec.alternatives);
+        Spec.isSelected = false; // finish action select
       return Spec;
     };
 
@@ -317,7 +319,7 @@ angular.module('pcagnosticsviz')
       return {
         data: Config.data,
         mark: spec.mark === ANY ? '?' : spec.mark,
-
+        type: spec.type,
         // TODO: support transform enumeration
         transform: spec.transform,
         encodings: vg.util.keys(spec.encoding).reduce(function(encodings, channelId) {
@@ -372,6 +374,7 @@ angular.module('pcagnosticsviz')
       spec.config = specQuery.config;
 
       spec.groupBy = 'auto'; // query.groupBy;
+      spec.orderBy =  specQuery.orderBy;
       spec.autoAddCount = (query.config || {}).autoAddCount;
       return spec;
     }
@@ -589,7 +592,7 @@ angular.module('pcagnosticsviz')
         //   console.log(spec);
         //     PCAplot.madeprop(spec);
         // }
-
+        Spec.isSelected = true;
         Spec.parseSpec(spec);
 
       },

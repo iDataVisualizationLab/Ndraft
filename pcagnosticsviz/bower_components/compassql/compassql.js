@@ -4026,6 +4026,7 @@ var SpecQueryModel = (function () {
         if (this._spec.transform) {
             spec.transform = this._spec.transform;
         }
+        spec.type = this._spec.type;
         spec.mark = this._spec.mark;
         spec.encoding = this._encoding();
         if (spec.encoding === null) {

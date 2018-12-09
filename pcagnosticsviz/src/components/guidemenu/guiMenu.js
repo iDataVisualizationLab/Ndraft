@@ -12,7 +12,7 @@ angular.module('pcagnosticsviz')
                 marks: '<',
                 props: '<',
                 limit:'=',
-                limitup: '<',
+                limitup: '=',
             },
             replace: true,
             controller: function($scope, PCAplot, Logger) {
@@ -34,7 +34,7 @@ angular.module('pcagnosticsviz')
                     console.log("dim: " + $scope.prop.dim + "limit: " + $scope.limit);
                 };
                 $scope.previewSlider = function (index){
-                    $scope.prop.pos =index;
+                    $scope.prop.pos =index+$scope.limitup;
                     var tolog = {level_explore: $scope.prop.dim, abtraction: $scope.prop.mark, visual_feature: $scope.prop.type};
                     Logger.logInteraction(Logger.actions.FEATURE_QUICKNAVIGATION,index, {
                         val:{PS:tolog,spec:this.vlSpec,query:this.query},
@@ -56,7 +56,7 @@ angular.module('pcagnosticsviz')
                     $scope.limit = first?($scope.initialLimit || (($scope.prop.dim<1)?10:5)):$scope.limit;
                     first = false;
                     // console.log("dim: " + $scope.prop.dim + "limit: " + $scope.limit);
-                    $scope.limitup =  ($scope.prop.pos > 1 )?Math.min( $scope.limitup,($scope.prop.pos-2)): 0;
+                    $scope.limitup = Math.min($scope.limitup,($scope.prop.pos > $scope.limit)? ($scope.prop.pos-2) : 0);
                 }, true); //, true /* watch equality rather than reference */);
 
                 $scope.increaseLimit = function () {

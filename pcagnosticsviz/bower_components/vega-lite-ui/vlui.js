@@ -5986,8 +5986,8 @@
                                             });
                                             //Bring back the hovered over blob
                                             console.log(d3.mean(d,function(e){return e.data.value[fieldset[0]]}));
-                                            tip.show([{key: fieldset[0], value: d3.mean(d,function(e){return e.data.value[fieldset[0]]})},
-                                                {key: fieldset[1], value: d3.mean(d,function(e){return e.data.value[fieldset[1]]})}], '');
+                                            tip.show([{key: fieldset[0], value: d3.format(".3n")(d3.mean(d,function(e){return e.data.value[fieldset[0]]}))},
+                                                {key: fieldset[1], value: d3.format(".3n")	(d3.mean(d,function(e){return e.data.value[fieldset[1]]}))}], '');
                                         })
                                         .on('mouseout', function (d,i){
                                             d3.selectAll(".bin-point")
@@ -6529,9 +6529,7 @@
                                     var g = boxplotdiv.append('svg')
                                         .attr("width",width + margin.left + margin.right)
                                         .attr("height",height + margin.top + margin.bottom)
-                                        .attr("class", "radar-Chart")
-                                        .append("g")
-                                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                                        .attr("class", "radar-Chart");
                                     //runtGraph
                                     var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
                                     var points =  Dataset.data.map(function(d){return [d[fieldset[0]],d[fieldset[1]]]});
@@ -6563,7 +6561,7 @@
                                             opacityCircles: 0.1, 	//The opacity of the circles of each blob
                                             strokeWidth: 1,
                                         };
-                                        RadarChart(".radar-Chart", data,fieldDefs, radarChartOptions,tiptext,tip);
+                                        RadarChart(g, data,fieldDefs, radarChartOptions,tiptext,tip);
 
 
 
@@ -6645,7 +6643,7 @@
                             });
                         }
                     }
-                    function RadarChart(id, data,axis, options,tiptext,tip) {
+                    function RadarChart(svg, data,axis, options,tiptext,tip) {
                         var cfg = {
                             w: 600,				//Width of the circle
                             h: 600,				//Height of the circle
@@ -6688,13 +6686,13 @@
                         /////////////////////////////////////////////////////////
 
                         //Remove whatever chart with the same id/class was present before
-                        d3.select(id).select("svg").remove();
+                        // d3.select(id).select("svg").remove();
 
                         //Initiate the radar chart SVG
-                        var svg = d3.select(id).append("svg")
-                            .attr("width",  cfg.w + cfg.margin.left + cfg.margin.right)
-                            .attr("height", cfg.h + cfg.margin.top + cfg.margin.bottom)
-                            .attr("class", "radar"+id);
+                        // var svg = d3.select(id).append("svg")
+                        //     .attr("width",  cfg.w + cfg.margin.left + cfg.margin.right)
+                        //     .attr("height", cfg.h + cfg.margin.top + cfg.margin.bottom)
+                        //     .attr("class", "radar"+id);
                         //Append a g element
                         var g = svg.append("g")
                             .attr("transform", "translate(" + (cfg.w/2 + cfg.margin.left) + "," + (cfg.h/2 + cfg.margin.top) + ")");
@@ -7193,7 +7191,7 @@
                         Logger.logInteraction(Logger.actions.SPEC_SELECT, chart.shorthand, {
                             list: scope.listTitle
                         });
-
+                        console.log(chart);
                         Pills.select(chart.vlSpec);
                         if (scope.$parent.postSelectAction) {
                             scope.$parent.postSelectAction();

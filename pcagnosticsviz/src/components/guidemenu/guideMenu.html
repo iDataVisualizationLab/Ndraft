@@ -22,7 +22,7 @@
             <vl-plot-group
                     ng-if="prop.previewcharts"
                     class="main-vl-plot-group card thumplot no-shrink"
-                    ng-class="{'square':prop.dim, 'active': prop.pos== $index}"
+                    ng-class="{'square':prop.dim, 'active': prop.pos== $index + limitup}"
                     ng-repeat="chart in prop.previewcharts| limitTo: limit : limitup"
                     ng-click="previewSlider($index)"
                     chart="chart"
