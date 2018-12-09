@@ -6,6 +6,7 @@ angular.module('pcagnosticsviz')
         var keys =  _.keys(Schema.schema.definitions.Encoding.properties).concat([ANY+0]);
         var colordot = '#4682b4';
         var states = {IDLE:0,GENERATE_GUIDE:1,GENERATE_ALTERNATIVE:2,FREE:3, UPDATEPOSITION:4};
+        var limitDefault = 10;
         function instantiate() {
             return {
                 data: Config.data,
@@ -1041,7 +1042,7 @@ angular.module('pcagnosticsviz')
             //}
             PCAplot.prop.mspec = prop.charts[pos];
             prop.pos = pos;
-            PCAplot.limit = 10;
+            PCAplot.limit = limitDefault;
             PCAplot.limitup = (pos > PCAplot.limit)? (pos-2) : 0;
             PCAplot.updateguide(prop);
         };
@@ -1131,6 +1132,9 @@ angular.module('pcagnosticsviz')
             typer.fieldDefs = fields.map(function(f) {return Dataset.schema.fieldSchema(f)});
             return typer;
         }
+        function wrongMarkDim(mark,dim){
+            return support[dim].marks.find(function(m){return m===mark})===-1;
+        }
         PCAplot.checkRender = function (spec,fields) { // convert spec to mpec
             var typer = spec2typer(spec,fields);
             var type = type2type(typer.type,typer.dim,PCAplot.dim);
@@ -1139,9 +1143,9 @@ angular.module('pcagnosticsviz')
                 {
                     PCAplot.state = states.GENERATE_GUIDE;
                     if ((PCAplot.dim !== PCAplot.prop.dim)||(typer.mark==='__ANY__')){
-                        if (typer.mark==='__ANY__')
-                            spec.mark = type;
-                        PCAplot.prop.dim = PCAplot.dim
+                        if (wrongMarkDim(typer.mark,typer.dim))
+                            spec.mark = type2mark(type,typer.dim);
+                        PCAplot.prop.dim = PCAplot.dim;
                         PCAplot.prop.mark = spec.mark;
                         PCAplot.prop.type = type;
                         spec.type = type;
@@ -1151,10 +1155,14 @@ angular.module('pcagnosticsviz')
                     var pos = findinList(fields);
                     if (PCAplot.prop.pos !== pos){
                         PCAplot.prop.pos = pos;
+                        if (pos > PCAplot.limit) {
+                            PCAplot.limitup = pos - 2;
+                            PCAplot.limit = limitDefault;
+                        }
 
-                    }else {
-                        PCAplot.state = states.GENERATE_ALTERNATIVE;
+                        PCAplot.prop.mspec = PCAplot.prop.charts[PCAplot.prop.pos];
                     }
+                        PCAplot.state = states.GENERATE_ALTERNATIVE;
                     PCAplot.prop.fieldDefs = typer.fieldDefs;
                 }
             }else if (fields.length){
@@ -1442,30 +1450,6 @@ angular.module('pcagnosticsviz')
         }
         function type2mark (type,dim){
             return support[dim].getmark(type,null);
-            // switch (type) {
-            //     case 'PCA1': return 'tick';
-            //     case 'outlier': return 'boxplot';
-            //     case 'PCA2': return 'area';
-            //     case 'skewness': return 'bar';
-            //
-            //     case 'outlying':
-            //     case 'spase':
-            //     case 'convex':
-            //     case 'skewed':
-            //     case 'clumpy':
-            //     case 'striated':
-            //     case 'skinny':
-            //     case 'stringy':
-            //     case 'monotonic':
-            //         var mark = support[1].marks[ran];
-            //         ran = ran>2?0:(ran+1);
-            //         return mark;
-            //     //case 'outlying SC'
-            //     case 'com':
-            //         return 'scatter3D';
-            //
-            //     default: return 'point';
-            // }
         }
 
         function getranking(type){

@@ -29,10 +29,8 @@ angular.module('pcagnosticsviz')
                     PCAplot.prop.mspec = scope.charts[scope.pos];
                     scope.limitup = Math.min(scope.limitup,(scope.pos > scope.limit)? (scope.pos-2) : 0);
                     // scope.charts[scope.pos].vlSpec.config.typer = PCAplot.prop.mspec.config.typer;
-                    console.log("*********ME**");
-                    console.log(scope.limitup);
-                    console.log(scope.limit);
-                    Pills.select(scope.charts[scope.pos].vlSpec);
+                    setTransform();
+                    //Pills.select(scope.charts[scope.pos].vlSpec);
                 },true);
 
                 scope.prev = function() {
