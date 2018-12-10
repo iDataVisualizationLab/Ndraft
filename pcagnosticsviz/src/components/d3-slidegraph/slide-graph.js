@@ -30,7 +30,7 @@ angular.module('pcagnosticsviz')
                     scope.limitup = Math.min(scope.limitup,(scope.pos > scope.limit)? (scope.pos-2) : 0);
                     // scope.charts[scope.pos].vlSpec.config.typer = PCAplot.prop.mspec.config.typer;
                     setTransform();
-                    //Pills.select(scope.charts[scope.pos].vlSpec);
+                    Pills.select(scope.charts[scope.pos].vlSpec);
                 },true);
 
                 scope.prev = function() {

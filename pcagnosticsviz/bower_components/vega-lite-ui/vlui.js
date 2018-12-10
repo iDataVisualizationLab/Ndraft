@@ -6351,7 +6351,10 @@
                                     //draw
                                     boxplotdiv.append('div')
                                     //.style("width",width+'px' )
-                                        .style("height",height +'px')
+                                        .style("height",'100%')//height +'px')
+                                        .style("width",'100%')
+                                        .style("dsiplay",'inline')
+                                        .style("position","relative")
                                         .attr("class", "3Dscatter-graph")
                                         .attr("id", "3Dscatter"+scope.visId);
 
@@ -6376,14 +6379,17 @@
                                         var plotType = 'scatter3d';
 
                                         var plotMargins = {
-                                            pad: 10,
+                                            l: 0,
+                                            r: 0,
+                                            b: 0,
+                                            t: 0,
                                             autoexpand: true
                                         };
                                         var color = d3.scale.linear()
                                             .domain(d3.extent(scag.bins.map(function(b) {return b.length})))
                                             .range(["steelbule",'#2f5597'])
                                         .interpolate(d3.interpolateHcl);
-                                        var  dataPointRadius = 3;
+                                        var  dataPointRadius = 6;
                                         var distance = function(a, b){
                                             var dx = a[0] - b[0],
                                                 dy = a[1] - b[1];
@@ -6446,14 +6452,15 @@
                                             }];
                                         var scaleXs = d3.scale.linear()
                                             .domain([0,1])
-                                            .range([0,width]);
+                                            .range([dataPointRadius,width]);
                                         scag.bins.forEach(function(d){
                                             var distances = d.map(function(p){return distance([d.x, d.y], p)});
+                                            console.log('max: '+d3.max(distances));
                                             var radius = d3.max(distances);
                                             scatterData[0].x.push(scaleX(d.x));
                                             scatterData[0].y.push(scaleY(d.y));
                                             scatterData[0].z.push(d.z);
-                                            scatterData[0].marker.size.push ((radius === 0 ? dataPointRadius : scaleXs(radius))*3);
+                                            scatterData[0].marker.size.push (scaleXs(radius));
                                             scatterData[0].marker.color.push (color(d.length));
                                             var text = fieldset[0]+ ": "+scaleX(d.x)+"<br>";
                                             text+=fieldset[1]+": "+scaleY(d.y)+"<br>";
@@ -6462,13 +6469,22 @@
                                         var scatterLayout = {
                                             paper_bgcolor: 'rgba(0,0,0,0)',
                                             plot_bgcolor: 'rgba(0,0,0,0)',
+                                            autosize: true,
                                             margin: plotMargins,
-                                            width: scalem+plotMargins.l,
+                                            //width: scalem+plotMargins.l,
                                             scene:{
+                                                autosize: true,
+                                                margin: plotMargins,
+                                                aspectratio: {
+                                                    x: 1,
+                                                    y: 1,
+                                                    z: 1
+                                                },
                                                 yaxis:{
                                                     title: fieldset[1],
                                                     /*ticks:'',
                                                     showticklabels: false,*/
+                                                    automargin: true,
                                                     titlefont: {
                                                         size: 11,
                                                     },
@@ -6477,6 +6493,7 @@
                                                     title: fieldset[0],
                                                     /*ticks:'',
                                                     showticklabels: false,*/
+                                                    automargin: true,
                                                     titlefont: {
                                                         size: 11,
                                                     },
@@ -6485,13 +6502,15 @@
                                                     title: fieldset[2],
                                                     /*ticks:'',
                                                     showticklabels: false,*/
+                                                    automargin: true,
                                                     titlefont: {
                                                         size: 11,
                                                     },
                                                 }
                                             }
                                         };
-                                        Plotly.newPlot('3Dscatter' + scope.visId, scatterData, scatterLayout,{displayModeBar: (config.displayModeBar == undefined),staticPlot: (config.staticPlot != undefined)});
+                                        Plotly.newPlot('3Dscatter' + scope.visId, scatterData, scatterLayout,{displayModeBar: (config.displayModeBar === undefined),staticPlot: (config.staticPlot !== undefined),responsive: true,'max-width':'500px',
+                                        });
 
                                         Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
                                             list: scope.listTitle
