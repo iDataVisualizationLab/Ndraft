@@ -1010,7 +1010,7 @@ angular.module('pcagnosticsviz')
             PCAplot.types =  support[prop.dim].types;
             PCAplot.marks = support[prop.dim].marks;
             // PCAplot.spec = mspec;
-            prop.charts = PCAplot.data[prop.dim].sort(prop.ranking)
+            prop.charts = getData(prop.dim).sort(prop.ranking)
                 .map(function(d){return prop.plot((d.fieldDefs||d ),prop.mark,prop.mspec) });
             prop.previewcharts = prop.charts.map(function (d) {
                 var thum =_.cloneDeep(d);
@@ -1046,6 +1046,9 @@ angular.module('pcagnosticsviz')
             PCAplot.limitup = (pos > PCAplot.limit)? (pos-2) : 0;
             PCAplot.updateguide(prop);
         };
+        function getData(dim) {
+            return PCAplot.data[dim>1?1:dim];
+        }
         function drawGuideplot (object,type,dataref) {
             if (dataref == undefined)
                 dataref = Dataset.schema.fieldSchemas;

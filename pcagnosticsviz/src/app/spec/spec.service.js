@@ -149,9 +149,8 @@ angular.module('pcagnosticsviz')
         //if (PCAplot.mainfield != fields[0]){
         if (PCAplot.dim != dim && dim <2){
             PCAplot.firstrun = true;
-            //PCAplot.mainfield = fields[0];
-            PCAplot.dim = dim;
         }
+        PCAplot.dim = dim;
         PCAplot.plot(data,dim);
         spec = PCAplot.checkRender(spec,fields);
         spec = _.cloneDeep(spec || Spec.spec);
