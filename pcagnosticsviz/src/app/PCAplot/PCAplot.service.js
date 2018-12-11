@@ -64,10 +64,14 @@ angular.module('pcagnosticsviz')
             option : 'auto',
             getmark: getmark
         }];
+        support.getsupport = function(dim){
+            var supportdim = ( dim> (support.length-1))?(support.length-1):dim;
+            return support[supportdim];
+        };
         //PCAplot.updateplot = function (data){};
         PCAplot.plot =function(dataor,dimension) {
             if (!Object.keys(Config.data).length){return PCAplot;}
-            if (!PCAplot.firstrun && (Dataset.currentDataset[Object.keys(Config.data)[0]]==Config.data[Object.keys(Config.data)[0]])) {return PCAplot;}
+            if (!PCAplot.firstrun && (Dataset.currentDataset[Object.keys(Config.data)[0]]===Config.data[Object.keys(Config.data)[0]])) {return PCAplot;}
             //console.log("PLOT!!!!");
             PCAplot.firstrun = false;
             // d3.select('#bi-plot').selectAll('g').remove();
@@ -76,11 +80,11 @@ angular.module('pcagnosticsviz')
             //var data = Dataset.data);
             if (typeof dataor !=='undefined' ) {
                 PCAplot.data = [Dataset.schema.fieldSchemas, PCAplot.dataref];
-                //d3.selectAll('.biplot').append("g");
+                var biplotselect = $('.biplot');
                 var data = _.cloneDeep(dataor);
                 var margin = {top: 20, right: 20, bottom: 20, left: 20};
-                var width = $('.biplot').width() - margin.left - margin.right;
-                var height = $('.biplot').width() - margin.top - margin.bottom;
+                var width = biplotselect.width() - margin.left - margin.right;
+                var height = biplotselect.width() - margin.top - margin.bottom;
                 var angle = Math.PI * 0;
 //var color = d3.scaleOrdinal(d3.schemeCategory10);
                 var color = d3.scale.category10();
@@ -122,8 +126,8 @@ angular.module('pcagnosticsviz')
                     brand_names = Object.keys(data[0]);
                     matrix = data2Num(data);
 
-                    var outlier = brand_names.map(function (d, i) {
-                        var outlier = 0,
+                    outlier = brand_names.map(function (d, i) {
+                        var outliernum = 0,
                             row = matrix.map(function (r) {
                                 return r[i]
                             }),
@@ -140,18 +144,18 @@ angular.module('pcagnosticsviz')
                         //console.log(Dataset.schema.fieldSchema(d).stats);
                         row.forEach(function (e) {
                             if ((e < q1 - 2 * iqr) || (e > q3 + 2 * iqr))
-                                outlier += 10;
+                                outliernum += 10;
                             else if ((e < q1 - iqr) || (e > q3 + iqr))
-                                outlier = outlier + 1;
+                                outliernum = outliernum + 1;
                         });
-                        return outlier;
+                        return outliernum;
                     });
                 }
                 else {
                     var newdata = [];
                     data.forEach(function (d) {
                         for (var e in d[d.field]) {
-                            if (d[d.field][e].invalid != 1) {
+                            if (d[d.field][e].invalid !== 1) {
                                 idlabel.push([d.field, e]);
                                 newdata.push(d[d.field][e]);
                             }
@@ -896,11 +900,11 @@ angular.module('pcagnosticsviz')
 
         PCAplot.estimate = function(PCAresult,dim,dataref) {
             // choose main axis
-            if (dim==0) {
+            if (dim===0) {
                 PCAplot.charts.length=0;
                 Dataset.schema.fieldSchemas.forEach(function (d) {
                     var pca = PCAresult.find(function (it) {
-                        return (it['brand'] == d.field)
+                        return (it['brand'] === d.field)
                     });
                     d.extrastat = {
                         pc1: pca.pc1,
@@ -916,15 +920,14 @@ angular.module('pcagnosticsviz')
                 PCAresult.sort(function (a, b) {
                     return Math.abs(a.pc2) < Math.abs(b.pc2) ? 1 : -1
                 });
-                var pca2_max = PCAresult[0]['brand'] != pca1_max ? PCAresult[0]['brand'] : PCAresult[1]['brand'];
+                var pca2_max = (PCAresult[0]['brand'] !== pca1_max) ? PCAresult[0]['brand'] : PCAresult[1]['brand'];
                 recomen.push(pca1_max);
                 recomen.push(pca2_max);
-                Dataset.schema.fieldSchemas.sort(function (a, b) {
-                    Math.abs(a.stats.modeskew) > Math.abs(b.stats.modeskew) ? -1 : 1});
+                Dataset.schema.fieldSchemas.sort(function (a, b) { return Math.abs(a.stats.modeskew) > Math.abs(b.stats.modeskew) ? -1 : 1});
                 var mostskew = Dataset.schema.fieldSchemas.filter(function(d)  {
                     var r = false;
                     recomen.forEach(function(e)  {
-                        r |= (e != d)
+                        r |= (e !== d)
                     });
                     return r;
                 })[0];
@@ -934,7 +937,7 @@ angular.module('pcagnosticsviz')
                 var mostoutlie = Dataset.schema.fieldSchemas.filter(function(d)  {
                     var r = false;
                     recomen.forEach(function(e)  {
-                        r |= (e != d);
+                        r |= (e !== d);
                     });
                     return r;
                 })[0];
@@ -1010,7 +1013,7 @@ angular.module('pcagnosticsviz')
             PCAplot.types =  support[prop.dim].types;
             PCAplot.marks = support[prop.dim].marks;
             // PCAplot.spec = mspec;
-            prop.charts = getData(prop.dim).sort(prop.ranking)
+                prop.charts = getData(prop.dim).sort(prop.ranking)
                 .map(function(d){return prop.plot((d.fieldDefs||d ),prop.mark,prop.mspec) });
             prop.previewcharts = prop.charts.map(function (d) {
                 var thum =_.cloneDeep(d);
@@ -1031,7 +1034,7 @@ angular.module('pcagnosticsviz')
                     displayModeBar: false,
                     colorbar: false
                 };
-                if (d.fieldSet[0].type!="temporal"){
+                if (d.fieldSet[0].type!=="temporal"){
                     thum.vlSpec.config.axis.ticks = false;
                 }
                 return thum;});
@@ -1046,11 +1049,11 @@ angular.module('pcagnosticsviz')
             PCAplot.limitup = (pos > PCAplot.limit)? (pos-2) : 0;
             PCAplot.updateguide(prop);
         };
-        function getData(dim) {
+        var getData = function (dim) {
             return PCAplot.data[dim>1?1:dim];
-        }
+        };
         function drawGuideplot (object,type,dataref) {
-            if (dataref == undefined)
+            if (dataref === undefined)
                 dataref = Dataset.schema.fieldSchemas;
             var spec = spec = _.cloneDeep(instantiate() || PCAplot.spec);
             //spec.data = Dataset.dataset;
@@ -1094,7 +1097,7 @@ angular.module('pcagnosticsviz')
                 fieldDefs: object,};
             PCAplot.chart.guideon = guideon;
                 PCAplot.charts.push(PCAplot.chart);
-        };
+        }
         PCAplot.prop2spec = function (prop) {
             PCAplot.state = states.GENERATE_GUIDE;
             PCAplot.prop = prop;
@@ -1192,6 +1195,7 @@ angular.module('pcagnosticsviz')
             });
         }
         PCAplot.alternativeupdate = function(mspec){
+            console.log(PCAplot.data);
             mspec = _.cloneDeep(mspec || PCAplot.prop.mspec);
             if (PCAplot.dataref.length ===0|| PCAplot.dataref== null){
                 var data = [];
@@ -1220,19 +1224,24 @@ angular.module('pcagnosticsviz')
             }
             //var fieldsets = mspec.fieldSet.map(function(d){return d.field}).filter(function(d){return d!="count"&&d!="*"});
             var fieldsets = mspec.fieldSet.map(function(d){return d.field}).filter(function(d){return d!="count"&&d!="*"});
+            console.log(mspec);
+            if (fieldsets.length===0) {
+                PCAplot.alternatives.length = 0;
+                return;
+            }
             if (fieldsets.length<2) {
-                var possible = PCAplot.dataref.filter(function (d) {
+                var possible = getData(1).filter(function (d) {
                     var ff = true;
-                    var f = false;
                     fieldsets.forEach(function (it) {
+                        var f = false;
                         d.fieldDefs.forEach(function (m) {
                             f = (f || (m.field=== it));
                         });
                         ff = ff && f;
-                    })
+                    });
                     return ff;
                 });
-                if (possible.length != 0) {
+                if (possible.length !== 0) {
                     var topitem = support[PCAplot.dim + 1].types.map(function (d) {
                         return possible.sort(function (a, b) {
                             return (a.scag[d] < b.scag[d]) ? 1 : -1;
@@ -1242,8 +1251,8 @@ angular.module('pcagnosticsviz')
                     var uniquetype = [];
                     topitem.forEach(function (d, i) {
                         if (unique.filter(function (u) {
-                                return u == d;
-                            }).length == 0) {
+                                return u === d;
+                            }).length === 0) {
                             unique.push(d);
                             uniquetype.push(support[PCAplot.dim + 1].types[i]);
                         }
@@ -1291,47 +1300,62 @@ angular.module('pcagnosticsviz')
                     PCAplot.alternatives.length = 0;
                 }
             }
-            else if (fieldsets.length>1) {
-            var possible = PCAplot.dataref.filter(function (d){
+            else {
+            var possible = getData(fieldsets.length-1).filter(function (d){
                 var ff= false;
-                var f=false;
                 fieldsets.forEach(function(it){
-                    d.fieldDefs.forEach(function(m){f=(f||(m.field===it)); })
+                    var f=false;
+                    d.fieldDefs.forEach(function(m){f=(f||(m.field===it)); });
                     ff=ff||f;});
                 return ff;});
+                console.log("#BUG");
+                console.log(possible);
             possible = possible.filter(function (d){
                 var ff= true;
-                var f=false;
                 fieldsets.forEach(function(it){
-                    d.fieldDefs.forEach(function(m){f=(f||(m.field===it)); })
+                    var f=false;
+                    d.fieldDefs.forEach(function(m){f=(f||(m.field===it)); });
                     ff=ff&&f;});
                 return !ff;});
             var topitem = support[1].types.map(function (d) {
                 return possible.sort(function (a, b) {
-                    return (a[d] < b[d]) ? 1 : -1;
+                    return (a.scag[d] < b.scag[d]) ? 1 : -1;
                 })[0];
             });
+            // FIX ME lack of relationship mapping here
             var unique = [];
             var uniquetype = [];
             topitem.forEach(function (d, i) {
                 if (unique.filter(function (u) {
-                        return u == d;
-                    }).length == 0) {
-                    unique.push(d);
-                    uniquetype.push(support[fieldsets.length].types[0]);
+                        return u.fieldDefs === d.fieldDefs;
+                    }).length === 0) {
+                    unique.push(JSON.parse(JSON.stringify(d)));
+                    var currentsupport = support.getsupport(fieldsets.length-1);
+                    var maxsupport = currentsupport.types.length;
+                    uniquetype.push(currentsupport.types[i>maxsupport?(maxsupport-1):i]);
                 }
             });
-            unique.forEach(function(d){
+                console.log(unique);
+            unique.forEach(function(d,i){
+                var label='';
                 var newf = fieldsets.map(function(f){
+                    label=label+'-'+f;
                     return Dataset.schema.fieldSchema(f);});
+
                 Array.prototype.push.apply(newf,d.fieldDefs.filter(function(fe){
                     var ff = true;
-                    fieldsets.forEach(function(fs){ff=ff&&fs!==fe.field});
-                    return ff;
-                }));
-                d.fieldDefs=newf});
-            var charts = uniquetype.map(function (d, i) {
-                return {v: unique[i], type: d}
+                    fieldsets.forEach(function(fs){ff=ff&&(fs!==fe.field)});
+                    if (ff) label=label+'-'+fe.field;
+                    return ff;})
+                );
+                d.label = label;
+                d.type = uniquetype[i];
+            d.fieldDefs=newf});
+                unique  = _.uniqBy(unique,'label');
+            console.log('#BUG');
+            console.log(unique);
+            var charts = unique.map(function (d, i) {
+                return {v: d, type: d.type}
             })
                 .map(function (d) {
                     var spec = {};
@@ -1362,8 +1386,7 @@ angular.module('pcagnosticsviz')
 
                 });
             PCAplot.alternatives = [{'charts': charts}];
-            }else{
-                PCAplot.alternatives.length=0;}
+            }
 
         };
 
@@ -1375,7 +1398,7 @@ angular.module('pcagnosticsviz')
             nprop.ranking = getranking(prop.type);
             mark2plot (prop.mark,nprop.mspec,Dataset.schema.fieldSchemas.slice(0,prop.dim+1));
             nprop.charts.length = 0;
-            var dataref = nprop.dim?PCAplot.dataref:Dataset.schema.fieldSchemas;
+            var dataref = getData(nprop.dim);//?PCAplot.dataref:Dataset.schema.fieldSchemas;
             nprop.charts = dataref.sort(nprop.ranking)
                 .map(function(d) {return drawGuideexplore((d.fieldDefs||d),nprop.mark,nprop.mspec) });
             //while (nprop[nprop.length-1])
@@ -1403,7 +1426,7 @@ angular.module('pcagnosticsviz')
                     chooseBy: ['abstraction'],
                     //chooseBy: ['aggregationQuality', 'effectiveness'],
                 };
-                if (d.fieldSet[0].type!="temporal"){
+                if (d.fieldSet[0].type!=="temporal"){
                     thum.vlSpec.config.axis.ticks = false;
                 }
                 return thum;});
@@ -1700,6 +1723,7 @@ angular.module('pcagnosticsviz')
             // prop.mspec.config.typer = oldtyper||PCAplot.prop.mspec.config.typer;
             // delete prop.mspec.model;
             PCAplot.prop = prop;
+            PCAplot.mspec = prop.mspec;
         };
 
         function scagnoticscore (field1,field2){

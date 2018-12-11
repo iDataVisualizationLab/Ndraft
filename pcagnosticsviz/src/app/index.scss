@@ -233,10 +233,6 @@ null-filter-directive {
   fill: #ffffff;
 }
 
-.contour-graph {
-  margin: auto;
-}
-
 .data-pane {
   h3{
     padding-top: $paddingheader;
@@ -304,4 +300,11 @@ bi-plot {
 
     // or simply zoom: 50%
   }
+}
+
+.contour-graph{
+  display: inline-block;
+  position: relative;
+
+  width:100%;
 }
