@@ -44,7 +44,7 @@ angular.module('pcagnosticsviz')
         };
         PCAplot.mark2plot = mark2plot;
         var support =[{
-            types : ['PCA1','PCA2', 'skewness', 'outlier'],
+            types : ['PC1','PC2', 'skewness', 'outlier'],
             marks : ['tick','bar','area','boxplot'],
             option : 'auto',
             getmark: getmark
@@ -54,12 +54,12 @@ angular.module('pcagnosticsviz')
             option : 'random',
             getmark: getmark
         }, {
-            types : ['com'],
+            types : ['outlying'],
             marks :['scatter3D'],
             option : 'auto',
             getmark: getmark
         }, {
-            types : ['com'],
+            types : ['outlying'],
             marks :['radar'],
             option : 'auto',
             getmark: getmark
@@ -944,8 +944,8 @@ angular.module('pcagnosticsviz')
                 var object1 = Dataset.schema.fieldSchema(pca1_max);
                 var object2 = Dataset.schema.fieldSchema(pca2_max);
 
-                drawGuideplot([object1], 'PCA1');
-                drawGuideplot([object2], 'PCA2');
+                drawGuideplot([object1], 'PC1');
+                drawGuideplot([object2], 'PC2');
                 drawGuideplot([mostskew], 'skewness');
                 drawGuideplot([mostoutlie], 'outlier');
             }
@@ -979,6 +979,7 @@ angular.module('pcagnosticsviz')
                     return a.score<b.score?1:-1;
                 });
                 //console.log(tops.length>4?4:tops.length);
+                ran =0;
                 for (var d = 0; d < (tops.length>4?4:tops.length); d++)
                     drawGuideplot(tops[d].fields, tops[d].type,PCAplot.dataref);
 
@@ -1013,11 +1014,17 @@ angular.module('pcagnosticsviz')
             PCAplot.types =  support[prop.dim].types;
             PCAplot.marks = support[prop.dim].marks;
             // PCAplot.spec = mspec;
-                prop.charts = getData(prop.dim).sort(prop.ranking)
-                .map(function(d){return prop.plot((d.fieldDefs||d ),prop.mark,prop.mspec) });
+            prop.charts = getData(prop.dim).sort(prop.ranking)
+            .map(function(d){
+                var chart = prop.plot((d.fieldDefs||d ),prop.mark,prop.mspec);
+                chart.vlSpec.config.typer = {type: prop.type,val: getTypeVal(undefined,d.fieldDefs||d)};
+                return chart;});
+
             prop.previewcharts = prop.charts.map(function (d) {
                 var thum =_.cloneDeep(d);
                 // console.log(d);
+                var typer = {};
+                typer[prop.type] = d.vlSpec.config.typer.val[prop.type];
                 thum.vlSpec.config = {
                     cell: {
                         width: prop.dim?100:200,
@@ -1032,7 +1039,8 @@ angular.module('pcagnosticsviz')
                     overlay: {line: true},
                     scale: {useRawDomain: true},
                     displayModeBar: false,
-                    colorbar: false
+                    colorbar: false,
+                    typer: {type: prop.type,val: typer},
                 };
                 if (d.fieldSet[0].type!=="temporal"){
                     thum.vlSpec.config.axis.ticks = false;
@@ -1041,12 +1049,9 @@ angular.module('pcagnosticsviz')
             var pos = 0;
             var axis = prop.fieldDefs.map(function(d){return d.field});
             pos = findinList(axis,prop.charts);
-            console.log(pos);
             //}
             PCAplot.prop.mspec = prop.charts[pos];
             prop.pos = pos;
-            PCAplot.limit = limitDefault;
-            PCAplot.limitup = (pos > PCAplot.limit)? (pos-2) : 0;
             PCAplot.updateguide(prop);
         };
         var getData = function (dim) {
@@ -1071,10 +1076,10 @@ angular.module('pcagnosticsviz')
                 overlay: {line: true},
                 scale: {useRawDomain: true}
             };
+            spec.config.typer = {type: type,val: getTypeVal(type,object)};
             mark2plot (type2mark(type,PCAplot.dim),spec,object);
             var query = getQuery(spec,undefined,type);
             var output = cql.query(query, Dataset.schema);
-            //spec.config.typer = spec.config.typer|| {dim: PCAplot.dim,mark:spec.mark,type: type,fieldDefs:object};
             PCAplot.query = output.query;
             var topItem = output.result.getTopSpecQueryModel();
             PCAplot.chart = Chart.getChart(topItem);
@@ -1122,6 +1127,7 @@ angular.module('pcagnosticsviz')
                     guideon(prop);
                     var tolog = {level_explore: prop.dim, abtraction: prop.mark, visual_feature: prop.type};
                     Logger.logInteraction(Logger.actions.EXPANDED_SELECT,this.shorthand,{val:{PS:tolog,spec:this.vlSpec,query:this.query}, time:new Date().getTime()});
+                    PCAplot.limit = limitDefault;
                 case states.GENERATE_ALTERNATIVE:
                     PCAplot.alternativeupdate();
                     PCAplot.state = states.FREE;
@@ -1400,10 +1406,15 @@ angular.module('pcagnosticsviz')
             nprop.charts.length = 0;
             var dataref = getData(nprop.dim);//?PCAplot.dataref:Dataset.schema.fieldSchemas;
             nprop.charts = dataref.sort(nprop.ranking)
-                .map(function(d) {return drawGuideexplore((d.fieldDefs||d),nprop.mark,nprop.mspec) });
+                .map(function(d) {
+                    var chart = drawGuideexplore((d.fieldDefs||d),nprop.mark,nprop.mspec);
+                    chart.vlSpec.config.typer = {type: prop.type,val: getTypeVal(undefined,d.fieldDefs||d)};
+                    return chart; });
             //while (nprop[nprop.length-1])
             nprop.previewcharts = nprop.charts.map(function(d) {
                 var thum =_.cloneDeep(d);
+                var typer = {};
+                typer[prop.type] = d.vlSpec.config.typer.val[prop.type];
                 thum.vlSpec.config = {
                     cell: {
                         width: 100,
@@ -1419,6 +1430,7 @@ angular.module('pcagnosticsviz')
                     scale: {useRawDomain: true},
                     displayModeBar: false,
                     colorbar: false,
+                    typer: {type: prop.type,val: typer},
                 };
                 thum.query={
                     groupBy: 'encoding',
@@ -1480,16 +1492,54 @@ angular.module('pcagnosticsviz')
 
         function getranking(type){
             switch (type) {
-                case 'PCA1': return function (a,b){return Math.abs(a.extrastat.pc1) < Math.abs(b.extrastat.pc1) ? 1:-1};
+                case 'PC1': return function (a,b){return Math.abs(a.extrastat.pc1) < Math.abs(b.extrastat.pc1) ? 1:-1};
                     break;
                 case'skewness': return function (a,b){return Math.abs(a.stats.modeskew) < Math.abs(b.stats.modeskew) ? 1:-1};
                     break;
-                case'PCA2': return function (a,b){return Math.abs(a.extrastat.pc2) < Math.abs(b.extrastat.pc2) ? 1:-1};
+                case'PC2': return function (a,b){return Math.abs(a.extrastat.pc2) < Math.abs(b.extrastat.pc2) ? 1:-1};
                     break;
                 case'outlier': return function (a,b){return a.extrastat.outlier < b.extrastat.outlier? 1:-1};
                     break;
                 default: return function (a,b){return (a.scag[type] < b.scag[type]) ? 1:-1};
                     break;
+            }
+        }
+        function getTypeVal(type,objects,skipFindField){
+            var a;
+            if (!skipFindField) {
+                if (objects.length===undefined)
+                    objects = [objects];
+                var dim = objects.length - 1;
+                a = getData(dim).find(function (d) {
+                    var temp = (d.fieldDefs || [d]);
+                    var count = temp.length;
+
+                    (d.fieldDefs || [d]).forEach(function (f) {
+                        count = count - !(objects.find(function (o) {
+                            return o.field === f.field
+                        }) === undefined);
+                    });
+                    return !count;
+                });
+            }else{
+                a= objects;
+            }
+
+            switch (type) {
+                case 'PC1': return {'PC1': (a||objects).extrastat.pc1};
+                case 'skewness': return {'skewness':(a||objects).stats.modeskew};
+                case 'PC2': return {'PC2':(a||objects).extrastat.pc2};
+                case 'outlier': return {'outlier':(a||objects).extrastat.outlier};
+                case undefined:
+                    var typeval ={};
+                    support.getsupport(dim).types.forEach(function(d){
+                        typeval[d] = getTypeVal(d,a,true)[d];
+                    });
+                    return typeval;
+                default:
+                    var typeval ={};
+                    typeval[type] = a.scag[type];
+                    return typeval;
             }
         }
         var drawGuideexplore = function (object,type,mspec) {
@@ -1723,6 +1773,7 @@ angular.module('pcagnosticsviz')
             // prop.mspec.config.typer = oldtyper||PCAplot.prop.mspec.config.typer;
             // delete prop.mspec.model;
             PCAplot.prop = prop;
+            PCAplot.limitup = (PCAplot.prop.pos > (PCAplot.limit-1))? (PCAplot.prop.pos-2) : 0;
             PCAplot.mspec = prop.mspec;
         };
 

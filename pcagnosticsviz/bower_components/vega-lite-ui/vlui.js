@@ -5494,6 +5494,28 @@
 
                         var shorthand = getShorthand();
 
+                        //custom zone
+                        function plotTyper(divin,typer){
+                            var div = divin.select(function() { return this.parentNode; });
+                            if (typer) {
+                                var format = d3.format(".2f");
+                                div.select('.typerDiv').remove();
+                                var typerdiv = div.append('div')
+                                    .attr('class', 'typerDiv');
+                                var content = d3.entries(typer.val);
+                                console.log(typer);
+                                console.log(typer.val);
+                                console.log(content);
+                                typerdiv.selectAll('.typerDetail')
+                                    .data(content).enter()
+                                    .append('p')
+                                    .attr('class', 'typerDetail')
+                                    .text(function (d) {
+                                        return d.key + ': ' + format(d.value)
+                                    });
+                            }
+                        }
+                        //end custom
                         function parseVega() {
                             // if no longer a part of the list, cancel!
                             if (scope.destroyed || scope.disabled || (scope.isInList && scope.chart.fieldSetKey && !scope.isInList(scope.chart))) {
@@ -5738,6 +5760,8 @@
                                     .text(spec.marks[0].axes[0].title)
                                     .style("font-weight",'bold' )
                                     .attr("transform", "translate("+ (width/2) +","+titleOffset+")");
+
+                                plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
                                 Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
                                     list: scope.listTitle
                                 });
@@ -5875,7 +5899,7 @@
                                         .attr("transform", "translate("+ (width/2) +","+18+")")
                                         .style("font-weight",'bold' );
 
-
+                                    plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
 
                                     Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
                                         list: scope.listTitle
@@ -6027,7 +6051,7 @@
                                         .attr("transform", "translate("+ (width/2) +","+21+")")
                                         .style("font-weight",'bold' );
 
-
+                                        plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
 
                                     Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
                                         list: scope.listTitle
@@ -6055,7 +6079,7 @@
                                     var height = (parseInt($(boxplotdiv[0]).parent().parent().css("max-height"),10)||parseInt($(boxplotdiv[0]).parent().parent().parent()[0].offsetHeight,10)) - margin.top - margin.bottom;//||width/3;
 
                                     var scalem = Math.min(width,height);
-                                    // margin.top = margin.top + (height-scalem)/2;
+                                    // margin.top = margin.top + (height-scbalem)/2;
                                     // margin.bottom = margin.bottom + (height-scalem)/2;
                                     // margin.left = margin.left + (width-scalem)/2;
                                     // margin.right = margin.right + (width-scalem)/2;
@@ -6176,6 +6200,7 @@
                                             .attr("transform", "translate("+ (width/2) +","+21+")")
                                             .style("font-weight",'bold' );
 
+                                        plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
 
                                         Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
                                             list: scope.listTitle
@@ -6205,29 +6230,39 @@
                                     var scalem = width>height?'y':'x';
                                     //width = scalem;
                                     //height = scalem;
+                                    var config = scope.chart.vlSpec.config;
+                                    var small = (config.colorbar != undefined?config.colorbar:true);
+                                    console.log('color bar: '+small);
+                                    if (small){
+                                        width = height;
+                                        margin.right += 30;
+                                    }else
+                                    {
+                                        width = height;
+                                    }
 
                                     //draw
                                     boxplotdiv.append('div')
                                         //.style("width",width+'px' )
                                         .attr("class", "contour-graph")
                                         .attr("id", "contour"+scope.visId)
-                                        .style('height',height+'px');
+                                        .style('height',(height+margin.top+margin.bottom)+'px')
+                                        .style('width',(width+margin.left+margin.right)+'px');
 
                                     var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
                                     var points =  Dataset.data.map(function(d){return [d[fieldset[0]],d[fieldset[1]]]});
 
                                     var scag = scagnostics(points, 'leader',20);
-                                    var config = scope.chart.vlSpec.config;
-                                    var small = (config.colorbar != undefined?config.colorbar:true);
+
                                     try{
                                         // var plotType = 'contour';
                                         var plotType = 'histogram2dcontour';
                                         var plotMargins = {
-                                            l: 0,
-                                            r: 0,
-                                            t: 0,
-                                            b: 0,
-                                            pad: 4,
+                                            l: margin.left,
+                                            r: margin.right,
+                                            t: margin.top,
+                                            b: margin.bottom,
+                                            pad: 0,
                                             autoexpand: false,
                                         };
                                         var color = d3.scale.linear()
@@ -6263,6 +6298,7 @@
                                             connectgaps: true,
                                             showscale: small,
                                             colorbar: {
+                                                x: 0.98,
                                                 thickness: 10,
                                                 thicknessmode: 'pixels',
                                                 len: 0.9,
@@ -6297,6 +6333,7 @@
                                             contourData[0].x = Dataset.data.map(function(d){return d[fieldset[0]]});
                                             contourData[0].y = Dataset.data.map(function(d){return d[fieldset[1]]});
                                             //contourData[0].z = matrix;
+                                        console.log("display: "+config.displayModeBar);
                                         var contourLayout = {
                                             paper_bgcolor: 'rgba(0,0,0,0)',
                                             plot_bgcolor: 'rgba(0,0,0,0)',
@@ -6308,22 +6345,24 @@
                                             yaxis:{
                                                 title: "<b>"+fieldset[1]+"<b>",
                                                 gridcolor: '#bdbdbd',
-                                                showticklabels: true,
+                                                showticklabels: false,
                                                 titlefont: {
                                                     size: 11,
                                                 },
-                                                tickangle: 'auto',
+                                                ticks:'',
+                                                // tickangle: 'auto',
                                                 autorange: true,
                                                 showgrid: false,
                                                 zeroline: false,
                                             },
                                             xaxis:{
                                                 title: "<b>"+fieldset[0]+"<b>",
-                                                showticklabels: true,
+                                                showticklabels: false,
                                                 titlefont: {
                                                     size: 11,
                                                 },
-                                                tickangle: 'auto',
+                                                ticks:'',
+                                                // tickangle: 'auto',
                                                 autorange: true,
                                                 showgrid: false,
                                                 zeroline: false,
@@ -6345,7 +6384,7 @@
                                                 }
                                             ],
                                         };
-                                        if (scalem =='y'){
+                                        if (scalem ==='y'){
                                             contourLayout.xaxis.scaleanchor = 'y';
                                             contourLayout.xaxis.scaleratio = 1/scalexy;
                                             //contourLayout.xaxis.anchor= 'y';
@@ -6354,12 +6393,19 @@
                                             contourLayout.yaxis.scaleratio =scalexy;
                                             //contourLayout.yaxis.anchor= 'x';
                                         }
-                                        Plotly.newPlot('contour' + scope.visId, contourData, contourLayout,{displayModeBar: (config.displayModeBar === undefined),staticPlot: (config.staticPlot !== undefined),responsive: true});
+                                        var extraconfig = {
+                                            displayModeBar: (config.displayModeBar === undefined),
+                                            staticPlot: (config.staticPlot !== undefined),responsive: true,
+                                            displaylogo: false,
+                                        };
+                                        Plotly.newPlot('contour' + scope.visId, contourData, contourLayout,extraconfig);
+
+                                        plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
 
                                         Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
-                                            list: scope.listTitle
-                                        });
-                                        rescaleIfEnable();}catch(e){}
+                                        list: scope.listTitle
+                                    });
+                                    rescaleIfEnable();}catch(e){}
                                     renderQueueNextPromise = $timeout(renderQueueNext, 1);
                                     return;
                                 case "scatter3D":
@@ -6408,6 +6454,7 @@
                                     // to do
                                     var config = scope.chart.vlSpec.config;
                                     var small = (config.colorbar != undefined?config.colorbar:true);
+
                                     try{
                                         var plotType = 'scatter3d';
 
@@ -6521,7 +6568,16 @@
                                                 }
                                             }
                                         };
-                                        Plotly.newPlot('3Dscatter' + scope.visId, scatterData, scatterLayout,{displayModeBar: (config.displayModeBar === undefined),staticPlot: (config.staticPlot !== undefined),responsive: true,'max-width':'500px',});
+                                        var extraconfig = {
+                                            displayModeBar: (config.displayModeBar === undefined),
+                                            staticPlot: (config.staticPlot !== undefined),
+                                            responsive: true,
+                                            displaylogo: false,
+                                            'max-width':'500px'
+                                        };
+                                        Plotly.newPlot('3Dscatter' + scope.visId, scatterData, scatterLayout,extraconfig);
+
+                                        plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
 
                                         Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
                                             list: scope.listTitle
@@ -6593,15 +6649,15 @@
                                         };
                                         RadarChart(g, data,fieldDefs, radarChartOptions,tiptext,tip);
 
-
-
+                                        plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
                                         Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
                                             list: scope.listTitle
                                         });
                                         rescaleIfEnable();}catch(e){}
                                     renderQueueNextPromise = $timeout(renderQueueNext, 1);
                                     return;
-                                default: vg.parse.spec(spec, function(error, chart) {
+                                default:
+                                    vg.parse.spec(spec, function(error, chart) {
                                 if (error) {
                                     console.error('error', error);
                                     renderQueueNextPromise = $timeout(renderQueueNext, 1);
@@ -6634,7 +6690,7 @@
                                         $window.views = $window.views || {};
                                         $window.views[shorthand] = view;
                                     }
-
+                                    plotTyper(d3.selectAll("#vis-" + scope.visId).select('.vega'),scope.chart.vlSpec.config.typer);
                                     Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
                                         list: scope.listTitle
                                     });
