@@ -1,18 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9ef1efaf-404e-482d-b692-aec0c9559f21" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.js" beforeDir="false" afterPath="$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/scripts/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/scripts/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/scripts/vendor.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/scripts/vendor.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/styles/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/dist/styles/app.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/index.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/index.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/main/main.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/main/main.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/d3-slidegraph/slide-graph.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/d3-slidegraph/slide-graph.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/guidemenu/guideMenu.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/guidemenu/guideMenu.html" afterDir="false" />
-    </list>
+    <list default="true" id="9ef1efaf-404e-482d-b692-aec0c9559f21" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -61,8 +50,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-369">
-              <caret line="1432" column="56" selection-start-line="1432" selection-start-column="56" selection-end-line="1432" selection-end-column="56" />
+            <state relative-caret-position="165">
+              <caret line="1561" column="42" selection-start-line="1559" selection-start-column="16" selection-end-line="1561" selection-end-column="42" />
               <folding>
                 <element signature="e#1845#38049#0" />
                 <element signature="e#38801#40466#0" />
@@ -117,8 +106,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/app/index.scss">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="398">
-              <caret line="318" column="20" selection-start-line="318" selection-start-column="20" selection-end-line="318" selection-end-column="20" />
+            <state relative-caret-position="418">
+              <caret line="322" column="1" selection-start-line="322" selection-start-column="1" selection-end-line="322" selection-end-column="1" />
             </state>
           </provider>
         </entry>
@@ -170,8 +159,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>PCAplot.c</find>
-      <find>drawGuideplot</find>
       <find>ranking</find>
       <find>guideplot</find>
       <find>prop.pos</find>
@@ -200,6 +187,8 @@
       <find>selec</find>
       <find>guideon</find>
       <find>update</find>
+      <find>updatesp</find>
+      <find>choose</find>
     </findStrings>
     <replaceStrings>
       <replace>AE43AF</replace>
@@ -458,8 +447,8 @@
     </packageJsonPaths>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="501" />
-    <option name="y" value="5" />
+    <option name="x" value="497" />
+    <option name="y" value="38" />
     <option name="width" value="2012" />
     <option name="height" value="982" />
   </component>
@@ -850,7 +839,7 @@
       <workItem from="1544044224452" duration="4252000" />
       <workItem from="1544053434102" duration="64736000" />
       <workItem from="1544194078455" duration="353000" />
-      <workItem from="1544194480805" duration="160667000" />
+      <workItem from="1544194480805" duration="164087000" />
     </task>
     <servers />
   </component>
@@ -863,10 +852,10 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1131318000" />
+    <option name="totallyTimeSpent" value="1134738000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="501" y="5" width="2012" height="982" extended-state="0" />
+    <frame x="497" y="38" width="2012" height="982" extended-state="0" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19620901" />
       <window_info id="Structure" order="1" weight="0.25" />
@@ -1567,15 +1556,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/app/index.scss">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="398">
-          <caret line="318" column="20" selection-start-line="318" selection-start-column="20" selection-end-line="318" selection-end-column="20" />
+        <state relative-caret-position="418">
+          <caret line="322" column="1" selection-start-line="322" selection-start-column="1" selection-end-line="322" selection-end-column="1" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-369">
-          <caret line="1432" column="56" selection-start-line="1432" selection-start-column="56" selection-end-line="1432" selection-end-column="56" />
+        <state relative-caret-position="165">
+          <caret line="1561" column="42" selection-start-line="1559" selection-start-column="16" selection-end-line="1561" selection-end-column="42" />
           <folding>
             <element signature="e#1845#38049#0" />
             <element signature="e#38801#40466#0" />
