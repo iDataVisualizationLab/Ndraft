@@ -5315,6 +5315,7 @@
 
                     function destroyView() {
                         if (view) {
+                            scope.tip.destroy();
                             tooltip.destroy(); // destroy tooltip (promise and event listners)
                             view.off('mouseover');
                             view.off('mouseout');
@@ -5335,7 +5336,26 @@
 
                     scope.hoverFocus = false;
                     scope.destroyed = false;
+                    scope.tip = d3.tip()
+                        .attr('class', 'd3-tip tips ')
+                        .offset([10, 20])
+                        .direction('e')
+                        .html(function(values,title) {
+                            var str ='';
+                            // str += '<h3>' + (title.length==1 ? 'ID ' : '' )+ title  + '</h3>'
+                            str += "<table style='text-align: right;'>";
+                            for (var i=0; i<values.length; i++) {
+                                if ( values[i].key != 'pc1' && values[i].key != 'pc2') {
+                                    str += "<tr >";
+                                    str += "<td >" + values[i].key + "</td>";
+                                    str += "<td class=pct>" + values[i].value + "</td>";
+                                    str + "</tr>";
+                                }
+                            }
+                            str += "</table>";
 
+                            return str;
+                        });
                     scope.mouseenter = function() {
                         hoverPromise = $timeout(function(){
                             Logger.logInteraction(Logger.actions.CHART_MOUSEOVER, scope.chart.shorthand,{
@@ -5503,9 +5523,6 @@
                                 var typerdiv = div.append('div')
                                     .attr('class', 'typerDiv');
                                 var content = d3.entries(typer.val);
-                                console.log(typer);
-                                console.log(typer.val);
-                                console.log(content);
                                 typerdiv.selectAll('.typerDetail')
                                     .data(content).enter()
                                     .append('p')
@@ -5526,26 +5543,6 @@
 
                             var start = new Date().getTime();
                             // render if still a part of the list
-                            var tip = d3.tip()
-                                .attr('class', 'd3-tip tips ')
-                                .offset([10, 20])
-                                .direction('e')
-                                .html(function(values,title) {
-                                    var str ='';
-                                    // str += '<h3>' + (title.length==1 ? 'ID ' : '' )+ title  + '</h3>'
-                                    str += "<table style='text-align: right;'>";
-                                    for (var i=0; i<values.length; i++) {
-                                        if ( values[i].key != 'pc1' && values[i].key != 'pc2') {
-                                            str += "<tr >";
-                                            str += "<td >" + values[i].key + "</td>";
-                                            str += "<td class=pct>" + values[i].value + "</td>";
-                                            str + "</tr>";
-                                        }
-                                    }
-                                    str += "</table>";
-
-                                    return str;
-                                });
                             switch (scope.chart.vlSpec.mark){
 
                                 case "boxplot":
@@ -5565,7 +5562,6 @@
                                 var titleOffset = spec.marks[0].axes[0].titleOffset||30;
                                 margin.bottom += (titleOffset===30?30:0);
                                 var  width = $(boxplotdiv[0]).width() - margin.left - margin.right;
-                                console.log(width);
                                 //var height = $(old_canvas[0]).height() - margin.top - margin.bottom;
                                 var height = (parseInt($(boxplotdiv[0]).parent().parent().css("max-height"),10)||parseInt($(boxplotdiv[0]).parent().parent().parent()[0].offsetHeight,10)) - margin.top - margin.bottom-$(boxplotdiv[0]).parent().parent().find('.vl-plot-group-header').outerHeight(true);//||width/3;
                                     height = Math.min(height,100);
@@ -5594,16 +5590,8 @@
                                     Dataset.data.forEach(function (d){
                                         tiptext.push(d3.entries(d));
                                         return fieldDefs.map(function(f){return {value: (f.stats.max-f.stats.min)? (d[f.field]-f.stats.min)/(f.stats.max-f.stats.min):0, or: d[f.field]}; });});
-                                    svg.call(tip);
-                                // var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
-                                // var data =[];
-                                // fieldset.forEach(function(d){
-                                //     var current = Dataset.schema.fieldSchema(d);
-                                //     if (current!= undefined)
-                                //         data.push(current);
-                                // });
-                                // console.log(data);
-                                //console.log(data[0].stats);
+                                    svg.call(scope.tip);
+
                                 var formatNum = function(n){
                                     return (!isNaN(parseFloat(n)) ? parseFloat(n):n.length);
                                 };
@@ -5703,7 +5691,7 @@
                                         });
                                         //Bring back the hovered over blob
 
-                                        tip.show(tiptext.find(function(t){
+                                        scope.tip.show(tiptext.find(function(t){
                                             var data_or = t.find(function(e){return e.key==fieldset[0] && e.value ==d});// improve later
                                             return data_or != undefined}), '');
                                     })
@@ -5711,7 +5699,7 @@
                                         d3.selectAll(".circleo")
                                             .transition().duration(200)
                                             .style("opacity", 1);
-                                        tip.hide();
+                                        scope.tip.hide();
                                     });
                                     boxs.append('g')
                                         .attr('class','outliersfar')
@@ -5738,7 +5726,7 @@
                                             });
                                             //Bring back the hovered over blob
 
-                                            tip.show(tiptext.find(function(t){
+                                            scope.tip.show(tiptext.find(function(t){
                                                 var data_or = t.find(function(e){return e.key==fieldset[0] && e.value ==d});// improve later
                                                 return data_or != undefined}), '');
                                         })
@@ -5746,7 +5734,7 @@
                                             d3.selectAll(".circleo")
                                                 .transition().duration(200)
                                                 .style("opacity", 1);
-                                            tip.hide();
+                                            scope.tip.hide();
                                         });
                                 // draw y axis
 
@@ -5821,8 +5809,6 @@
                                     var scaleYv = d3.scale.linear()
                                         .domain([0,1])
                                         .range([fieldDefs[1].stats.min,fieldDefs[1].stats.max]);
-                                    console.log(spec.marks[0].axes[0].title+"-"+spec.marks[0].axes[1].title);
-                                    //console.log(scag.bins);
                                     // the y-axis
                                     var scaleY = d3.scale.linear()
                                         .domain(d3.extent(points,function(d){return d.val[1]}))
@@ -5860,15 +5846,15 @@
                                                         .style("opacity", 0.1);
                                             });
                                             //Bring back the hovered over blob
-                                            tip.show(tiptext[i], '');
+                                            scope.tip.show(tiptext[i], '');
                                         })
                                         .on('mouseout', function (d,i){
                                             d3.selectAll(".ppoint")
                                                 .transition().duration(200)
                                                 .style("opacity", 1);
-                                            tip.hide();
+                                            scope.tip.hide();
                                         });
-                                    g.call(tip);
+                                    g.call(scope.tip);
 
                                     var xAxis = d3.svg.axis()
                                         .scale(scaleX)
@@ -5920,10 +5906,11 @@
                                     // draw boxplot inspirted by http://bl.ocks.org/jensgrubert/7789216
                                     var labels = true; // show the text labels beside individual boxplots?
                                     // my zone \(=o=)\
-                                    var margin = {top: 5, right: 5, bottom: 25, left: 20};
+                                    var margin = {top: 3, right: 5, bottom: 20, left: 20};
+                                    margin.bottom += +$(boxplotdiv[0]).parent().parent().find('.vl-plot-group-header').outerHeight(true);
                                     var  width = $(boxplotdiv[0]).width() - margin.left - margin.right;
                                     //var height = $(old_canvas[0]).height() - margin.top - margin.bottom;
-                                    var height = (parseInt($(boxplotdiv[0]).parent().parent().css("max-height"),10)||parseInt($(boxplotdiv[0]).parent().parent().parent()[0].offsetHeight,10)) - margin.top - margin.bottom-$(boxplotdiv[0]).parent().parent().find('.vl-plot-group-header').outerHeight(true);//||width/3;
+                                    var height = (parseInt($(boxplotdiv[0]).parent().parent().css("max-height"),10)||parseInt($(boxplotdiv[0]).parent().parent().parent()[0].offsetHeight,10)) - margin.top - margin.bottom;//||width/3;
                                     var scalem = Math.min(width,height);
                                     // margin.top = margin.top + (height-scalem)/2;
                                     // margin.bottom = margin.bottom + (height-scalem)/2;
@@ -5931,13 +5918,17 @@
                                     // margin.right = margin.right + (width-scalem)/2;
                                     width = scalem;
                                     height = scalem;
-
+                                    console.log("REDERLOG")
+                                    console.log(scope.width+"x"+scope.height);
+                                    console.log(width+"x"+height);
+                                    //width = height =340;
                                     //draw
 
                                     var g = boxplotdiv.append('svg')
-                                        .attr("width",width + margin.left + margin.right)
-                                        .attr("height",height + margin.top + margin.bottom)
-                                        .attr("class", "hexagon-graph")
+                                        .style('max-height',height+'px')
+                                        .attr("viewBox", "0 0 "+(width + margin.left + margin.right)+" "+(height + margin.top + margin.bottom))
+                                        .attr("preserveAspectRatio", "xMidYMax meet")
+                                        .attr("class", "hexagon-graph")//
                                         .append("g")
                                         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
                                     //runtGraph
@@ -5947,12 +5938,7 @@
                                         var point = [d[fieldset[0]],d[fieldset[1]]];
                                         point.data={key: i, value: d};
                                         return point;});
-                                    //console.log("myevent");
-                                    //console.log(data[0].stats);
 
-                                    //check min max
-                                    // console.log(fieldset);
-                                    // console.log(points);
                                     try{
                                         var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});
                                         var scaleXv = d3.scale.linear()
@@ -5961,9 +5947,8 @@
                                         var scaleYv = d3.scale.linear()
                                             .domain([0,1])
                                             .range([fieldDefs[1].stats.min,fieldDefs[1].stats.max]);
-                                        console.log(spec.marks[0].axes[0].title+"-"+spec.marks[0].axes[1].title);
                                     var scag = scagnostics(points, 'hexagon',20);
-                                    //console.log(scag.bins);
+
                                     // the y-axis
                                     var scaleY = d3.scale.linear()
                                         .domain([0,1])
@@ -6009,17 +5994,16 @@
                                                         .style("opacity", 0.1);
                                             });
                                             //Bring back the hovered over blob
-                                            console.log(d3.mean(d,function(e){return e.data.value[fieldset[0]]}));
-                                            tip.show([{key: fieldset[0], value: d3.format(".3n")(d3.mean(d,function(e){return e.data.value[fieldset[0]]}))},
+                                            scope.tip.show([{key: fieldset[0], value: d3.format(".3n")(d3.mean(d,function(e){return e.data.value[fieldset[0]]}))},
                                                 {key: fieldset[1], value: d3.format(".3n")	(d3.mean(d,function(e){return e.data.value[fieldset[1]]}))}], '');
                                         })
                                         .on('mouseout', function (d,i){
                                             d3.selectAll(".bin-point")
                                                 .transition().duration(200)
                                                 .style("opacity", 1);
-                                            tip.hide();
+                                            scope.tip.hide();
                                         });
-                                        g.call(tip);
+                                        g.call(scope.tip);
 
                                     var xAxis = d3.svg.axis()
                                         .scale(scaleX)
@@ -6158,17 +6142,16 @@
                                                             .style("opacity", 0.1);
                                                 });
                                                 //Bring back the hovered over blob
-                                                console.log(d3.mean(d,function(e){return e.data.value[fieldset[0]]}));
-                                                tip.show([{key: fieldset[0], value: d3.mean(d,function(e){return e.data.value[fieldset[0]]})},
+                                                scope.tip.show([{key: fieldset[0], value: d3.mean(d,function(e){return e.data.value[fieldset[0]]})},
                                                     {key: fieldset[1], value: d3.mean(d,function(e){return e.data.value[fieldset[1]]})}], '');
                                             })
                                             .on('mouseout', function (d,i){
                                                 d3.selectAll(".bin-point")
                                                     .transition().duration(200)
                                                     .style("opacity", 1);
-                                                tip.hide();
+                                                scope.tip.hide();
                                             });
-                                        g.call(tip);
+                                        g.call(scope.tip);
 
                                         var xAxis = d3.svg.axis()
                                             .scale(scaleX)
@@ -6226,13 +6209,11 @@
                                     //var height = $(old_canvas[0]).height() - margin.top - margin.bottom;
                                     var height = (parseInt($(boxplotdiv[0]).parent().parent().css("max-height"),10)||parseInt($(boxplotdiv[0]).parent().parent().parent()[0].offsetHeight,10)) - margin.top - margin.bottom-$(boxplotdiv[0]).parent().parent().find('.vl-plot-group-header').outerHeight(true);
                                     height = height>2*width? width:height;
-                                    console.log(height);
                                     var scalem = width>height?'y':'x';
                                     //width = scalem;
                                     //height = scalem;
                                     var config = scope.chart.vlSpec.config;
                                     var small = (config.colorbar != undefined?config.colorbar:true);
-                                    console.log('color bar: '+small);
                                     if (small){
                                         width = height;
                                         margin.right += 30;
@@ -6265,20 +6246,22 @@
                                             pad: 0,
                                             autoexpand: false,
                                         };
+                                        var maxbin = d3.max(scag.bins,function(d){return d.length});
                                         var color = d3.scale.linear()
                                             .domain([0,1])
-                                            .range(["white",'#2f5597'])
-                                            ;//.interpolate(d3.interpolateHcl);
+                                            .range(["white",'#2f5597']);//.interpolate(d3.interpolateHcl);
+                                        var emptycolor = "white";
                                         var level = 8;
                                         var colorlevel = d3.scale.linear()
                                             .domain([0,level-1])
-                                            .range([0,1]);
-                                        var colorscale = [[colorlevel(0),color(colorlevel(0))],
-                                            [colorlevel(1),color(colorlevel(0))]];
-                                        for (var i =1; i<(level-1);i++){
+                                            .range([1/maxbin,1]);
+                                        var colorscale = [[0,emptycolor],
+                                            [colorlevel(0),emptycolor]];
+                                        for (var i =0; i<(level-1);i++){
                                             colorscale.push ([colorlevel(i),color(colorlevel(i))]);
                                             colorscale.push ([colorlevel(i+1),color(colorlevel(i))]);
                                         }
+
                                         var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});
 
                                         var scaleX = d3.scale.linear()
@@ -6291,9 +6274,11 @@
 
                                             type: plotType,
                                             colorscale: colorscale,
+                                            zmin:0,
+                                            zmax: maxbin,
                                             line: {
                                                 smoothing: 0.85,
-                                                color: 'rgba(1, 1, 1,0.2)'
+                                                color: 'rgba(1, 1, 1,0.8)'
                                             },
                                             connectgaps: true,
                                             showscale: small,
@@ -6307,6 +6292,17 @@
                                             },
                                             xaxis: 'x',
                                             yaxis: 'y',
+                                            contour:{
+                                                start:0,
+                                                size:1,
+                                                end:30,
+                                                showlabels: true,
+                                                labelfont: {
+                                                    family: 'Raleway',
+                                                    color: 'black'
+                                                }
+                                            },
+                                            ncontours:30,
                                             nbinsx: scag.binSize,
                                             nbinsy: scag.binSize,
                                             // histfunc: "count",
@@ -6314,26 +6310,11 @@
                                        //if (scope.chart.vlSpec.config.colorbar)
 
                                         var scalexy = (scaleX.range()[1]-scaleX.range()[0])/(scaleY.range()[1]-scaleY.range()[0]);
-                                        // var datax = scag.bins.map(function(d){return {x:d.x,y:d.y,z:d.length}});
-                                        // datax.sort(function(a,b){return a.x<b.x?-1:1});
-                                        // var datay = scag.bins.map(function(d){return {x:d.x,y:d.y,z:d.length}});
-                                        // datay.sort(function(a,b){return a.y<b.y?-1:1});
-                                        // var gridx = [];
-                                        // datax.forEach(function(d){
-                                        //     if (scaleX(d.x)!=gridx[gridx.length-1])
-                                        //         gridx.push(scaleX(d.x))});
-                                        // var gridy = [];
-                                        // datay.forEach(function(d){
-                                        //     if (scaleY(d.y)!=gridy[gridy.length-1])
-                                        //         gridy.push(scaleY(d.y))});
-                                        // var matrix = gridy.map(function(gy){
-                                        //     return gmridx.map(function(gx){
-                                        //         var item = datax.filter(function(d){return (scaleX(d.x)==gx)&&(scaleY(d.y)==gy)})[0];
+
                                         //         return item===undefined?null:item.z;})});
                                             contourData[0].x = Dataset.data.map(function(d){return d[fieldset[0]]});
                                             contourData[0].y = Dataset.data.map(function(d){return d[fieldset[1]]});
                                             //contourData[0].z = matrix;
-                                        console.log("display: "+config.displayModeBar);
                                         var contourLayout = {
                                             paper_bgcolor: 'rgba(0,0,0,0)',
                                             plot_bgcolor: 'rgba(0,0,0,0)',
@@ -6514,7 +6495,6 @@
                                             .range([dataPointRadius,width]);
                                         scag.bins.forEach(function(d){
                                             var distances = d.map(function(p){return distance([d.x, d.y], p)});
-                                            // console.log('max: '+d3.max(distances));
                                             var radius = d3.max(distances);
                                             scatterData[0].x.push(scaleX(d.x));
                                             scatterData[0].y.push(scaleY(d.y));
@@ -6619,12 +6599,7 @@
                                     //runtGraph
                                     var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
                                     var points =  Dataset.data.map(function(d){return [d[fieldset[0]],d[fieldset[1]]]});
-                                    //console.log("myevent");
-                                    //console.log(data[0].stats);
 
-                                    //check min max
-                                    // console.log(fieldset);
-                                    // console.log(points);
                                     try{
                                         var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});
                                         //var color = d3.scale.ordinal().range(["#EDC951","#CC333F","#00A0B0"]);
@@ -6647,7 +6622,7 @@
                                             opacityCircles: 0.1, 	//The opacity of the circles of each blob
                                             strokeWidth: 1,
                                         };
-                                        RadarChart(g, data,fieldDefs, radarChartOptions,tiptext,tip);
+                                        RadarChart(g, data,fieldDefs, radarChartOptions,tiptext,scope.tip);
 
                                         plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
                                         Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
@@ -6697,7 +6672,6 @@
                                     rescaleIfEnable();
 
                                     var endChart = new Date().getTime();
-                                    // console.log('parse spec', (endParse-start), 'charting', (endChart-endParse), shorthand);
                                     //replace boxplot
 
                                     if (scope.tooltip) {
@@ -7029,6 +7003,7 @@
 
                     scope.$on('$destroy', function() {
                         console.log('vlplot destroyed');
+                        scope.tip.destroy();
                         if (view) {
                             destroyView();
                         }
@@ -7277,7 +7252,6 @@
                         Logger.logInteraction(Logger.actions.SPEC_SELECT, chart.shorthand, {
                             list: scope.listTitle
                         });
-                        console.log(chart);
                         Pills.select(chart.vlSpec);
                         if (scope.$parent.postSelectAction) {
                             scope.$parent.postSelectAction();

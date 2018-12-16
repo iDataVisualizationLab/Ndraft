@@ -52,6 +52,7 @@ angular.module('pcagnosticsviz', [
   .constant('Drop', window.Drop)
   .constant('Blob', window.Blob)
   .constant('URL', window.URL)
+  .constant('scagnostics', window.scagnostics)
   .constant('jsondiffpatch', window.jsondiffpatch)
   .config(function(consts) {
     window.vg.util.extend(consts, {

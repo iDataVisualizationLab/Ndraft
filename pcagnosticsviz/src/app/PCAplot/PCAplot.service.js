@@ -379,6 +379,8 @@ angular.module('pcagnosticsviz')
                             return "#ff6f2b"
                         })
                         .style("fill-opacity", 0.1);
+                    console.log('Mouse over brand');
+                    console.log(b.brand);
                     legendtop.data([b.brand]).text(function (d) {
                         return d;
                     });
@@ -1201,7 +1203,7 @@ angular.module('pcagnosticsviz')
             });
         }
         PCAplot.alternativeupdate = function(mspec){
-            console.log(PCAplot.data);
+
             mspec = _.cloneDeep(mspec || PCAplot.prop.mspec);
             if (PCAplot.dataref.length ===0|| PCAplot.dataref== null){
                 var data = [];
@@ -1230,7 +1232,7 @@ angular.module('pcagnosticsviz')
             }
             //var fieldsets = mspec.fieldSet.map(function(d){return d.field}).filter(function(d){return d!="count"&&d!="*"});
             var fieldsets = mspec.fieldSet.map(function(d){return d.field}).filter(function(d){return d!="count"&&d!="*"});
-            console.log(mspec);
+
             if (fieldsets.length===0) {
                 PCAplot.alternatives.length = 0;
                 return;
@@ -1314,8 +1316,7 @@ angular.module('pcagnosticsviz')
                     d.fieldDefs.forEach(function(m){f=(f||(m.field===it)); });
                     ff=ff||f;});
                 return ff;});
-                console.log("#BUG");
-                console.log(possible);
+
             possible = possible.filter(function (d){
                 var ff= true;
                 fieldsets.forEach(function(it){
@@ -1341,7 +1342,6 @@ angular.module('pcagnosticsviz')
                     uniquetype.push(currentsupport.types[i>maxsupport?(maxsupport-1):i]);
                 }
             });
-                console.log(unique);
             unique.forEach(function(d,i){
                 var label='';
                 var newf = fieldsets.map(function(f){
@@ -1358,8 +1358,7 @@ angular.module('pcagnosticsviz')
                 d.type = uniquetype[i];
             d.fieldDefs=newf});
                 unique  = _.uniqBy(unique,'label');
-            console.log('#BUG');
-            console.log(unique);
+
             var charts = unique.map(function (d, i) {
                 return {v: d, type: d.type}
             })
@@ -1584,7 +1583,7 @@ angular.module('pcagnosticsviz')
                 spec.encoding.x.timeUnit = "year";
                 spec.encoding.y.type = "quantitative";
             }
-            //console.log(spec);
+
         }
 
         function dashplot(spec,objectin) {
