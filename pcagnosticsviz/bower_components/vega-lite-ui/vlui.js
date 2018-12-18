@@ -5513,7 +5513,14 @@
                         }
 
                         var shorthand = getShorthand();
-
+                        var level= 7;
+                        var maincolor = d3v4.scaleSequential(d3v4.interpolateViridis);
+                        var emptycolor = "#ffffff";
+                        maincolor.domain([0, (level+1)*0.1]);
+                        maincolor.interpolator(d3v4["interpolateBlues"]);
+                        var subcolor = function (val){
+                            scale
+                        }
                         //custom zone
                         function plotTyper(divin,typer){
                             var div = divin.select(function() { return this.parentNode; });
@@ -5585,7 +5592,7 @@
                                     });
 
                                     var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});
-                                    //var color = d3.scale.ordinal().range(["#EDC951","#CC333F","#00A0B0"]);
+
                                     var tiptext=[];
                                     Dataset.data.forEach(function (d){
                                         tiptext.push(d3.entries(d));
@@ -5797,7 +5804,6 @@
                                     var points =  Dataset.data.map(function(d,i){return {index: i,val: [d[fieldset[0]],d[fieldset[1]]]}});
 
                                     var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});
-                                    //var color = d3.scale.ordinal().range(["#EDC951","#CC333F","#00A0B0"]);
                                     var tiptext=[];
                                     Dataset.data.forEach(function (d){
                                         tiptext.push(d3.entries(d));
@@ -5820,10 +5826,6 @@
                                         .domain(d3.extent(points,function(d){return d.val[0]}))
                                         .range([0,width]);
 
-                                    /*var color = d3.scale.linear()
-                                        .domain(d3.extent(scag.bins.map(function(b) {return b.length})))
-                                        .range(["grey", "steelblue"])
-                                        .interpolate(d3.interpolateHcl);*/
 
                                     var bins = g
                                         .selectAll(".ppoint")
@@ -5947,7 +5949,7 @@
                                         var scaleYv = d3.scale.linear()
                                             .domain([0,1])
                                             .range([fieldDefs[1].stats.min,fieldDefs[1].stats.max]);
-                                    var scag = scagnostics(points, 'hexagon',20);
+                                    var scag = scagnostics(points, 'hexagon',40,false,false,undefined,1,Infinity);
 
                                     // the y-axis
                                     var scaleY = d3.scale.linear()
@@ -5960,18 +5962,19 @@
                                         .domain([0,1])
                                         .range([0,width]);
 
-                                    /*var color = d3.scale.linear()
-                                        .domain(d3.extent(scag.bins.map(function(b) {return b.length})))
-                                        .range(["grey", "steelblue"])
-                                        .interpolate(d3.interpolateHcl);*/
-                                        var color=   d3v4.scaleSequential(d3v4.interpolateLab("white",'#2f5597'))
-                                            .domain(d3v4.extent(scag.bins.map(function(b) {return b.length})));
+                                        // var color = d3.scale.linear()
+                                        //     .domain(d3.extent(scag.bins.map(function(b) {return b.length})))
+                                        //     .range(["white",'#2f5597'])
+                                        //     .interpolate(d3.interpolateHcl);
+                                        var color = d3.scale.linear()
+                                             .domain(d3.extent(scag.bins.map(function(b) {return b.length})))
+                                            .range([maincolor(0.1),maincolor(0.7)]);
                                     var bins = g.append("g")
                                         .attr("class", "hexagon")
                                         .selectAll(".bin-point")
                                         .data(scag.bins)
                                         .enter().append("path")
-                                        .attr("class", "bin-point")
+                                        .attr("class", "bin-point mainstroke")
                                         .attr("d", scag.binner.hexagon(scaleX(scag.binRadius)))
                                         .attr("transform", function (d) {
                                             return "translate(" + scaleX(d.x) + "," + scaleY(d.y) + ")";
@@ -6004,7 +6007,11 @@
                                             scope.tip.hide();
                                         });
                                         g.call(scope.tip);
-
+                                        var deltax = scaleX(scag.binRadius);
+                                        scaleX.domain([-scag.binRadius,1+scag.binRadius])
+                                            .range([scaleX.range()[0]-deltax,scaleX.range()[1]+deltax]);
+                                        scaleY.domain([-scag.binRadius,1+scag.binRadius])
+                                            .range([scaleY.range()[0]+deltax,scaleY.range()[1]-deltax]);
                                     var xAxis = d3.svg.axis()
                                         .scale(scaleX)
                                         .orient("bottom");
@@ -6017,7 +6024,8 @@
 
                                     // draw y axis
                                     g.append("g")
-                                          .attr("class", "y axis")
+                                        .attr("class", "y axis")
+                                        .attr("transform", "translate(" + (-deltax) + ",0)")
                                           .call(yAxis)
                                         .append('text')
                                         .text(spec.marks[0].axes[1].title)
@@ -6027,7 +6035,7 @@
                                     // draw x axis
                                     g.append("g")
                                         .attr("class", "x axis")
-                                        .attr("transform", "translate(0," + (height) + ")")
+                                        .attr("transform", "translate(0," + scaleY.range()[0] + ")")
                                         .call(xAxis)
                                         .append('text')
                                         .attr("text-anchor", "middle")
@@ -6036,6 +6044,8 @@
                                         .style("font-weight",'bold' );
 
                                         plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
+
+                                     g.attr("transform", "translate(" + (margin.left-deltax) + "," + (margin.top+deltax) + ")");
 
                                     Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
                                         list: scope.listTitle
@@ -6072,9 +6082,9 @@
 
                                     //draw
 
-                                    var g = boxplotdiv.append('svg')
-                                        .attr("width",width + margin.left + margin.right)
-                                        .attr("height",height + margin.top + margin.bottom)
+                                    var g = boxplotdiv.append('svg') .style('max-height',height+'px')
+                                        .attr("viewBox", "0 0 "+(width + margin.left + margin.right)+" "+(height + margin.top + margin.bottom))
+                                        .attr("preserveAspectRatio", "xMidYMax meet")
                                         .attr("class", "leader-graph")
                                         .append("g")
                                         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -6088,7 +6098,7 @@
 
                                     try{
                                         var dataPointRadius = 2;
-                                        var scag = scagnostics(points, 'leader',20);
+                                        var scag = scagnostics(points, 'leader',20,false,false,undefined,1,Infinity);
                                         //console.log(scag.bins);
                                         // the y-axis
                                         var scaleY = d3.scale.linear()
@@ -6103,19 +6113,18 @@
 
                                         var color = d3.scale.linear()
                                             .domain(d3.extent(scag.bins.map(function(b) {return b.length})))
-                                            .range(["white",'#2f5597'])
-                                            .interpolate(d3.interpolateHcl);
+                                            .range([maincolor(0.1),maincolor(0.7)]);
                                         var distance = function(a, b){
                                             var dx = a[0] - b[0],
                                                 dy = a[1] - b[1];
                                             return Math.round(Math.sqrt((dx * dx) + (dy * dy))*Math.pow(10, 10))/Math.pow(10, 10);
                                         };
                                         var bins = g.append("g")
-                                            .attr("class", "leader",20)
+                                            .attr("class", "leader")
                                             .selectAll(".bin-point")
                                             .data(scag.bins)
                                             .enter().append("circle")
-                                            .attr("class", "bin-point")
+                                            .attr("class", "bin-point mainstroke")
                                             .attr("r", function(d)  {
                                                 var distances = d.map(function(p){return distance([d.x, d.y], p)});
                                                 var radius = d3.max(distances);
@@ -6124,7 +6133,6 @@
                                             .attr("cx", function(d){return scaleX(d.x)})
                                             .attr("cy", function(d){return scaleY(d.y)})
                                             .attr("fill", function(d){return color(d.length)})
-                                            .attr("stroke", "#2f5597")
                                             .attr("stroke-width", 1).on('mouseover', function (d,i){
                                                 var currentdata = d3.select(this).datum();
                                                 d3.selectAll(".bin-point")[0].forEach(function(e){
@@ -6152,7 +6160,11 @@
                                                 scope.tip.hide();
                                             });
                                         g.call(scope.tip);
-
+                                        var deltax = scaleX(scag.binRadius);
+                                        scaleX.domain([-scag.binRadius,1+scag.binRadius])
+                                            .range([scaleX.range()[0]-deltax,scaleX.range()[1]+deltax]);
+                                        scaleY.domain([-scag.binRadius,1+scag.binRadius])
+                                            .range([scaleY.range()[0]+deltax,scaleY.range()[1]-deltax]);
                                         var xAxis = d3.svg.axis()
                                             .scale(scaleX)
                                             .orient("bottom");
@@ -6166,6 +6178,7 @@
                                         // draw y axis
                                         g.append("g")
                                             .attr("class", "y axis")
+                                            .attr("transform", "translate(" + (-deltax) + ",0)")
                                             .call(yAxis)
                                             .append('text')
                                             .text(spec.marks[0].axes[1].title)
@@ -6175,7 +6188,7 @@
                                         // draw x axis
                                         g.append("g")
                                             .attr("class", "x axis")
-                                            .attr("transform", "translate(0," + (height) + ")")
+                                            .attr("transform", "translate(0," + scaleY.range()[0] + ")")
                                             .call(xAxis)
                                             .append('text')
                                             .attr("text-anchor", "middle")
@@ -6184,6 +6197,8 @@
                                             .style("font-weight",'bold' );
 
                                         plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
+
+                                        g.attr("transform", "translate(" + (margin.left-deltax) + "," + (margin.top+deltax) + ")");
 
                                         Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
                                             list: scope.listTitle
@@ -6232,9 +6247,23 @@
 
                                     var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
                                     var points =  Dataset.data.map(function(d){return [d[fieldset[0]],d[fieldset[1]]]});
+                                    var scag = scagnostics(points, 'hexagon',40,false,false,undefined,1,Infinity);
 
-                                    var scag = scagnostics(points, 'leader',20);
-
+                                    var level= 7;
+                                    var colorlevel = maincolor.ticks(level).slice(-level-2);
+                                    console.log(colorlevel);
+                                    var color_names =[];
+                                    var colorscale = [[0,emptycolor],
+                                        [(1-0.5)/(level),emptycolor]];
+                                    for (var i =1; i<level;i++){
+                                        colorscale.push ([(i-0.5)/level,maincolor(colorlevel[i])]);
+                                        colorscale.push ([(i+1-0.5)/level,maincolor(colorlevel[i])]);
+                                        color_names.push(""+i);
+                                    }
+                                    color_names[level-2] = "≥"+ (level-1);
+                                    colorscale.push ([(level-0.5)/level,maincolor(colorlevel[level])]);
+                                    colorscale.push ([1,maincolor(colorlevel[level])]);
+                                    console.log(color_names);
                                     try{
                                         // var plotType = 'contour';
                                         var plotType = 'histogram2dcontour';
@@ -6246,22 +6275,6 @@
                                             pad: 0,
                                             autoexpand: false,
                                         };
-                                        var maxbin = d3.max(scag.bins,function(d){return d.length});
-                                        var color = d3.scale.linear()
-                                            .domain([0,1])
-                                            .range(["white",'#2f5597']);//.interpolate(d3.interpolateHcl);
-                                        var emptycolor = "white";
-                                        var level = 8;
-                                        var colorlevel = d3.scale.linear()
-                                            .domain([0,level-1])
-                                            .range([1/maxbin,1]);
-                                        var colorscale = [[0,emptycolor],
-                                            [colorlevel(0),emptycolor]];
-                                        for (var i =0; i<(level-1);i++){
-                                            colorscale.push ([colorlevel(i),color(colorlevel(i))]);
-                                            colorscale.push ([colorlevel(i+1),color(colorlevel(i))]);
-                                        }
-
                                         var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});
 
                                         var scaleX = d3.scale.linear()
@@ -6275,10 +6288,11 @@
                                             type: plotType,
                                             colorscale: colorscale,
                                             zmin:0,
-                                            zmax: maxbin,
+                                            zmax:7,
                                             line: {
                                                 smoothing: 0.85,
-                                                color: 'rgba(1, 1, 1,0.8)'
+                                                color: 'rgba(1, 1, 1,1)',
+                                                width: 0.2,
                                             },
                                             connectgaps: true,
                                             showscale: small,
@@ -6288,21 +6302,17 @@
                                                 thicknessmode: 'pixels',
                                                 len: 0.9,
                                                 lenmode: 'fraction',
-                                                outlinewidth: 0
+                                                outlinewidth: 0,
+                                                tickvals: d3.range(1,level,1),
+                                                ticktext: color_names,
                                             },
                                             xaxis: 'x',
                                             yaxis: 'y',
                                             contour:{
-                                                start:0,
+                                                start:1,
                                                 size:1,
-                                                end:30,
-                                                showlabels: true,
-                                                labelfont: {
-                                                    family: 'Raleway',
-                                                    color: 'black'
-                                                }
+                                                end:6,
                                             },
-                                            ncontours:30,
                                             nbinsx: scag.binSize,
                                             nbinsy: scag.binSize,
                                             // histfunc: "count",
@@ -6335,6 +6345,8 @@
                                                 autorange: true,
                                                 showgrid: false,
                                                 zeroline: false,
+                                                linecolor: '#000000',
+                                                linewidth: 1
                                             },
                                             xaxis:{
                                                 title: "<b>"+fieldset[0]+"<b>",
@@ -6347,23 +6359,25 @@
                                                 autorange: true,
                                                 showgrid: false,
                                                 zeroline: false,
+                                                linecolor: '#000000',
+                                                linewidth: 1
                                             },
-                                            shapes:[
-                                                {
-                                                    type: 'rect',
-                                                    xref: 'x',
-                                                    yref: 'y',
-                                                    x0: scaleX.range()[0],
-                                                    y0: scaleY.range()[0],
-                                                    x1: scaleX.range()[1],
-                                                    y1: scaleY.range()[1],
-                                                    fillcolor: 'none',
-                                                    line: {
-                                                        color: '#bdbdbd',
-                                                        width: 2
-                                                    }
-                                                }
-                                            ],
+                                            // shapes:[
+                                            //     {
+                                            //         type: 'rect',
+                                            //         xref: 'x',
+                                            //         yref: 'y',
+                                            //         x0: scaleX.range()[0],
+                                            //         y0: scaleY.range()[0],
+                                            //         x1: scaleX.range()[1],
+                                            //         y1: scaleY.range()[1],
+                                            //         fillcolor: 'none',
+                                            //         line: {
+                                            //             color: '#bdbdbd',
+                                            //             width: 2
+                                            //         }
+                                            //     }
+                                            // ],
                                         };
                                         if (scalem ==='y'){
                                             contourLayout.xaxis.scaleanchor = 'y';
@@ -6375,10 +6389,11 @@
                                             //contourLayout.yaxis.anchor= 'x';
                                         }
                                         var extraconfig = {
-                                            displayModeBar: (config.displayModeBar === undefined),
                                             staticPlot: (config.staticPlot !== undefined),responsive: true,
                                             displaylogo: false,
                                         };
+                                        if (config.displayModeBar ===false)
+                                            extraconfig.displayModeBar=false;
                                         Plotly.newPlot('contour' + scope.visId, contourData, contourLayout,extraconfig);
 
                                         plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
@@ -6431,11 +6446,15 @@
                                         var point = [d[fieldset[0]],d[fieldset[1]]];
                                         point.data = {'x': d[fieldset[0]], 'y': d[fieldset[1]], 'z': d[fieldset[2]]};
                                     return point;});
-                                    var scag = scagnostics(points, 'leader',20);
                                     // to do
                                     var config = scope.chart.vlSpec.config;
                                     var small = (config.colorbar != undefined?config.colorbar:true);
-
+                                    if (config.extraconfig !== 'point') {
+                                        var scag = scagnostics(points, 'leader', 20);
+                                        var color = d3.scale.linear()
+                                            .domain(d3.extent(scag.bins.map(function(b) {return b.length})))
+                                            .range([maincolor(0.1),maincolor(0.7)]);
+                                    }
                                     try{
                                         var plotType = 'scatter3d';
 
@@ -6446,28 +6465,7 @@
                                             t: 0,
                                             autoexpand: true
                                         };
-                                        var color = d3.scale.linear()
-                                            .domain(d3.extent(scag.bins.map(function(b) {return b.length})))
-                                            .range(["steelbule",'#2f5597'])
-                                        .interpolate(d3.interpolateHcl);
                                         var  dataPointRadius = 6;
-                                        var distance = function(a, b){
-                                            var dx = a[0] - b[0],
-                                                dy = a[1] - b[1];
-                                            return Math.round(Math.sqrt((dx * dx) + (dy * dy))*Math.pow(10, 10))/Math.pow(10, 10)};
-                                        var minz= Infinity;
-                                        var maxz= -Infinity;
-                                        scag.bins.forEach(function(d){
-                                            var z = 0;
-                                            d.forEach(function(i){ z = z+i.data.z;});
-                                            z = z/d.length;
-                                            d.z =z;
-                                            minz = Math.min(minz,z);
-                                            maxz = Math.max(maxz,z);});
-                                        var scalez = d3.scale.linear()
-                                            .domain([minz,maxz])
-                                            .range([0,1]);
-
                                         var scatterData = [
                                             {
                                                 x:[],
@@ -6482,7 +6480,7 @@
                                                     size: [],
                                                     // color: color(d.length)
                                                     line: {
-                                                        color: 'rgba(217, 217, 217, 0.14)',
+                                                        color: 'rgba(0, 0, 0, 0.3)',
                                                         width: 0.5
                                                     },
                                                     color: [],
@@ -6490,21 +6488,60 @@
                                                 showscale: small,
                                                 showlegend: false,
                                             }];
-                                        var scaleXs = d3.scale.linear()
-                                            .domain([0,1])
-                                            .range([dataPointRadius,width]);
-                                        scag.bins.forEach(function(d){
-                                            var distances = d.map(function(p){return distance([d.x, d.y], p)});
-                                            var radius = d3.max(distances);
-                                            scatterData[0].x.push(scaleX(d.x));
-                                            scatterData[0].y.push(scaleY(d.y));
-                                            scatterData[0].z.push(d.z);
-                                            scatterData[0].marker.size.push (scaleXs(radius));
-                                            scatterData[0].marker.color.push (color(d.length));
-                                            var text = fieldset[0]+ ": "+scaleX(d.x)+"<br>";
-                                            text+=fieldset[1]+": "+scaleY(d.y)+"<br>";
-                                            text+=fieldset[2]+": "+d.z;
-                                            scatterData[0].text.push(text);});
+                                        if (config.extraconfig !== 'point') {
+                                            var distance = function (a, b) {
+                                                var dx = a[0] - b[0],
+                                                    dy = a[1] - b[1];
+                                                return Math.round(Math.sqrt((dx * dx) + (dy * dy)) * Math.pow(10, 10)) / Math.pow(10, 10)
+                                            };
+                                            var minz = Infinity;
+                                            var maxz = -Infinity;
+                                            scag.bins.forEach(function (d) {
+                                                var z = 0;
+                                                d.forEach(function (i) {
+                                                    z = z + i.data.z;
+                                                });
+                                                z = z / d.length;
+                                                d.z = z;
+                                                minz = Math.min(minz, z);
+                                                maxz = Math.max(maxz, z);
+                                            });
+                                            var scalez = d3.scale.linear()
+                                                .domain([minz, maxz])
+                                                .range([0, 1]);
+
+                                            var scaleXs = d3.scale.linear()
+                                                .domain([0, 1])
+                                                .range([dataPointRadius, width]);
+                                            scag.bins.forEach(function (d) {
+                                                var distances = d.map(function (p) {
+                                                    return distance([d.x, d.y], p)
+                                                });
+                                                var radius = d3.max(distances);
+                                                scatterData[0].x.push(scaleX(d.x));
+                                                scatterData[0].y.push(scaleY(d.y));
+                                                scatterData[0].z.push(d.z);
+                                                scatterData[0].marker.size.push(scaleXs(radius));
+                                                scatterData[0].marker.color.push(color(d.length));
+                                                var text = fieldset[0] + ": " + scaleX(d.x) + "<br>";
+                                                text += fieldset[1] + ": " + scaleY(d.y) + "<br>";
+                                                text += fieldset[2] + ": " + d.z;
+                                                scatterData[0].text.push(text);
+                                            });
+                                        }else {
+
+                                            points.forEach(function(d) {
+                                                scatterData[0].x.push(d.data.x);
+                                                scatterData[0].y.push(d.data.y);
+                                                scatterData[0].z.push(d.data.z);
+                                                scatterData[0].marker.size.push(dataPointRadius);
+                                                scatterData[0].marker.color.push('#2f5597');
+                                                var text = fieldset[0] + ": " + d.data.x + "<br>";
+                                                text += fieldset[1] + ": " + d.data.y + "<br>";
+                                                text += fieldset[2] + ": " + d.data.z;
+                                                scatterData[0].text.push(text);
+                                            })
+                                        }
                                         var scatterLayout = {
                                             paper_bgcolor: 'rgba(0,0,0,0)',
                                             plot_bgcolor: 'rgba(0,0,0,0)',
@@ -6598,7 +6635,7 @@
                                         .attr("class", "radar-Chart");
                                     //runtGraph
                                     var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
-                                    var points =  Dataset.data.map(function(d){return [d[fieldset[0]],d[fieldset[1]]]});
+                                    // var points =  Dataset.data.map(function(d){return [d[fieldset[0]],d[fieldset[1]]]});
 
                                     try{
                                         var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});

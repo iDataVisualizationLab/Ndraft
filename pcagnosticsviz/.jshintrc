@@ -11,6 +11,8 @@
   "indent": 2,
   "quotmark": "single",
   "undef": true,
+  "expr": true,
+  "esversion": 7,
   "globals": {
     "angular": false,
     // Angular Mocks

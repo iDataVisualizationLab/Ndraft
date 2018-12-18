@@ -11,7 +11,7 @@ $fa-font-path: "../../bower_components/fontawesome/fonts";
 
 $iron: #ccc;
 $paddingheader: 10px;
-
+$maincolor: #2f5597;
 #logo {
   background: url("../assets/images/logov3.png") center no-repeat;
   background-size: contain;
@@ -320,4 +320,9 @@ bi-plot {
 }
 .typerDiv p{
   margin: 5px ;
+}
+
+.mainstroke {
+  stroke: #000000;
+  stroke-width: 0.2;
 }

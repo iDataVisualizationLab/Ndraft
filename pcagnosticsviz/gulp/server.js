@@ -39,7 +39,7 @@ gulp.task('serve', ['watch', 'jshint'], function () {
     paths.src + 'src/assets/data/*',
     paths.tmp + '/serve/*.html',
     paths.tmp + '/serve/{app,components}/**/*.html',
-    paths.src + '/{app,components}/**/*.html'
+    paths.src + '/{app,components}/**/*.html',
   ]);
 
   gulp.start('test:auto');

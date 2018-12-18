@@ -54,8 +54,8 @@ angular.module('pcagnosticsviz')
             option : 'random',
             getmark: getmark
         }, {
-            types : ['outlying'],
-            marks :['scatter3D'],
+            types : ['outlying','skewed'],
+            marks :['scatter3D-point','scatter3D'],
             option : 'auto',
             getmark: getmark
         }, {
@@ -999,6 +999,7 @@ angular.module('pcagnosticsviz')
                 case 'leader': pointplot(spec, object,'leader'); break;
                 case 'contour': pointplot(spec, object,'contour'); break;
                 case 'scatter3D': scatterplot(spec,object); break;
+                case 'scatter3D-point': scatterplot(spec,object,'point'); break;
                 case 'radar': radarplot(spec,object); break;
             }
         }
@@ -1015,11 +1016,12 @@ angular.module('pcagnosticsviz')
             //prop.charts = Dataset.schema.fieldSchemas.sort(prop.ranking)
             PCAplot.types =  support[prop.dim].types;
             PCAplot.marks = support[prop.dim].marks;
+            var axis = prop.fieldDefs.map(function(d){return d.field});
             // PCAplot.spec = mspec;
-            prop.charts = getData(prop.dim).sort(prop.ranking)
+            prop.charts = (prop.dim>1?[prop.fieldDefs]:(getData(prop.dim).sort(prop.ranking)))
             .map(function(d){
                 var chart = prop.plot((d.fieldDefs||d ),prop.mark,prop.mspec);
-                chart.vlSpec.config.typer = {type: prop.type,val: getTypeVal(undefined,d.fieldDefs||d)};
+                chart.vlSpec.config.typer = {type: prop.type,val: (prop.dim>1?0:getTypeVal(undefined,d.fieldDefs||d))};
                 return chart;});
 
             prop.previewcharts = prop.charts.map(function (d) {
@@ -1049,7 +1051,6 @@ angular.module('pcagnosticsviz')
                 }
                 return thum;});
             var pos = 0;
-            var axis = prop.fieldDefs.map(function(d){return d.field});
             pos = findinList(axis,prop.charts);
             //}
             PCAplot.prop.mspec = prop.charts[pos];
@@ -1057,8 +1058,26 @@ angular.module('pcagnosticsviz')
             PCAplot.updateguide(prop);
         };
         var getData = function (dim) {
-            return PCAplot.data[dim>1?1:dim];
+            if (dim<2)
+                return PCAplot.data[dim>1?1:dim];
+            else{
+                var dataout = combinations(PCAplot.data[0],0,0,dim,[],[]);
+                return dataout;
+            }
         };
+        function combinations(choices,start,curentn, dim,data,prefix) {
+            for (var  i = start;i<choices.length;i++){
+                var current_comb = (prefix || []).concat(choices[i]);
+                if (curentn===dim) {
+                    data.push(current_comb);
+
+                }
+                else
+                    combinations(choices,start+1,curentn+1, dim,data, current_comb);
+            }
+            return data;
+        }
+
         function drawGuideplot (object,type,dataref) {
             if (dataref === undefined)
                 dataref = Dataset.schema.fieldSchemas;
@@ -1167,14 +1186,20 @@ angular.module('pcagnosticsviz')
                     PCAplot.prop.fieldDefs = typer.fieldDefs;
                 } else if(PCAplot.state === states.FREE){
                     var pos = findinList(fields);
+                    console.log('position find:'+pos);
                     if (PCAplot.prop.pos !== pos){
-                        PCAplot.prop.pos = pos;
-                        if (pos > PCAplot.limit) {
-                            PCAplot.limitup = pos - 2;
-                            PCAplot.limit = limitDefault;
-                        }
+                        if (pos!==-1) {
+                            PCAplot.prop.pos = pos;
+                            if (pos > PCAplot.limit) {
+                                PCAplot.limitup = pos - 2;
+                                PCAplot.limit = limitDefault;
+                            }
 
-                        PCAplot.prop.mspec = PCAplot.prop.charts[PCAplot.prop.pos];
+                            PCAplot.prop.mspec = PCAplot.prop.charts[PCAplot.prop.pos];
+                        }else{
+                            PCAplot.state = states.GENERATE_GUIDE;
+                            PCAplot.prop.fieldDefs = typer.fieldDefs;
+                        }
                     }
                         PCAplot.state = states.GENERATE_ALTERNATIVE;
                     PCAplot.prop.fieldDefs = typer.fieldDefs;
@@ -1232,7 +1257,10 @@ angular.module('pcagnosticsviz')
             }
             //var fieldsets = mspec.fieldSet.map(function(d){return d.field}).filter(function(d){return d!="count"&&d!="*"});
             var fieldsets = mspec.fieldSet.map(function(d){return d.field}).filter(function(d){return d!="count"&&d!="*"});
-
+            if(fieldsets.length>2){
+                PCAplot.alternatives = [{'charts': []}];
+                return;
+            }
             if (fieldsets.length===0) {
                 PCAplot.alternatives.length = 0;
                 return;
@@ -1403,7 +1431,8 @@ angular.module('pcagnosticsviz')
             nprop.ranking = getranking(prop.type);
             mark2plot (prop.mark,nprop.mspec,Dataset.schema.fieldSchemas.slice(0,prop.dim+1));
             nprop.charts.length = 0;
-            var dataref = getData(nprop.dim);//?PCAplot.dataref:Dataset.schema.fieldSchemas;
+
+            var dataref = prop.dim>1?[prop.fieldDefs]:getData(nprop.dim);//?PCAplot.dataref:Dataset.schema.fieldSchemas;
             nprop.charts = dataref.sort(nprop.ranking)
                 .map(function(d) {
                     var chart = drawGuideexplore((d.fieldDefs||d),nprop.mark,nprop.mspec);
@@ -1499,7 +1528,12 @@ angular.module('pcagnosticsviz')
                     break;
                 case'outlier': return function (a,b){return a.extrastat.outlier < b.extrastat.outlier? 1:-1};
                     break;
-                default: return function (a,b){return (a.scag[type] < b.scag[type]) ? 1:-1};
+                default: return function (a,b){
+                    if (a.scag!==undefined)
+                        return (a.scag[type] < b.scag[type]) ? 1:-1;
+                    else
+                        0;
+                };
                     break;
             }
         }
@@ -1537,7 +1571,7 @@ angular.module('pcagnosticsviz')
                     return typeval;
                 default:
                     var typeval ={};
-                    typeval[type] = a.scag[type];
+                    typeval[type] = (a===undefined)?0:a.scag[type];
                     return typeval;
             }
         }
@@ -1626,14 +1660,15 @@ angular.module('pcagnosticsviz')
             spec.config.mark= {"filled": true, "opacity":1};
         }
 
-        function scatterplot(spec,objects){
+        function scatterplot(spec,objects,option){
             spec.mark = "scatter3D";
-
             spec.encoding = {
                 x: { field: objects[0].field, type: objects[0].type},
                 y: { field: objects[1].field, type: objects[1].type},
                 column: { field: objects[2].field, type: objects[2].type},
             };
+            if (option)
+                spec.config.extraconfig = option;
         }
         function radarplot(spec,objects){
             spec.mark = "radar";
@@ -1641,6 +1676,7 @@ angular.module('pcagnosticsviz')
                 x: { field: objects[0].field, type: objects[0].type},
                 y: { field: objects[1].field, type: objects[1].type},
                 column: { field: objects[2].field, type: objects[2].type},
+                row: { field: objects[3].field, type: objects[3].type},
             };
             //spec.layer = objects.map(function(o){return {encoding:{x: { field: o.field, type: o.type}}}});
         }
