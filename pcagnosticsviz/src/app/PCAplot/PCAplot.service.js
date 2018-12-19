@@ -55,12 +55,12 @@ angular.module('pcagnosticsviz')
             getmark: getmark
         }, {
             types : ['outlying','skewed'],
-            marks :['scatter3D-point','scatter3D'],
+            marks :['scatter3D-point','scatter3D-evenbin','scatter3D'],
             option : 'auto',
             getmark: getmark
         }, {
-            types : ['outlying'],
-            marks :['radar'],
+            types : ['outlying','skewed','sparse'],
+            marks :['radar','radar-evenbin','radar-leader'],
             option : 'auto',
             getmark: getmark
         }];
@@ -1000,7 +1000,10 @@ angular.module('pcagnosticsviz')
                 case 'contour': pointplot(spec, object,'contour'); break;
                 case 'scatter3D': scatterplot(spec,object); break;
                 case 'scatter3D-point': scatterplot(spec,object,'point'); break;
+                case 'scatter3D-evenbin': scatterplot(spec,object,'evenbin'); break;
                 case 'radar': radarplot(spec,object); break;
+                case 'radar-evenbin': radarplot(spec,object,'evenbin'); break;
+                case 'radar-leader': radarplot(spec,object,'leader'); break;
             }
         }
 
@@ -1199,6 +1202,7 @@ angular.module('pcagnosticsviz')
                         }else{
                             PCAplot.state = states.GENERATE_GUIDE;
                             PCAplot.prop.fieldDefs = typer.fieldDefs;
+                            return;
                         }
                     }
                         PCAplot.state = states.GENERATE_ALTERNATIVE;
@@ -1670,7 +1674,7 @@ angular.module('pcagnosticsviz')
             if (option)
                 spec.config.extraconfig = option;
         }
-        function radarplot(spec,objects){
+        function radarplot(spec,objects,option){
             spec.mark = "radar";
             spec.encoding = {
                 x: { field: objects[0].field, type: objects[0].type},
@@ -1678,6 +1682,8 @@ angular.module('pcagnosticsviz')
                 column: { field: objects[2].field, type: objects[2].type},
                 row: { field: objects[3].field, type: objects[3].type},
             };
+            if (option)
+                spec.config.extraconfig = option;
             //spec.layer = objects.map(function(o){return {encoding:{x: { field: o.field, type: o.type}}}});
         }
 

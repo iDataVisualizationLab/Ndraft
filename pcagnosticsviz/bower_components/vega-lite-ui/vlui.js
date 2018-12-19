@@ -6265,8 +6265,6 @@
                                     colorscale.push ([1,maincolor(colorlevel[level])]);
                                     console.log(color_names);
                                     try{
-                                        // var plotType = 'contour';
-                                        var plotType = 'histogram2dcontour';
                                         var plotMargins = {
                                             l: margin.left,
                                             r: margin.right,
@@ -6275,6 +6273,9 @@
                                             pad: 0,
                                             autoexpand: false,
                                         };
+                                        // var plotType = 'contour';
+                                        var plotType = 'histogram2dcontour';
+
                                         var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});
 
                                         var scaleX = d3.scale.linear()
@@ -6362,22 +6363,7 @@
                                                 linecolor: '#000000',
                                                 linewidth: 1
                                             },
-                                            // shapes:[
-                                            //     {
-                                            //         type: 'rect',
-                                            //         xref: 'x',
-                                            //         yref: 'y',
-                                            //         x0: scaleX.range()[0],
-                                            //         y0: scaleY.range()[0],
-                                            //         x1: scaleX.range()[1],
-                                            //         y1: scaleY.range()[1],
-                                            //         fillcolor: 'none',
-                                            //         line: {
-                                            //             color: '#bdbdbd',
-                                            //             width: 2
-                                            //         }
-                                            //     }
-                                            // ],
+
                                         };
                                         if (scalem ==='y'){
                                             contourLayout.xaxis.scaleanchor = 'y';
@@ -6450,7 +6436,7 @@
                                     var config = scope.chart.vlSpec.config;
                                     var small = (config.colorbar != undefined?config.colorbar:true);
                                     if (config.extraconfig !== 'point') {
-                                        var scag = scagnostics(points, 'leader', 20);
+                                        var scag = scagnostics(points, 'leader', 15);
                                         var color = d3.scale.linear()
                                             .domain(d3.extent(scag.bins.map(function(b) {return b.length})))
                                             .range([maincolor(0.1),maincolor(0.7)]);
@@ -6488,7 +6474,10 @@
                                                 showscale: small,
                                                 showlegend: false,
                                             }];
-                                        if (config.extraconfig !== 'point') {
+                                        var scaleXs = d3.scale.linear()
+                                            .domain([0, 1])
+                                            .range([dataPointRadius, width*2/3]);
+                                        if (config.extraconfig === undefined) {
                                             var distance = function (a, b) {
                                                 var dx = a[0] - b[0],
                                                     dy = a[1] - b[1];
@@ -6510,9 +6499,7 @@
                                                 .domain([minz, maxz])
                                                 .range([0, 1]);
 
-                                            var scaleXs = d3.scale.linear()
-                                                .domain([0, 1])
-                                                .range([dataPointRadius, width]);
+
                                             scag.bins.forEach(function (d) {
                                                 var distances = d.map(function (p) {
                                                     return distance([d.x, d.y], p)
@@ -6528,7 +6515,37 @@
                                                 text += fieldset[2] + ": " + d.z;
                                                 scatterData[0].text.push(text);
                                             });
-                                        }else {
+                                        }else if(config.extraconfig ==="evenbin"){
+                                            var datain =Dataset.data.map(function (d){
+                                                var dd = fieldDefs.map(function(f){return d[f.field] });
+                                                dd.data = dd;
+                                                return dd;});
+                                            var bin = binnerN()
+                                                .startBinGridSize(40)
+                                                .isNormalized(false)
+                                                .minNumOfBins(1)
+                                                .maxNumOfBins(datain.length)
+                                                .data([]).updateRadius(true).binType("evenbin");
+                                            bin.data(datain)
+                                                .calculate();
+                                            color.domain(d3.extent(bin.bins.map(function(b) {return b.length})));
+                                            var opacitys = d3.scale.linear().domain(color.domain()).range([0.3,1]);
+                                            scatterData[0].marker.opacity=[];
+                                            bin.bins.forEach(function(d) {
+                                                var point = bin.normalizedFun.scaleBackPoint(d.val);
+                                                scatterData[0].x.push(point[0]);
+                                                scatterData[0].y.push(point[1]);
+                                                scatterData[0].z.push(point[2]);
+                                                scatterData[0].marker.size.push(scaleXs(bin.binRadius/2));
+                                                scatterData[0].marker.color.push(color(d.length));
+                                                scatterData[0].marker.opacity.push(opacitys(d.length));
+                                                var text = fieldset[0] + ": " + point[0] + "<br>";
+                                                text += fieldset[1] + ": " + point[1] + "<br>";
+                                                text += fieldset[2] + ": " + point[2];
+                                                scatterData[0].text.push(text);
+                                            })
+                                        }
+                                        else{
 
                                             points.forEach(function(d) {
                                                 scatterData[0].x.push(d.data.x);
@@ -6636,14 +6653,46 @@
                                     //runtGraph
                                     var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
                                     // var points =  Dataset.data.map(function(d){return [d[fieldset[0]],d[fieldset[1]]]});
-
+                                    var data;
                                     try{
                                         var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});
                                         //var color = d3.scale.ordinal().range(["#EDC951","#CC333F","#00A0B0"]);
                                         var tiptext=[];
-                                        var data = Dataset.data.map(function (d){
-                                            tiptext.push(d3.entries(d));
-                                            return fieldDefs.map(function(f){return {value: (f.stats.max-f.stats.min)? (d[f.field]-f.stats.min)/(f.stats.max-f.stats.min):0, or: d[f.field]}; });});
+                                        console.log("RADAR BUG");
+                                        var binType = scope.chart.vlSpec.config.extraconfig;
+                                        if (binType){
+                                            var datain =Dataset.data.map(function (d){
+                                                var dd = fieldDefs.map(function(f){return d[f.field] });
+                                                dd.data = dd;
+                                                return dd;});
+                                            var bin = binnerN()
+                                                .startBinGridSize(binType ==="leader"?2.5:10)
+                                                .isNormalized(false)
+                                                .minNumOfBins(1)
+                                                .maxNumOfBins(datain.length)
+                                                .data([]).updateRadius(true).binType(binType);
+                                            bin.data(datain)
+                                                .calculate();
+                                            console.log(bin.bins.length);
+                                            console.log(bin.binRadius);
+                                            let distance = function(a, b){
+                                                let dsum = 0;
+                                                a.forEach((d,i)=> {dsum +=(d-b[i])*(d-b[i])});
+                                                return Math.round(Math.sqrt(dsum)*Math.pow(10, 10))/Math.pow(10, 10);};
+                                            data = bin.bins.map(function(d){
+                                                tiptext.push(fieldDefs.map(function (f,i) {
+                                                    return {key:f.field,value:d.val[i]};
+                                                }));
+                                                var dd = d.val.map( function(e){return {value: e};});
+                                                    dd.radius = binType ==="leader"?d3.max(d.map(function(p){return distance(d.val, p)}))*2:bin.binRadius;
+                                                    dd.density = d.length/datain.length;
+                                                return dd;
+                                            });
+                                        }else{
+                                            data = Dataset.data.map(function (d){
+                                                tiptext.push(d3.entries(d));
+                                                return fieldDefs.map(function(f){return {value: (f.stats.max-f.stats.min)? (d[f.field]-f.stats.min)/(f.stats.max-f.stats.min):0, or: d[f.field]}; });});
+                                        }
                                         var radarChartOptions = {
                                             w: width,
                                             h: height,
@@ -6745,14 +6794,14 @@
                             w: 600,				//Width of the circle
                             h: 600,				//Height of the circle
                             margin: {top: 20, right: 20, bottom: 20, left: 20}, //The margins of the SVG
-                            levels: 3,				//How many levels or inner circles should there be drawn
+                            levels: 5,				//How many levels or inner circles should there be drawn
                             maxValue: 0, 			//What is the value that the biggest circle will represent
                             labelFactor: 1.25, 	//How much farther than the radius of the outer circle should the labels be placed
                             wrapWidth: 60, 		//The number of pixels after which a label needs to be given a new line
                             opacityArea: 0.35, 	//The opacity of the area of the blob
                             dotRadius: 4, 			//The size of the colored circles of each blog
                             opacityCircles: 0.1, 	//The opacity of the circles of each blob
-                            strokeWidth: 2, 		//The width of the stroke around each blob
+                            strokeWidth: 3, 		//The width of the stroke around each blob
                             roundStrokes: false,	//If true the area and stroke will follow a round path (cardinal-closed)
                             color: d3.scale.category10()	//Color function
                         };
@@ -6774,10 +6823,14 @@
                             angleSlice = Math.PI * 2 / total;		//The width in radians of each "slice"
 
                         //Scale for the radius
+                        var offsetZeros = radius/(cfg.levels+1);
                         var rScale = d3.scale.linear()
-                            .range([0, radius])
+                            .range([offsetZeros, radius])
                             .domain([0, maxValue]);
+                        var rScalefromZeros = function(d){
+                            return d>0? (rScale(d)-offsetZeros):cfg.strokeWidth;
 
+                        };
                         /////////////////////////////////////////////////////////
                         //////////// Create the container SVG and g /////////////
                         /////////////////////////////////////////////////////////
@@ -6814,11 +6867,11 @@
 
                         //Draw the background circles
                         axisGrid.selectAll(".levels")
-                            .data(d3.range(1,(cfg.levels+1)).reverse())
+                            .data(d3.range(0,(cfg.levels+1)).reverse())
                             .enter()
                             .append("circle")
-                            .attr("class", "gridCircle")
-                            .attr("r", function(d, i){return radius/cfg.levels*d;})
+                            .attr("class", "gridCircle levels")
+                            .attr("r", function(d, i){return rScale(d/cfg.levels);})
                             .style("fill", "#CDCDCD")
                             .style("stroke", "#CDCDCD")
                             .style("fill-opacity", cfg.opacityCircles)
@@ -6833,8 +6886,8 @@
                             .attr("y", function(d){return -d*radius/cfg.levels;})
                             .attr("dy", "0.4em")
                             .style("font-size", "10px")
-                            .attr("fill", "#737373")
-                            .text(function(d,i) { return Format(maxValue * d/cfg.levels); });
+                            .attr("fill", "#737373");
+                            //.text(function(d,i) { return Format(maxValue * d/cfg.levels); });
 
                         /////////////////////////////////////////////////////////
                         //////////////////// Draw the axes //////////////////////
@@ -6888,34 +6941,15 @@
                             .attr("class", "radarWrapper");
 
                         //Append the backgrounds
-                        /*blobWrapper
-                            .append("path")
-                            .attr("class", "radarArea")
-                            .attr("d", function(d,i) { return radarLine(d); })
-                            .style("fill", "none")//function(d,i) { return cfg.color(i); })
-                            .style("fill-opacity", cfg.opacityArea)
-                            .on('mouseover', function (d,i){
-                                //Dim all blobs
-                                d3.selectAll(".radarArea")
-                                    .transition().duration(200)
-                                    .style("fill-opacity", 0.1);
-                                //Bring back the hovered over blob
-                                d3.select(this)
-                                    .transition().duration(200)
-                                    .style("fill-opacity", 0.7);
-                            })
-                            .on('mouseout', function(){
-                                //Bring back all blobs
-                                d3.selectAll(".radarArea")
-                                    .transition().duration(200)
-                                    .style("fill-opacity", cfg.opacityArea);
-                            });*/
-
+                        var opacityscale = d3.scale.linear().domain([0,1]).range([0.3,1]);
                         //Create the outlines
                         blobWrapper.append("path")
                             .attr("class", "radarStroke")
                             .attr("d", function(d,i) { return radarLine(d); })
-                            .style("stroke-width", cfg.strokeWidth + "px")
+                            .style("stroke-width", function(d){
+                                return (rScalefromZeros(d.radius*2/3)||cfg.strokeWidth) + "px"})
+                            .style("stroke-opacity", function(d){
+                                return (opacityscale(d.density)||0.5)})
                             .style("stroke", "#2f5597")//function(d,i) { return cfg.color(i); })
                             .style("fill", "none")
                             .style("filter" , "url(#glow)")
