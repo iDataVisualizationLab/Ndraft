@@ -55,7 +55,7 @@ angular.module('pcagnosticsviz')
             getmark: getmark
         }, {
             types : ['outlying','skewed'],
-            marks :['scatter3D-point','scatter3D-evenbin','scatter3D'],
+            marks :['scatter3D-point','scatter3D-evenbin','scatter3D','scatter3D-contour'],
             option : 'auto',
             getmark: getmark
         }, {
@@ -1001,6 +1001,7 @@ angular.module('pcagnosticsviz')
                 case 'scatter3D': scatterplot(spec,object); break;
                 case 'scatter3D-point': scatterplot(spec,object,'point'); break;
                 case 'scatter3D-evenbin': scatterplot(spec,object,'evenbin'); break;
+                case 'scatter3D-contour': scatterplot(spec,object,'contour'); break;
                 case 'radar': radarplot(spec,object); break;
                 case 'radar-evenbin': radarplot(spec,object,'evenbin'); break;
                 case 'radar-leader': radarplot(spec,object,'leader'); break;

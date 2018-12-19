@@ -6544,6 +6544,106 @@
                                                 text += fieldset[2] + ": " + point[2];
                                                 scatterData[0].text.push(text);
                                             })
+                                        }else if(config.extraconfig ==="contour"){
+                                            var datain =Dataset.data.map(function (d){
+                                                var dd = fieldDefs.map(function(f){return d[f.field] });
+                                                dd.data = dd;
+                                                return dd;});
+                                            var bin = binnerN()
+                                                .startBinGridSize(40)
+                                                .isNormalized(false)
+                                                .minNumOfBins(1)
+                                                .maxNumOfBins(datain.length)
+                                                .data([]).updateRadius(true).binType("evenbin");
+                                            bin.data(datain)
+                                                .calculate();
+                                            color.domain(d3.extent(bin.bins.map(function(b) {return b.length})));
+                                            var opacitys = d3.scale.linear().domain(color.domain()).range([0.3,1]);
+                                            scatterData[0].marker.opacity=[];
+                                            //scatterData[0].type = "surface";
+                                            bin.bins.forEach(function(d) {
+                                                var point = bin.normalizedFun.scaleBackPoint(d.val);
+                                                //var matrizz = scatterData[0].x.map(function(e){return 0;});
+                                                //scatterData[0].x.push(point[0]);
+                                                //scatterData[0].y.push(point[1]);
+                                                //scatterData[0].z.push(point[2]);
+                                                // matrizz.push(point[2]);
+                                                // scatterData[0].z.push(matrizz);
+
+                                                scatterData[0].marker.size.push(scaleXs(bin.binRadius/2));
+                                                scatterData[0].marker.color.push(color(d.length));
+                                                scatterData[0].marker.opacity.push(opacitys(d.length));
+                                                var text = fieldset[0] + ": " + point[0] + "<br>";
+                                                text += fieldset[1] + ": " + point[1] + "<br>";
+                                                text += fieldset[2] + ": " + point[2];
+                                                scatterData[0].text.push(text);
+                                            });
+                                            scatterData.push({
+                                                alphahull: 2,
+                                                color:maincolor(0.3),
+                                                opacity: 0.05,
+                                                type: 'mesh3d',
+                                                x: [],
+                                                y: [],
+                                                z: []
+                                            });
+                                            datain.forEach(function(d){
+                                                scatterData[1].x.push(d[0]);
+                                                scatterData[1].y.push(d[1]);
+                                                scatterData[1].z.push(d[2]);
+                                            });
+                                            scatterData.push({
+                                                alphahull: 3,
+                                                color:maincolor(0.4),
+                                                opacity: 0.1,
+                                                type: 'mesh3d',
+                                                x: scatterData[1].x,
+                                                y: scatterData[1].y,
+                                                z: scatterData[1].z
+                                            });
+                                            scatterData.push({
+                                                alphahull: 4,
+                                                color:maincolor(0.2),
+                                                opacity: 0.15,
+                                                type: 'mesh3d',
+                                                x: scatterData[1].x,
+                                                y: scatterData[1].y,
+                                                z: scatterData[1].z
+                                            });
+                                            scatterData.push({
+                                                alphahull: 5,
+                                                color:maincolor(0.5),
+                                                opacity: 0.2,
+                                                type: 'mesh3d',
+                                                x: scatterData[1].x,
+                                                y: scatterData[1].y,
+                                                z: scatterData[1].z
+                                            });
+                                            scatterData.push({
+                                                alphahull: 6,
+                                                color:maincolor(0.6),
+                                                opacity: 0.25,
+                                                type: 'mesh3d',
+                                                x: scatterData[1].x,
+                                                y: scatterData[1].y,
+                                                z: scatterData[1].z
+                                            });
+                                            scatterData.push({
+                                                alphahull: 7,
+                                                color:maincolor(0.7),
+                                                opacity: 0.3,
+                                                type: 'mesh3d',
+                                                x: scatterData[1].x,
+                                                y: scatterData[1].y,
+                                                z: scatterData[1].z
+                                            });
+
+                                            // bin.bins.forEach(function(d,i) {
+                                            //     for (var j =i+1;j<scatterData[0].x.length;j++)
+                                            //     scatterData[0].z[i].push(0);
+                                            // })
+
+
                                         }
                                         else{
 
@@ -6675,9 +6775,9 @@
                                                 .calculate();
                                             console.log(bin.bins.length);
                                             console.log(bin.binRadius);
-                                            let distance = function(a, b){
-                                                let dsum = 0;
-                                                a.forEach((d,i)=> {dsum +=(d-b[i])*(d-b[i])});
+                                            var distance = function(a, b){
+                                                var dsum = 0;
+                                                a.forEach(function (d,i) {dsum +=(d-b[i])*(d-b[i])});
                                                 return Math.round(Math.sqrt(dsum)*Math.pow(10, 10))/Math.pow(10, 10);};
                                             data = bin.bins.map(function(d){
                                                 tiptext.push(fieldDefs.map(function (f,i) {
