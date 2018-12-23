@@ -5518,6 +5518,7 @@
                         var emptycolor = "#ffffff";
                         maincolor.domain([0, (level+1)*0.1]);
                         maincolor.interpolator(d3v4["interpolateBlues"]);
+                        var categorycolor = d3.scale.category20();
                         var subcolor = function (val){
                             scale
                         }
@@ -6436,7 +6437,7 @@
                                     var config = scope.chart.vlSpec.config;
                                     var small = (config.colorbar != undefined?config.colorbar:true);
                                     if (config.extraconfig !== 'point') {
-                                        var scag = scagnostics(points, 'leader', 15);
+                                        var scag = scagnostics(points, 'leader', 10,false,false,undefined,1,Infinity);
                                         var color = d3.scale.linear()
                                             .domain(d3.extent(scag.bins.map(function(b) {return b.length})))
                                             .range([maincolor(0.1),maincolor(0.7)]);
@@ -6476,7 +6477,7 @@
                                             }];
                                         var scaleXs = d3.scale.linear()
                                             .domain([0, 1])
-                                            .range([dataPointRadius, width*2/3]);
+                                            .range([dataPointRadius, width*4/5]);
                                         if (config.extraconfig === undefined) {
                                             var distance = function (a, b) {
                                                 var dx = a[0] - b[0],
@@ -6515,13 +6516,40 @@
                                                 text += fieldset[2] + ": " + d.z;
                                                 scatterData[0].text.push(text);
                                             });
-                                        }else if(config.extraconfig ==="evenbin"){
+                                        }else
+                                            if(config.extraconfig ==="evenbin"){
+                                                // const box
+                                                var x = [0, 0, 1, 1, 0, 0, 1, 1];
+                                                var y = [0, 1, 1, 0, 0, 1, 1, 0];
+                                                var z = [0, 0, 0, 0, 1, 1, 1, 1];
+                                                var i = [7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7];
+                                                var j = [3, 4, 1, 2, 5, 6, 5, 5, 0, 1, 2, 2];
+                                                var k = [0, 7, 2, 3, 6, 7, 1, 2, 5, 5, 7, 6];
+                                                var boxscale = function (x, y, z, position,radius) {
+                                                    // we will forego other checks for to limit the length of the example
+                                                    var range_x = [position[0]-radius,position[0]+radius];
+                                                    var range_y = [position[1]-radius,position[1]+radius];
+                                                    var range_z = [position[2]-radius,position[2]+radius];
+                                                    x = x.map(function(e, i) {
+                                                        return range_x[e];
+                                                    });
+
+                                                    y = y.map(function(e, i) {
+                                                        return range_y[e];
+                                                    });
+
+                                                    z = z.map(function(e, i) {
+                                                        return range_z[e];
+                                                    });
+
+                                                    return {x: x, y: y, z: z};
+                                                }
                                             var datain =Dataset.data.map(function (d){
                                                 var dd = fieldDefs.map(function(f){return d[f.field] });
                                                 dd.data = dd;
                                                 return dd;});
                                             var bin = binnerN()
-                                                .startBinGridSize(40)
+                                                .startBinGridSize(10)
                                                 .isNormalized(false)
                                                 .minNumOfBins(1)
                                                 .maxNumOfBins(datain.length)
@@ -6529,22 +6557,36 @@
                                             bin.data(datain)
                                                 .calculate();
                                             color.domain(d3.extent(bin.bins.map(function(b) {return b.length})));
-                                            var opacitys = d3.scale.linear().domain(color.domain()).range([0.3,1]);
+                                            var opacitys = d3.scale.linear().domain(color.domain()).range([0.1,1]);
                                             scatterData[0].marker.opacity=[];
-                                            bin.bins.forEach(function(d) {
-                                                var point = bin.normalizedFun.scaleBackPoint(d.val);
-                                                scatterData[0].x.push(point[0]);
-                                                scatterData[0].y.push(point[1]);
-                                                scatterData[0].z.push(point[2]);
-                                                scatterData[0].marker.size.push(scaleXs(bin.binRadius/2));
-                                                scatterData[0].marker.color.push(color(d.length));
-                                                scatterData[0].marker.opacity.push(opacitys(d.length));
+                                            bin.bins.forEach(function(d,index) {
+                                                //var point = bin.normalizedFun.scaleBackPoint(d.val);
+                                                var point = d.val;
+                                                var radius = bin.binRadius/2;
+                                                point[0] = point[0]-(point[0]===0?radius:0);
+                                                point[1] = point[1]-(point[1]===0?radius:0);
+                                                point[2] = point[2]-(point[2]===0?radius:0);
+                                                var boxitem = boxscale(x, y, z, point,radius);
+                                                scatterData[index] = {};
+                                                scatterData[index].x=boxitem.x;
+                                                scatterData[index].y=boxitem.y;
+                                                scatterData[index].z=boxitem.z;
+                                                scatterData[index].i= i;
+                                                scatterData[index].j= j;
+                                                scatterData[index].k= k;
+                                                scatterData[index].type= 'mesh3d';
+                                                scatterData[index].color=(color(d.length));
+                                                scatterData[index].opacity=(opacitys(d.length));
+                                                // scatterData[i].marker.size.push(scaleXs(bin.binRadius/2));
+                                                // scatterData[i].marker.color.push(color(d.length));
+                                                // scatterData[i].marker.opacity.push(opacitys(d.length));
                                                 var text = fieldset[0] + ": " + point[0] + "<br>";
                                                 text += fieldset[1] + ": " + point[1] + "<br>";
                                                 text += fieldset[2] + ": " + point[2];
-                                                scatterData[0].text.push(text);
+                                                scatterData[index].text= text;
                                             })
-                                        }else if(config.extraconfig ==="contour"){
+                                        }else
+                                            if(config.extraconfig ==="contour"){
                                             var datain =Dataset.data.map(function (d){
                                                 var dd = fieldDefs.map(function(f){return d[f.field] });
                                                 dd.data = dd;
@@ -6637,7 +6679,6 @@
                                                 y: scatterData[1].y,
                                                 z: scatterData[1].z
                                             });
-
                                             // bin.bins.forEach(function(d,i) {
                                             //     for (var j =i+1;j<scatterData[0].x.length;j++)
                                             //     scatterData[0].z[i].push(0);

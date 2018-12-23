@@ -54,7 +54,7 @@ angular.module('pcagnosticsviz')
             option : 'random',
             getmark: getmark
         }, {
-            types : ['outlying','skewed'],
+            types : ['outlying','skewed','sparse','clumpy'],
             marks :['scatter3D-point','scatter3D-evenbin','scatter3D','scatter3D-contour'],
             option : 'auto',
             getmark: getmark
