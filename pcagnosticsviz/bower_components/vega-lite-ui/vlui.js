@@ -5950,7 +5950,14 @@
                                         var scaleYv = d3.scale.linear()
                                             .domain([0,1])
                                             .range([fieldDefs[1].stats.min,fieldDefs[1].stats.max]);
-                                    var scag = scagnostics(points, 'hexagon',40,false,false,undefined,1,Infinity);
+                                    var scag = scagnostics(points,{
+                                        binType: 'hexagon',
+                                        startBinGridSize: 40,
+                                        isNormalized: false,
+                                        isBinned: false,
+                                        outlyingUpperBound: undefined,
+                                        minBins:1,
+                                        maxBins:Infinity});
 
                                     // the y-axis
                                     var scaleY = d3.scale.linear()
@@ -6064,8 +6071,6 @@
                                             .style('position','relative');
                                     boxplotdiv.selectAll('*').remove();
 
-                                    // draw boxplot inspirted by http://bl.ocks.org/jensgrubert/7789216
-                                    //var labels = true; // show the text labels beside individual boxplots?
                                     // my zone \(=o=)\
                                     var margin = {top: 3, right: 5, bottom: 20, left: 20};
                                     margin.bottom += +$(boxplotdiv[0]).parent().parent().find('.vl-plot-group-header').outerHeight(true);
@@ -6099,7 +6104,14 @@
 
                                     try{
                                         var dataPointRadius = 2;
-                                        var scag = scagnostics(points, 'leader',20,false,false,undefined,1,Infinity);
+                                        var scag = scagnostics(points,{
+                                            binType: 'leader',
+                                            startBinGridSize: 20,
+                                            isNormalized: false,
+                                            isBinned: false,
+                                            outlyingUpperBound: undefined,
+                                            minBins:1,
+                                            maxBins:Infinity});
                                         //console.log(scag.bins);
                                         // the y-axis
                                         var scaleY = d3.scale.linear()
@@ -6248,7 +6260,14 @@
 
                                     var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
                                     var points =  Dataset.data.map(function(d){return [d[fieldset[0]],d[fieldset[1]]]});
-                                    var scag = scagnostics(points, 'hexagon',40,false,false,undefined,1,Infinity);
+                                    var scag = scagnostics(points, {
+                                        binType: 'hexagon',
+                                        startBinGridSize: 40,
+                                        isNormalized: false,
+                                        isBinned: false,
+                                        outlyingUpperBound: undefined,
+                                        minBins:1,
+                                        maxBins:Infinity});
 
                                     var level= 7;
                                     var colorlevel = maincolor.ticks(level).slice(-level-2);
@@ -6437,7 +6456,14 @@
                                     var config = scope.chart.vlSpec.config;
                                     var small = (config.colorbar != undefined?config.colorbar:true);
                                     if (config.extraconfig !== 'point') {
-                                        var scag = scagnostics(points, 'leader', 10,false,false,undefined,1,Infinity);
+                                        var scag = scagnostics(points, {
+                                            binType: 'leader',
+                                            startBinGridSize: 10,
+                                            isNormalized: false,
+                                            isBinned: false,
+                                            outlyingUpperBound: undefined,
+                                            minBins:1,
+                                            maxBins:Infinity});
                                         var color = d3.scale.linear()
                                             .domain(d3.extent(scag.bins.map(function(b) {return b.length})))
                                             .range([maincolor(0.1),maincolor(0.7)]);

@@ -1822,7 +1822,54 @@ angular.module('pcagnosticsviz')
         function scagnoticscore (field1,field2){
             var matrix = Dataset.data.map(function(d){return [d[field1],d[field2]]});
             try {
-                var scag = scagnostics(matrix,'leader',20);
+                var scag = scagnostics(matrix,{
+                    binType: 'leader',
+                    startBinGridSize: 20});
+                if (!isNaN(scag.skinnyScore))
+                    return {
+                        'outlying': scag.outlyingScore,
+                        'skewed': scag.skewedScore,
+                        'sparse':scag.sparseScore,
+                        'clumpy':scag.clumpyScore,
+                        'striated':scag.striatedScore,
+                        'convex':scag.convexScore,
+                        'skinny':scag.skinnyScore,
+                        'stringy':scag.stringyScore,
+                        'monotonic':scag.monotonicScore,};
+                else return {
+                    'outlying': 0,
+                    'skewed': 0,
+                    'sparse':0,
+                    'clumpy':0,
+                    'striated':0,
+                    'convex':0,
+                    'skinny':0,
+                    'stringy':0,
+                    'monotonic':0,
+                    invalid:1,
+                };
+
+            }catch(e){
+                return {
+                    'outlying': 0,
+                    'skewed': 0,
+                    'sparse':0,
+                    'clumpy':0,
+                    'striated':0,
+                    'convex':0,
+                    'skinny':0,
+                    'stringy':0,
+                    'monotonic':0,
+                    invalid:1,
+                };
+            }
+        }
+        function scagnoticscore3D (field1,field2,field3){
+            var matrix = Dataset.data.map(function(d){return [d[field1],d[field2],d[field3]]});
+            try {
+                var scag = scagnostics3d(matrix,{
+                    binType: 'leader',
+                    startBinGridSize: 20});
                 if (!isNaN(scag.skinnyScore))
                     return {
                         'outlying': scag.outlyingScore,
