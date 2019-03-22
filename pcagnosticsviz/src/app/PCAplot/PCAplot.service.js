@@ -1156,6 +1156,7 @@ angular.module('pcagnosticsviz')
                 case states.GENERATE_ALTERNATIVE:
                     PCAplot.alternativeupdate();
                     PCAplot.state = states.FREE;
+                    break;
                 default: return;
             }
             //PCAplot.updateguide(prop);
@@ -1163,7 +1164,8 @@ angular.module('pcagnosticsviz')
         };
         function spec2typer(spec,fields){
             var typer ={};
-            typer.mark = spec.mark;
+            var extra = spec.config.extraconfig;
+            typer.mark = extra? spec.mark+"-"+extra:spec.mark;
             typer.dim = PCAplot.dim;
             typer.type = spec.type;
             typer.fieldDefs = fields.map(function(f) {return Dataset.schema.fieldSchema(f)});
@@ -1173,8 +1175,11 @@ angular.module('pcagnosticsviz')
             return support[dim].marks.find(function(m){return m===mark})===undefined;
         }
         PCAplot.checkRender = function (spec,fields) { // convert spec to mpec
+            console.log(spec)
             var typer = spec2typer(spec,fields);
             var type = type2type(typer.type,typer.dim,PCAplot.dim);
+            console.log(typer);
+            console.log(type);
             if (PCAplot.prop!= null ) {
                 if ((spec.mark !== PCAplot.prop.mark) ||(PCAplot.dim !== PCAplot.prop.dim))
                 {
@@ -1183,7 +1188,7 @@ angular.module('pcagnosticsviz')
                         if (wrongMarkDim(typer.mark,typer.dim))
                             spec.mark = type2mark(type,typer.dim);
                         PCAplot.prop.dim = PCAplot.dim;
-                        PCAplot.prop.mark = spec.mark;
+                        PCAplot.prop.mark = typer.mark;
                         PCAplot.prop.type = type;
                         spec.type = type;
                     }
