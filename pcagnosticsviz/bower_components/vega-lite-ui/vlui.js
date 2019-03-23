@@ -6822,6 +6822,21 @@
                                     // var points =  Dataset.data.map(function(d){return [d[fieldset[0]],d[fieldset[1]]]});
                                     var data;
                                     try{
+                                        var radarChartOptions = {
+                                            w: width,
+                                            h: height,
+                                            margin: margin,
+                                            maxValue: 1,
+                                            levels: 5,
+                                            roundStrokes: true,
+                                            color: color,
+                                            labelFactor: 1.1, 	//How much farther than the radius of the outer circle should the labels be placed
+                                            wrapWidth: 60, 		//The number of pixels after which a label
+                                            opacityArea: 0.35, 	//The opacity of the area of the blob
+                                            dotRadius: 2, 			//The size of the colored circles of each
+                                            opacityCircles: 0.1, 	//The opacity of the circles of each blob
+                                            strokeWidth: 1,
+                                        };
                                         var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});
                                         //var color = d3.scale.ordinal().range(["#EDC951","#CC333F","#00A0B0"]);
                                         var tiptext=[];
@@ -6850,31 +6865,25 @@
                                                 tiptext.push(fieldDefs.map(function (f,i) {
                                                     return {key:f.field,value:d.val[i]};
                                                 }));
-                                                var dd = d.val.map( function(e){return {value: e};});
+                                                if (binType==="leader") {
+                                                    var zipped= _.unzip(d);
+                                                    var dd = zipped.map( function(e){return {value: ss.mean(e),q1: ss.quantile(e, 0.25),q3: ss.quantile(e, 0.75)};});
+                                                    // dd.radius = binType ==="leader"?d3.max(d.map(function(p){return distance(d.val, p)}))*2:bin.binRadius;
+                                                    // dd.density = d.length/datain.length;
+                                                    radarChartOptions.type = "leader";
+                                                    return dd;
+                                                }else{
+                                                    var dd = d.val.map( function(e){return {value: e};});
                                                     dd.radius = binType ==="leader"?d3.max(d.map(function(p){return distance(d.val, p)}))*2:bin.binRadius;
                                                     dd.density = d.length/datain.length;
-                                                return dd;
+                                                    return dd;
+                                                }
                                             });
                                         }else{
                                             data = Dataset.data.map(function (d){
                                                 tiptext.push(d3.entries(d));
                                                 return fieldDefs.map(function(f){return {value: (f.stats.max-f.stats.min)? (d[f.field]-f.stats.min)/(f.stats.max-f.stats.min):0, or: d[f.field]}; });});
                                         }
-                                        var radarChartOptions = {
-                                            w: width,
-                                            h: height,
-                                            margin: margin,
-                                            maxValue: 1,
-                                            levels: 5,
-                                            roundStrokes: true,
-                                            color: color,
-                                            labelFactor: 1.1, 	//How much farther than the radius of the outer circle should the labels be placed
-                                            wrapWidth: 60, 		//The number of pixels after which a label
-                                            opacityArea: 0.35, 	//The opacity of the area of the blob
-                                            dotRadius: 2, 			//The size of the colored circles of each
-                                            opacityCircles: 0.1, 	//The opacity of the circles of each blob
-                                            strokeWidth: 1,
-                                        };
                                         RadarChart(g, data,fieldDefs, radarChartOptions,tiptext,scope.tip);
 
                                         plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
@@ -6970,7 +6979,7 @@
                             opacityCircles: 0.1, 	//The opacity of the circles of each blob
                             strokeWidth: 3, 		//The width of the stroke around each blob
                             roundStrokes: false,	//If true the area and stroke will follow a round path (cardinal-closed)
-                            color: d3.scale.category10()	//Color function
+                            color: d3.scale.category10(),	//Color function
                         };
 
                         //Put all of the options into a variable called cfg
@@ -7042,7 +7051,7 @@
                             .style("fill", "#CDCDCD")
                             .style("stroke", "#CDCDCD")
                             .style("fill-opacity", cfg.opacityCircles)
-                            .style("filter" , "url(#glow)");
+                            // .style("filter" , "url(#glow)");
 
                         //Text indicating at what % each level is
                         axisGrid.selectAll(".axisLabel")
@@ -7092,13 +7101,32 @@
                         /////////////////////////////////////////////////////////
 
                         //The radial line function
-                        var radarLine = d3.svg.line.radial()
-                            .interpolate("linear-closed")
+                        var radarLine = d3v4.radialLine()
+                            .curve(d3v4.curveCatmullRomClosed.alpha(0.5))
                             .radius(function(d) { return rScale(d.value); })
                             .angle(function(d,i) {	return i*angleSlice; });
-
+                        var radialAreaGenerator = d3v4.radialArea()
+                            .angle(function(d,i) {  return i*angleSlice; })
+                            .innerRadius(function(d,i) {
+                                return rScale(d.q1);
+                            })
+                            .outerRadius(function(d,i) {
+                                return rScale(d.q3);
+                            }).curve(d3v4.curveCatmullRomClosed.alpha(0.5));
+                        function drawCluster(paths){
+                            return paths.attr("d", d => {
+                                return radialAreaGenerator(d);}).transition();
+                        }
+                        function drawMeanLine(paths){
+                            return paths
+                                .attr("d", d =>radarLine(d))
+                                .style("fill",'none')
+                                .style("stroke",'black')
+                                .style("stroke-width",0.5)
+                                .style("stroke-dasharray",'1 2');
+                        }
                         if(cfg.roundStrokes) {
-                            radarLine.interpolate("cardinal-closed");
+                            radarLine.curve(d3v4.curveCatmullRomClosed.alpha(0.5));
                         }
 
                         //Create a wrapper for the blobs
@@ -7110,46 +7138,83 @@
                         //Append the backgrounds
                         var opacityscale = d3.scale.linear().domain([0,1]).range([0.3,1]);
                         //Create the outlines
-                        blobWrapper.append("path")
-                            .attr("class", "radarStroke")
-                            .attr("d", function(d,i) { return radarLine(d); })
-                            .style("stroke-width", function(d){
-                                return (rScalefromZeros(d.radius*2/3)||cfg.strokeWidth) + "px"})
-                            .style("stroke-opacity", function(d){
-                                return (opacityscale(d.density)||0.5)})
-                            .style("stroke", "#2f5597")//function(d,i) { return cfg.color(i); })
-                            .style("fill", "none")
-                            .style("filter" , "url(#glow)")
-                            .style("opacity", cfg.opacityArea)
-                            .on('mouseover', function (d,i){
-                                //Dim all blobs
-                                d3.selectAll(".radarStroke")
-                                    .transition().duration(200)
-                                    .style("opacity", 0.1);
-                                //Bring back the hovered over blob
-                                d3.select(this)
-                                    .transition().duration(200)
-                                    .style("opacity", 0.7);
-                                tip.show(tiptext[i], '');
-                            })
-                            .on('mouseout', function(){
-                                //Bring back all blobs
-                                d3.selectAll(".radarStroke")
-                                    .transition().duration(200)
-                                    .style("opacity", cfg.opacityArea);
-                                tip.hide();
-                            });
-
+                        if (cfg.type) {
+                            blobWrapper.append("path")
+                                .attr("class", "radarStroke")
+                                .attr("d", d => radialAreaGenerator(d))
+                                .style("stroke-width", function (d) {
+                                    return 0.3
+                                })
+                                .style("stroke-opacity", function (d) {
+                                    return (opacityscale(d.density) || 0.5)
+                                })
+                                .style("stroke", "#2f5597")//function(d,i) { return cfg.color(i); })
+                                .style("fill", "#2f5597")
+                                // .style("filter" , "url(#glow)")
+                                .style("opacity", cfg.opacityArea)
+                                .on('mouseover', function (d, i) {
+                                    //Dim all blobs
+                                    d3.selectAll(".radarStroke")
+                                        .transition().duration(200)
+                                        .style("opacity", 0.1);
+                                    //Bring back the hovered over blob
+                                    d3.select(this)
+                                        .transition().duration(200)
+                                        .style("opacity", 0.7);
+                                    tip.show(tiptext[i], '');
+                                })
+                                .on('mouseout', function () {
+                                    //Bring back all blobs
+                                    d3.selectAll(".radarStroke")
+                                        .transition().duration(200)
+                                        .style("opacity", cfg.opacityArea);
+                                    tip.hide();
+                                });
+                            blobWrapper
+                                .append("path").classed('radarLine', true).call(drawMeanLine);
+                        }else{
+                            blobWrapper.append("path")
+                                .attr("class", "radarStroke")
+                                .attr("d", d => radarLine(d))
+                                .style("stroke-width", function (d) {
+                                    return (rScalefromZeros(d.radius * 2 / 3) || cfg.strokeWidth) + "px"
+                                })
+                                .style("stroke-opacity", function (d) {
+                                    return (opacityscale(d.density) || 0.5)
+                                })
+                                .style("stroke", "#2f5597")//function(d,i) { return cfg.color(i); })
+                                .style("fill", "none")
+                                // .style("filter" , "url(#glow)")
+                                .style("opacity", cfg.opacityArea)
+                                .on('mouseover', function (d, i) {
+                                    //Dim all blobs
+                                    d3.selectAll(".radarStroke")
+                                        .transition().duration(200)
+                                        .style("opacity", 0.1);
+                                    //Bring back the hovered over blob
+                                    d3.select(this)
+                                        .transition().duration(200)
+                                        .style("opacity", 0.7);
+                                    tip.show(tiptext[i], '');
+                                })
+                                .on('mouseout', function () {
+                                    //Bring back all blobs
+                                    d3.selectAll(".radarStroke")
+                                        .transition().duration(200)
+                                        .style("opacity", cfg.opacityArea);
+                                    tip.hide();
+                                });
+                        }
                         //Append the circles
-                        blobWrapper.selectAll(".radarCircle")
-                            .data(function(d,i) { return d; })
-                            .enter().append("circle")
-                            .attr("class", "radarCircle")
-                            .attr("r", cfg.dotRadius)
-                            .attr("cx", function(d,i){ return rScale(d.value) * Math.cos(angleSlice*i - Math.PI/2); })
-                            .attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice*i - Math.PI/2); })
-                            .style("fill", "#2f5597")//function(d,i,j) { return cfg.color(j); })
-                            .style("fill-opacity", 0.5);
+                        // blobWrapper.selectAll(".radarCircle")
+                        //     .data(function(d,i) { return d; })
+                        //     .enter().append("circle")
+                        //     .attr("class", "radarCircle")
+                        //     .attr("r", cfg.dotRadius)
+                        //     .attr("cx", function(d,i){ return rScale(d.value) * Math.cos(angleSlice*i - Math.PI/2); })
+                        //     .attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice*i - Math.PI/2); })
+                        //     .style("fill", "#2f5597")//function(d,i,j) { return cfg.color(j); })
+                        //     .style("fill-opacity", 0.5);
 
                         /////////////////////////////////////////////////////////
                         //////// Append invisible circles for tooltip ///////////
