@@ -5518,10 +5518,15 @@
                         var emptycolor = "#ffffff";
                         maincolor.domain([0, (level+1)*0.1]);
                         maincolor.interpolator(d3v4["interpolateBlues"]);
-                        var categorycolor = d3.scale.category20();
-                        var subcolor = function (val){
-                            scale
-                        }
+                        var domain = d3.range(level).map(function(d) {return d/(level-1)});
+                        var generator = d3v4.scaleLinear()
+                            .domain(domain)
+                            .range(["#110066", "#4400ff", "#00cccc", "#00dd00", "#ffcc44", "#ff0000", "#660000"]
+                            );
+                        var range = d3.range(domain.length).map(generator);
+                        var rainbowcolor = d3v4.scaleLinear()
+                            .domain(domain)
+                            .range(["#110066", "#4400ff", "#00cccc", "#00dd00", "#ffcc44", "#ff0000", "#660000"]);
                         //custom zone
                         function plotTyper(divin,typer){
                             var div = divin.select(function() { return this.parentNode; });
@@ -6268,22 +6273,20 @@
                                         outlyingUpperBound: undefined,
                                         minBins:1,
                                         maxBins:Infinity});
-
+                                    var colorchoice = maincolor;
                                     var level= 7;
-                                    var colorlevel = maincolor.ticks(level).slice(-level-2);
-                                    console.log(colorlevel);
+                                    var colorlevel = colorchoice.ticks(level).slice(-level-2);
                                     var color_names =[];
                                     var colorscale = [[0,emptycolor],
                                         [(1-0.5)/(level),emptycolor]];
                                     for (var i =1; i<level;i++){
-                                        colorscale.push ([(i-0.5)/level,maincolor(colorlevel[i])]);
-                                        colorscale.push ([(i+1-0.5)/level,maincolor(colorlevel[i])]);
+                                        colorscale.push ([(i-0.5)/level,colorchoice(colorlevel[i])]);
+                                        colorscale.push ([(i+1-0.5)/level,colorchoice(colorlevel[i])]);
                                         color_names.push(""+i);
                                     }
                                     color_names[level-2] = "≥"+ (level-1);
-                                    colorscale.push ([(level-0.5)/level,maincolor(colorlevel[level])]);
-                                    colorscale.push ([1,maincolor(colorlevel[level])]);
-                                    console.log(color_names);
+                                    colorscale.push ([(level-0.5)/level,colorchoice(colorlevel[level])]);
+                                    colorscale.push ([1,colorchoice(colorlevel[level])]);
                                     try{
                                         var plotMargins = {
                                             l: margin.left,
@@ -6827,7 +6830,7 @@
                                             h: height,
                                             margin: margin,
                                             maxValue: 1,
-                                            levels: 5,
+                                            levels: 6,
                                             roundStrokes: true,
                                             color: color,
                                             labelFactor: 1.1, 	//How much farther than the radius of the outer circle should the labels be placed
@@ -6843,42 +6846,78 @@
                                         console.log("RADAR BUG");
                                         var binType = scope.chart.vlSpec.config.extraconfig;
                                         if (binType){
-                                            var datain =Dataset.data.map(function (d){
-                                                var dd = fieldDefs.map(function(f){return d[f.field] });
-                                                dd.data = dd;
-                                                return dd;});
-                                            var bin = binnerN()
-                                                .startBinGridSize(binType ==="leader"?2.5:10)
-                                                .isNormalized(false)
-                                                .minNumOfBins(1)
-                                                .maxNumOfBins(datain.length)
-                                                .data([]).updateRadius(true).binType(binType);
-                                            bin.data(datain)
-                                                .calculate();
-                                            console.log(bin.bins.length);
-                                            console.log(bin.binRadius);
-                                            var distance = function(a, b){
-                                                var dsum = 0;
-                                                a.forEach(function (d,i) {dsum +=(d-b[i])*(d-b[i])});
-                                                return Math.round(Math.sqrt(dsum)*Math.pow(10, 10))/Math.pow(10, 10);};
-                                            data = bin.bins.map(function(d){
-                                                tiptext.push(fieldDefs.map(function (f,i) {
-                                                    return {key:f.field,value:d.val[i]};
+                                            if (binType =="leader"||binType =="evenbin") {
+                                                var datain = Dataset.data.map(function (d) {
+                                                    var dd = fieldDefs.map(function (f) {
+                                                        return d[f.field]
+                                                    });
+                                                    dd.data = dd;
+                                                    return dd;
+                                                });
+                                                var bin = binnerN()
+                                                    .startBinGridSize(binType === "leader" ? 2.5 : 10)
+                                                    .isNormalized(false)
+                                                    .minNumOfBins(1)
+                                                    .maxNumOfBins(datain.length)
+                                                    .data([]).updateRadius(true).binType(binType);
+                                                bin.data(datain)
+                                                    .calculate();
+                                                console.log(bin.bins.length);
+                                                console.log(bin.binRadius);
+                                                var distance = function (a, b) {
+                                                    var dsum = 0;
+                                                    a.forEach(function (d, i) {
+                                                        dsum += (d - b[i]) * (d - b[i])
+                                                    });
+                                                    return Math.round(Math.sqrt(dsum) * Math.pow(10, 10)) / Math.pow(10, 10);
+                                                };
+                                                data = bin.bins.map(function (d) {
+                                                    tiptext.push(fieldDefs.map(function (f, i) {
+                                                        return {key: f.field, value: d.val[i]};
+                                                    }));
+                                                    if (binType === "leader") {
+                                                        var zipped = _.unzip(d);
+                                                        var dd = zipped.map(function (e) {
+                                                            return {
+                                                                value: ss.mean(e),
+                                                                q1: ss.quantile(e, 0.25),
+                                                                q3: ss.quantile(e, 0.75)
+                                                            };
+                                                        });
+                                                        // dd.radius = binType ==="leader"?d3.max(d.map(function(p){return distance(d.val, p)}))*2:bin.binRadius;
+                                                        dd.density = d.length / datain.length;
+                                                        radarChartOptions.type = "leader";
+                                                        return dd;
+                                                    } else {
+                                                        var dd = d.val.map(function (e) {
+                                                            return {value: e};
+                                                        });
+                                                        dd.radius = binType === "leader" ? d3.max(d.map(function (p) {
+                                                            return distance(d.val, p)
+                                                        })) * 2 : bin.binRadius;
+                                                        dd.density = d.length / datain.length;
+                                                        return dd;
+                                                    }
+                                                });
+                                                console.log(data);
+                                                console.log(tiptext);
+                                            }else{// contour
+                                                data = [fieldDefs.map(function(d){
+                                                    console.log(d)
+                                                    var range = (d.stats.max-d.stats.min);
+                                                    if (range)
+                                                        return {value: (d.stats.median-d.stats.min)/range,q1: (d.stats.q1-d.stats.min)/range,q3: (d.stats.q3-d.stats.min)/range}
+                                                    else
+                                                        return {value: 0,q1: 0,q3: 0}
+                                                })];
+                                                tiptext.push(fieldDefs.map(function (f, i) {
+                                                    return {key: f.field, value: f.stats.mean};
                                                 }));
-                                                if (binType==="leader") {
-                                                    var zipped= _.unzip(d);
-                                                    var dd = zipped.map( function(e){return {value: ss.mean(e),q1: ss.quantile(e, 0.25),q3: ss.quantile(e, 0.75)};});
-                                                    // dd.radius = binType ==="leader"?d3.max(d.map(function(p){return distance(d.val, p)}))*2:bin.binRadius;
-                                                    // dd.density = d.length/datain.length;
-                                                    radarChartOptions.type = "leader";
-                                                    return dd;
-                                                }else{
-                                                    var dd = d.val.map( function(e){return {value: e};});
-                                                    dd.radius = binType ==="leader"?d3.max(d.map(function(p){return distance(d.val, p)}))*2:bin.binRadius;
-                                                    dd.density = d.length/datain.length;
-                                                    return dd;
-                                                }
-                                            });
+                                                radarChartOptions.type = "contour";
+                                                radarChartOptions.gcolor = rainbowcolor;
+                                                console.log(data);
+                                                console.log(tiptext);
+                                            }
                                         }else{
                                             data = Dataset.data.map(function (d){
                                                 tiptext.push(d3.entries(d));
@@ -6970,7 +7009,7 @@
                             w: 600,				//Width of the circle
                             h: 600,				//Height of the circle
                             margin: {top: 20, right: 20, bottom: 20, left: 20}, //The margins of the SVG
-                            levels: 5,				//How many levels or inner circles should there be drawn
+                            levels: 6,				//How many levels or inner circles should there be drawn
                             maxValue: 0, 			//What is the value that the biggest circle will represent
                             labelFactor: 1.25, 	//How much farther than the radius of the outer circle should the labels be placed
                             wrapWidth: 60, 		//The number of pixels after which a label needs to be given a new line
@@ -7000,6 +7039,7 @@
 
                         //Scale for the radius
                         var offsetZeros = radius/(cfg.levels+1);
+                        var offsetZeros = 0;
                         var rScale = d3.scale.linear()
                             .range([offsetZeros, radius])
                             .domain([0, maxValue]);
@@ -7026,6 +7066,31 @@
                         /////////////////////////////////////////////////////////
                         ////////// Glow filter for some extra pizzazz ///////////
                         /////////////////////////////////////////////////////////
+                        if (cfg.gcolor) {
+                            var rg = svg.append("defs").append("radialGradient")
+                                .attr("id", "rGradient2");
+                            var limitcolor = 1;
+                            var legntharrColor = cfg.gcolor.range().length - 1;
+                            var opGradientScale = d3v4.scaleLinear().domain([0, legntharrColor]).range([0.4, 0.8]);
+                            rg.append("stop")
+                                .attr("offset", '0%')
+                                .attr("stop-color", cfg.gcolor(limitcolor/legntharrColor))
+                                .attr("stop-opacity", opGradientScale(0));
+
+                            cfg.gcolor.range().forEach(function (d, i){
+                                if (i > (limitcolor - 1)) {
+                                    rg.append("stop")
+                                        .attr("offset", i / legntharrColor * 100 + "%")
+                                        .attr("stop-color", d)
+                                        .attr("stop-opacity", 0.8);
+                                    if (i != legntharrColor)
+                                        rg.append("stop")
+                                            .attr("offset", (i + 1) / legntharrColor * 100 + "%")
+                                            .attr("stop-color", cfg.gcolor.range()[i + 1])
+                                            .attr("stop-opacity", opGradientScale(i + 1));
+                                }
+                            });
+                        }
 
                         //Filter for the outside glow
                         var filter = g.append('defs').append('filter').attr('id','glow'),
@@ -7047,9 +7112,13 @@
                             .enter()
                             .append("circle")
                             .attr("class", "gridCircle levels")
-                            .attr("r", function(d, i){return rScale(d/cfg.levels);})
+                            .attr("r", function (d, i) {
+                                return radius / cfg.levels * d;
+                            })
                             .style("fill", "#CDCDCD")
-                            .style("stroke", "#CDCDCD")
+                            .style("stroke", function(d,i){ return cfg.gcolor?cfg.gcolor(d/cfg.levels):"#CDCDCD"})
+                            .style("stroke-width", 0.3)
+                            .style("stroke-opacity", 1)
                             .style("fill-opacity", cfg.opacityCircles)
                             // .style("filter" , "url(#glow)");
 
@@ -7111,11 +7180,18 @@
                                 return rScale(d.q1);
                             })
                             .outerRadius(function(d,i) {
-                                return rScale(d.q3);
+                                    return rScale(d.q3);
                             }).curve(d3v4.curveCatmullRomClosed.alpha(0.5));
                         function drawCluster(paths){
-                            return paths.attr("d", d => {
-                                return radialAreaGenerator(d);}).transition();
+                            return paths.attr("d", function (d){
+                                return radialAreaGenerator(d);})
+                                .style("stroke-width", 0.5)
+                                .style("stroke", "#2f5597")//function(d,i) { return cfg.color(i); })
+                                .style("fill", cfg.gcolor?"transparent":"#2f5597")
+                                // .style("filter" , "url(#glow)")
+                                .style("opacity", function (d) {
+                                    return (opacityscale(d.density) || 0.5)
+                                })
                         }
                         function drawMeanLine(paths){
                             return paths
@@ -7139,19 +7215,22 @@
                         var opacityscale = d3.scale.linear().domain([0,1]).range([0.3,1]);
                         //Create the outlines
                         if (cfg.type) {
+                            if(cfg.gcolor){
+                                blobWrapper.append("clipPath")
+                                    .attr("id",(d,i)=>"sum"+i)
+                                    .append("path")
+                                    .attr("d", d => radialAreaGenerator(d));
+                                blobWrapper.append("rect")
+                                    .style('fill', 'url(#rGradient2)')
+                                    .attr("clip-path",( d,i)=>"url(#sum"+i+")")
+                                    .attr("x",-radius)
+                                    .attr("y",-radius)
+                                    .attr("width",(radius)*2)
+                                    .attr("height",(radius)*2);
+                            }
                             blobWrapper.append("path")
                                 .attr("class", "radarStroke")
-                                .attr("d", d => radialAreaGenerator(d))
-                                .style("stroke-width", function (d) {
-                                    return 0.3
-                                })
-                                .style("stroke-opacity", function (d) {
-                                    return (opacityscale(d.density) || 0.5)
-                                })
-                                .style("stroke", "#2f5597")//function(d,i) { return cfg.color(i); })
-                                .style("fill", "#2f5597")
-                                // .style("filter" , "url(#glow)")
-                                .style("opacity", cfg.opacityArea)
+                                .call(drawCluster)
                                 .on('mouseover', function (d, i) {
                                     //Dim all blobs
                                     d3.selectAll(".radarStroke")

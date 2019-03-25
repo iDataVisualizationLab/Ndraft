@@ -60,7 +60,7 @@ angular.module('pcagnosticsviz')
             getmark: getmark
         }, {
             types : ['outlying','skewed','sparse'],
-            marks :['radar','radar-evenbin','radar-leader'],
+            marks :['radar','radar-evenbin','radar-leader','radar-contour'],
             option : 'auto',
             getmark: getmark
         }];
@@ -1005,6 +1005,7 @@ angular.module('pcagnosticsviz')
                 case 'radar': radarplot(spec,object); break;
                 case 'radar-evenbin': radarplot(spec,object,'evenbin'); break;
                 case 'radar-leader': radarplot(spec,object,'leader'); break;
+                case 'radar-contour': radarplot(spec,object,'contour'); break;
             }
         }
 
@@ -1150,7 +1151,7 @@ angular.module('pcagnosticsviz')
                 case states.GENERATE_GUIDE:
                     PCAplot.limitup = Infinity;
                     guideon(prop);
-                    var tolog = {level_explore: prop.dim, abtraction: prop.mark, visual_feature: prop.type};
+                    var tolog = {level_explore: prop.dim, type: prop.mark,abstraction: prop.mark, visual_feature: prop.type};
                     Logger.logInteraction(Logger.actions.EXPANDED_SELECT,this.shorthand,{val:{PS:tolog,spec:this.vlSpec,query:this.query}, time:new Date().getTime()});
                     PCAplot.limit = limitDefault;
                 case states.GENERATE_ALTERNATIVE:
@@ -1164,11 +1165,18 @@ angular.module('pcagnosticsviz')
         };
         function spec2typer(spec,fields){
             var typer ={};
+            if (spec.type){
             var extra = spec.config.extraconfig;
             typer.mark = extra? spec.mark+"-"+extra:spec.mark;
             typer.dim = PCAplot.dim;
             typer.type = spec.type;
             typer.fieldDefs = fields.map(function(f) {return Dataset.schema.fieldSchema(f)});
+            }else {
+                typer.mark = PCAplot.prop.mark;
+                typer.dim = PCAplot.prop.dim;
+                typer.type = PCAplot.prop.type;
+                typer.fieldDefs = fields.map(function(f) {return Dataset.schema.fieldSchema(f)});
+            }
             return typer;
         }
         function wrongMarkDim(mark,dim){
@@ -1185,10 +1193,13 @@ angular.module('pcagnosticsviz')
                 {
                     PCAplot.state = states.GENERATE_GUIDE;
                     if ((PCAplot.dim !== PCAplot.prop.dim)||(typer.mark==='__ANY__')){
-                        if (wrongMarkDim(typer.mark,typer.dim))
-                            spec.mark = type2mark(type,typer.dim);
+                        if (wrongMarkDim(typer.mark,PCAplot.dim)) {
+                            spec.mark = type2mark(type, PCAplot.dim);
+                            PCAplot.prop.mark = spec.mark;
+                        }else {
+                            PCAplot.prop.mark = typer.mark;
+                        }
                         PCAplot.prop.dim = PCAplot.dim;
-                        PCAplot.prop.mark = typer.mark;
                         PCAplot.prop.type = type;
                         spec.type = type;
                     }
