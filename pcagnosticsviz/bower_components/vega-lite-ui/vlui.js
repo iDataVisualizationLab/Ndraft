@@ -7195,7 +7195,7 @@
                         }
                         function drawMeanLine(paths){
                             return paths
-                                .attr("d", d =>radarLine(d))
+                                .attr("d", function(d) {return radarLine(d)})
                                 .style("fill",'none')
                                 .style("stroke",'black')
                                 .style("stroke-width",0.5)
@@ -7217,12 +7217,12 @@
                         if (cfg.type) {
                             if(cfg.gcolor){
                                 blobWrapper.append("clipPath")
-                                    .attr("id",(d,i)=>"sum"+i)
+                                    .attr("id",function (d,i){return "sum"+i})
                                     .append("path")
-                                    .attr("d", d => radialAreaGenerator(d));
+                                    .attr("d", function(d) {return radialAreaGenerator(d)});
                                 blobWrapper.append("rect")
                                     .style('fill', 'url(#rGradient2)')
-                                    .attr("clip-path",( d,i)=>"url(#sum"+i+")")
+                                    .attr("clip-path",function ( d,i){return "url(#sum"+i+")"})
                                     .attr("x",-radius)
                                     .attr("y",-radius)
                                     .attr("width",(radius)*2)
@@ -7254,7 +7254,7 @@
                         }else{
                             blobWrapper.append("path")
                                 .attr("class", "radarStroke")
-                                .attr("d", d => radarLine(d))
+                                .attr("d", function(d) {return radarLine(d)})
                                 .style("stroke-width", function (d) {
                                     return (rScalefromZeros(d.radius * 2 / 3) || cfg.strokeWidth) + "px"
                                 })
