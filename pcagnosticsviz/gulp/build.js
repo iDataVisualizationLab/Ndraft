@@ -1,7 +1,9 @@
 'use strict';
 
 var gulp = require('gulp');
-
+var babel = require('gulp-babel');
+var header = require('gulp-header');
+var uglify = require('gulp-uglify');
 var paths = gulp.paths;
 
 var $ = require('gulp-load-plugins')({
@@ -24,10 +26,15 @@ gulp.task('partials', function () {
     .pipe(gulp.dest(paths.tmp + '/partials/'));
 });
 
-gulp.task('html', ['inject', 'partials'], function () {
+gulp.task('html', ['inject', 'partials','workerinject'], function () {
   var partialsInjectFile = gulp.src(paths.tmp + '/partials/templateCacheHtml.js', { read: false });
+  var partialsInjectFile2 = gulp.src(paths.dist + '/scripts/ng-webworker.js', { read: false });
   var partialsInjectOptions = {
     starttag: '<!-- inject:partials -->',
+    ignorePath: paths.tmp + '/partials',
+    addRootSlash: false
+  };var partialsInjectOptions2 = {
+    starttag: '<!-- inject:workerinject -->',
     ignorePath: paths.tmp + '/partials',
     addRootSlash: false
   };
@@ -37,6 +44,7 @@ gulp.task('html', ['inject', 'partials'], function () {
   var cssFilter = $.filter('**/*.css', {restore: true});
 
   return gulp.src(paths.tmp + '/serve/*.html')
+      .pipe($.inject(partialsInjectFile2, partialsInjectOptions2))
     .pipe($.inject(partialsInjectFile, partialsInjectOptions))
     .pipe($.useref())
     .pipe(jsFilter)
@@ -82,7 +90,11 @@ gulp.task('zeroclipboard', function () {
   return gulp.src('bower_components/zeroclipboard/dist/ZeroClipboard.swf')
     .pipe(gulp.dest(paths.dist + '/bower_components/zeroclipboard/dist/'));
 });
-
+gulp.task('worker', function() {
+    return gulp.src(['bower_components/ng-webworker/src/ng-webworker.js', 'bower_components/ng-webworker/src/worker_wrapper.js'])
+        .pipe(uglify())
+        .pipe(gulp.dest(paths.dist + '/scripts/'));
+});
 gulp.task('clean', function (done) {
   $.del([paths.dist + '/', paths.tmp + '/'], done);
 });

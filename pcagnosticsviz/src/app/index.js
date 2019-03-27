@@ -43,7 +43,8 @@ angular.module('pcagnosticsviz', [
     'LocalStorageModule',
     '720kb.tooltips',
     'ngOrderObjectBy',
-    'angular-google-analytics'])
+    'angular-google-analytics',
+    'ngWebworker'])
   .constant('_', window._)
   .constant('vg', window.vg)
   .constant('cql', window.cql)
@@ -53,6 +54,8 @@ angular.module('pcagnosticsviz', [
   .constant('Blob', window.Blob)
   .constant('URL', window.URL)
   .constant('scagnostics', window.scagnostics)
+  .constant('scagnostics3D', window.scagnostics3D)
+  .constant('scagnosticsnD', window.scagnosticsnD)
   .constant('jsondiffpatch', window.jsondiffpatch)
   .config(function(consts) {
     window.vg.util.extend(consts, {

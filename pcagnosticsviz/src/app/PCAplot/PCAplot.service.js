@@ -1,8 +1,7 @@
 'use strict';
 
 angular.module('pcagnosticsviz')
-// TODO: rename to Query once it's compvare independent from Polestar
-    .factory('PCAplot', function(ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,Chart,Config,Schema,util,GuidePill) {
+    .factory('PCAplot', function(ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,Chart,Config,Schema,util,GuidePill, Webworker) {
         var keys =  _.keys(Schema.schema.definitions.Encoding.properties).concat([ANY+0]);
         var colordot = '#4682b4';
         var states = {IDLE:0,GENERATE_GUIDE:1,GENERATE_ALTERNATIVE:2,FREE:3, UPDATEPOSITION:4};
@@ -1835,112 +1834,149 @@ angular.module('pcagnosticsviz')
             PCAplot.mspec = prop.mspec;
         };
 
-        function scagnoticscore (field1,field2){
-            var matrix = Dataset.data.map(function(d){return [d[field1],d[field2]]});
-            try {
-                var scag = scagnostics(matrix,{
-                    binType: 'leader',
-                    startBinGridSize: 20});
-                if (!isNaN(scag.skinnyScore))
-                    return {
-                        'outlying': scag.outlyingScore,
-                        'skewed': scag.skewedScore,
-                        'sparse':scag.sparseScore,
-                        'clumpy':scag.clumpyScore,
-                        'striated':scag.striatedScore,
-                        'convex':scag.convexScore,
-                        'skinny':scag.skinnyScore,
-                        'stringy':scag.stringyScore,
-                        'monotonic':scag.monotonicScore,};
-                else return {
-                    'outlying': 0,
-                    'skewed': 0,
-                    'sparse':0,
-                    'clumpy':0,
-                    'striated':0,
-                    'convex':0,
-                    'skinny':0,
-                    'stringy':0,
-                    'monotonic':0,
-                    invalid:1,
-                };
 
-            }catch(e){
-                return {
-                    'outlying': 0,
-                    'skewed': 0,
-                    'sparse':0,
-                    'clumpy':0,
-                    'striated':0,
-                    'convex':0,
-                    'skinny':0,
-                    'stringy':0,
-                    'monotonic':0,
-                    invalid:1,
-                };
-            }
-        }
-        function scagnoticscore3D (field1,field2,field3){
-            var matrix = Dataset.data.map(function(d){return [d[field1],d[field2],d[field3]]});
-            try {
-                var scag = scagnostics3d(matrix,{
-                    binType: 'leader',
-                    startBinGridSize: 20});
-                if (!isNaN(scag.skinnyScore))
-                    return {
-                        'outlying': scag.outlyingScore,
-                        'skewed': scag.skewedScore,
-                        'sparse':scag.sparseScore,
-                        'clumpy':scag.clumpyScore,
-                        'striated':scag.striatedScore,
-                        'convex':scag.convexScore,
-                        'skinny':scag.skinnyScore,
-                        'stringy':scag.stringyScore,
-                        'monotonic':scag.monotonicScore,};
-                else return {
-                    'outlying': 0,
-                    'skewed': 0,
-                    'sparse':0,
-                    'clumpy':0,
-                    'striated':0,
-                    'convex':0,
-                    'skinny':0,
-                    'stringy':0,
-                    'monotonic':0,
-                    invalid:1,
-                };
+        function calscagnotic (primfield,dataschema,data){
+            importScripts("https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.20/require.min.js");
+            require(['https://idatavisualizationlab.github.io/N/Scagnostic/scagnostics.min.js'], function() {
+                primfield.forEach(function (selectedfield) {
+                    dataschema._fieldSchemas.forEach(function (d) {
+                        if ((d.field !== selectedfield) && (dataschema._fieldSchemaIndex[selectedfield].scag == undefined || dataschema._fieldSchemaIndex[selectedfield].scag[d.field] === undefined) && (d.scag === undefined || (d.scag[selectedfield] === undefined))) {
+                            var scag = scagnoticscore(selectedfield, d.field);
+                            if (dataschema._fieldSchemaIndex[selectedfield].scag === undefined)
+                                dataschema._fieldSchemaIndex[selectedfield].scag = {};
+                            dataschema._fieldSchemaIndex[selectedfield] .scag[d.field] = scag;
+                            notify({source: selectedfield, target: d.field, value: scag});
+                        }
+                    })
+                });
+                console.log("---worker---");
+                return complete(dataschema);
+            });
 
-            }catch(e){
-                return {
-                    'outlying': 0,
-                    'skewed': 0,
-                    'sparse':0,
-                    'clumpy':0,
-                    'striated':0,
-                    'convex':0,
-                    'skinny':0,
-                    'stringy':0,
-                    'monotonic':0,
-                    invalid:1,
-                };
-            }
-        }
+                function scagnoticscore (field1,field2){
+                    var matrix = data.map(function(d){return [d[field1],d[field2]]});
+                    try {
+                        var scag = this.scagnostics(matrix,{
+                            binType: 'leader',
+                            startBinGridSize: 20});
+                        if (!isNaN(scag.skinnyScore))
+                            return {
+                                'outlying': scag.outlyingScore,
+                                'skewed': scag.skewedScore,
+                                'sparse':scag.sparseScore,
+                                'clumpy':scag.clumpyScore,
+                                'striated':scag.striatedScore,
+                                'convex':scag.convexScore,
+                                'skinny':scag.skinnyScore,
+                                'stringy':scag.stringyScore,
+                                'monotonic':scag.monotonicScore};
+                        else return {
+                            'outlying': 0,
+                            'skewed': 0,
+                            'sparse':0,
+                            'clumpy':0,
+                            'striated':0,
+                            'convex':0,
+                            'skinny':0,
+                            'stringy':0,
+                            'monotonic':0,
+                            invalid:1
+                        };
 
-        PCAplot.calscagnotic = function (primfield){
-            primfield.forEach(function(selectedfield) {
-                Dataset.schema.fieldSchemas.forEach(function(d){
-                    if ((d.field!==selectedfield) && (Dataset.schema._fieldSchemaIndex[selectedfield].scag==undefined||Dataset.schema._fieldSchemaIndex[selectedfield].scag[d.field] ===undefined) && (d.scag ===undefined ||(d.scag[selectedfield]===undefined))){
-                        var scag = scagnoticscore(selectedfield,d.field);
-                        /*if (d.scag === undefined)
-                            d.scag = {};
-                        d.scag[selectedfield] = scag;*/
-                        if (Dataset.schema.fieldSchema(selectedfield).scag === undefined)
-                            Dataset.schema.fieldSchema(selectedfield).scag ={};
-                        Dataset.schema.fieldSchema(selectedfield).scag[d.field] = scag;
-                        // console.log(selectedfield+" "+d.field);
+                    }catch(e){
+                        return {
+                            'outlying': 0,
+                            'skewed': 0,
+                            'sparse':0,
+                            'clumpy':0,
+                            'striated':0,
+                            'convex':0,
+                            'skinny':0,
+                            'stringy':0,
+                            'monotonic':0,
+                            invalid:1,
+                        };
                     }
-                })});
+                }
+                function scagnoticscore3D (field1,field2,field3){
+                    var matrix = Dataset.data.map(function(d){return [d[field1],d[field2],d[field3]]});
+                    try {
+                        var scag = scagnostics3d(matrix,{
+                            binType: 'leader',
+                            startBinGridSize: 20});
+                        if (!isNaN(scag.skinnyScore))
+                            return {
+                                'outlying': scag.outlyingScore,
+                                'skewed': scag.skewedScore,
+                                'sparse':scag.sparseScore,
+                                'clumpy':scag.clumpyScore,
+                                'striated':scag.striatedScore,
+                                'convex':scag.convexScore,
+                                'skinny':scag.skinnyScore,
+                                'stringy':scag.stringyScore,
+                                'monotonic':scag.monotonicScore};
+                        else return {
+                            'outlying': 0,
+                            'skewed': 0,
+                            'sparse':0,
+                            'clumpy':0,
+                            'striated':0,
+                            'convex':0,
+                            'skinny':0,
+                            'stringy':0,
+                            'monotonic':0,
+                            invalid:1
+                        };
+
+                    }catch(e){
+                        return {
+                            'outlying': 0,
+                            'skewed': 0,
+                            'sparse':0,
+                            'clumpy':0,
+                            'striated':0,
+                            'convex':0,
+                            'skinny':0,
+                            'stringy':0,
+                            'monotonic':0,
+                            invalid:1,
+                        };
+                    }
+                }
+                function scagnoticscoreND (fields){
+                    var matrix = Dataset.data.map(function(d){return fields.map(
+                        function (f) {
+                            return d[f]})});
+                    try {
+                        var scag = scagnosticsnd(matrix,{
+                            binType: 'leader',
+                            startBinGridSize: 20});
+                        return {
+                            'outlying': scag.outlyingScore,
+                        };
+                    }catch(e){
+                        return {
+                            'outlying': 0,
+                            invalid:1,
+                        };
+                    }
+                }
+
+
+
             //console.log (Dataset.schema.fieldSchema(primfield[0]));
+        };
+        PCAplot.workerScagnotic = Webworker.create(calscagnotic, {async: true });
+        PCAplot.calscagnotic = function (primfield){
+            PCAplot.workerScagnotic.run(primfield,Dataset.schema,Dataset.data).then(function(result) {
+                console.log("done");
+            }, null, function(progress) {
+                if (Dataset.schema.fieldSchema(progress.source).scag === undefined)
+                    Dataset.schema.fieldSchema(progress.source).scag = {};
+                Dataset.schema.fieldSchema(progress.source).scag[progress.target] = progress.value;
+                console.log(progress);
+            });
+
         };
 
         PCAplot.updateAlternative= function (prop,dataref){
