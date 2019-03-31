@@ -1400,6 +1400,8 @@ stats.profile = function(values, f) {
       min = null,
       max = null,
       M2 = 0,
+      M2s = 0,
+      multimodality = 0,
       vals = [],
       u = {}, delta, sd, i, v, x;
 
@@ -1423,11 +1425,37 @@ stats.profile = function(values, f) {
       vals.push(x);
     }
   }
+
   M2 = M2 / (valid - 1);
   sd = Math.sqrt(M2);
 
   // sort values for median and iqr
   vals.sort(util.cmp);
+
+  if (max !==min) {
+      var means = (stats.mean(vals) - min) / (max - min);
+      var standardizedData = []
+      for (i = 0; i < vals.length; ++i) {
+          x = (vals[i] - min) / (max - min);
+          standardizedData.push(x);
+          delta = x - means;
+          M2s = M2s + delta * delta;
+      }
+      M2s = M2s / (valid*0.25);
+
+      // Apply K-means
+      var k_mean = stats.k_means1(standardizedData, 2);
+      var count_loop = 0;
+      var deltaerror = 2;
+      while (count_loop<100 && deltaerror > 0.0001){
+          var k_mean_new = stats.k_means1(standardizedData, 2,k_mean);
+          deltaerror =  Math.abs(k_mean_new[0].val-k_mean[0].val)+Math.abs(k_mean_new[1].val-k_mean[1].val);
+          k_mean = k_mean_new;
+          count_loop++
+      }
+      // Compute multimodality feature
+      multimodality = Math.sqrt(Math.abs(k_mean[0].val-k_mean[1].val))
+  }
 
   return {
     type:     type(values, f),
@@ -1443,10 +1471,73 @@ stats.profile = function(values, f) {
     median:   (v = stats.quantile(vals, 0.5)),
     q1:       stats.quantile(vals, 0.25),
     q3:       stats.quantile(vals, 0.75),
-    modeskew: sd === 0 ? 0 : (mean - v) / sd
+    modeskew: sd === 0 ? 0 : (mean - v) / sd,
+    variance: M2s,
+    multimodality: multimodality
   };
 };
+stats.k_means1 = function(x, n, means) {
+    // A simple average function, just because
+    // JavaScript doesn't provide one by default.
+    function avg(x) {
+        var s = 0;
+        for (var i = 0; i < x.length; i++) {
+            s += x[i];
+        }
+        return (x.length > 0) ? (s / x.length) : 0;
+    }
 
+    // n is the number of means to choose.
+    if (n === 0) {
+        throw new Error('The number of means must be non-zero');
+    } else if (n > x.length) {
+        throw new Error('The number of means must be fewer than the length of the dataset');
+    }
+
+    var seen = {};
+    if (!means) {
+        means = [];
+        // Randomly choose k means from the data and make sure that no point
+        // is chosen twice. This bit inspired by polymaps
+        while (means.length < n) {
+            var idx = Math.floor(Math.random() * (x.length - 1));
+            if (!seen[idx]) {
+                means.push({ val: x[idx], vals: [] });
+                seen[idx] = true;
+            }
+        }
+    }
+
+    var i;
+    // For every value, find the closest mean and add that value to the
+    // mean's `vals` array.
+    for (i = 0; i < x.length; i++) {
+        var dists = [];
+        for (var j = 0; j < means.length; j++) {
+            dists.push(Math.abs(x[i] - means[j].val));
+        }
+        var closest_index = dists.indexOf(Math.min.apply(null, dists));
+        means[closest_index].vals.push(x[i]);
+    }
+
+    // Create new centers from the centroids of the values in each
+    // group.
+    //
+    // > In the case of one-dimensional data, such as the test scores,
+    // the centroid is the arithmetic average of the values
+    // of the points in a cluster.
+    //
+    // [Vance Faber](http://bit.ly/LHCh2y)
+    var newvals = [];
+    for (i = 0; i < means.length; i++) {
+        var centroid = avg(means[i].vals);
+        newvals.push({
+            val: centroid,
+            vals: []
+        });
+    }
+    return newvals;
+}
 // Compute profiles for all variables in a data set.
 stats.summary = function(data, fields) {
   fields = fields || util.keys(data[0]);

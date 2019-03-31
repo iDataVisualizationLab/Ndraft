@@ -1,6 +1,6 @@
 .pane.guidemenu {
   max-width: 300px;
-  background-color: #301d6e;
+  background-color: $panelColor;
   .contain {
     display: flex;
     flex-direction: column;
@@ -28,6 +28,7 @@
       margin-right: 15px;
       min-width: 80px;
       align-items: center;
+      overflow-x: auto;
     }
     .active {
       margin: 5px;

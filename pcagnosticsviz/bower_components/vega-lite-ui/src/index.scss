@@ -5,6 +5,11 @@ $text-color: #212121;
 $link-color: #38425D;
 $link-hover-color: #72757B;
 $background-color: #befffe;
+$maincolor: #757571;
+$headercolor: linear-gradient(to left, #000000, #342937, #465778, #248fb1, #00c9c8);
+$subdetailColor: #b0aba0;
+$fontColor: #f0f0f0;
+$chartbackgroundcolor: #ffffff;
 
 html {
   height: 100%;
@@ -116,7 +121,7 @@ textarea {
 }
 
 .top-card {
-  background-color: #FCFDFE;
+  background-image: $headercolor;
 }
 
 .no-right-margin {

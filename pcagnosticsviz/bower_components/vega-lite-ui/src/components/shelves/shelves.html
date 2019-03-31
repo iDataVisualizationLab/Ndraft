@@ -1,7 +1,7 @@
 <div class="card vflex shelves no-top-margin no-right-margin abs-100">
   <div class="shelf-pane shelf-encoding-pane full-width">
     <a class="right"  ng-click="clear()"><i class="fa fa-eraser"></i> Clear</a>
-    <h2>Encoding</h2>
+    <h2>Dimension</h2>
 
     <div class="shelf-pane shelf-positional-pane full-width">
       <!--<h3>Positional</h3>-->
@@ -38,7 +38,7 @@
       </channel-shelf>
     </div>
 
-    <div class="shelf-pane shelf-marks-pane full-width">
+    <div class="shelf-pane shelf-marks-pane full-width displaynone">
       <div class="right">
         <select class="markselect" ng-model="spec.mark"
                 ng-class="{auto: spec.mark === ANY}"
@@ -78,7 +78,7 @@
       </channel-shelf>
     </div>
 
-    <div class="shelf-pane shelf-any-pane full-width" ng-if="supportAny && !preview">
+    <div class="shelf-pane shelf-any-pane full-width displaynone" ng-if="supportAny && !preview">
       <!--<h3>Automatic</h3>-->
       <br/>
       <channel-shelf

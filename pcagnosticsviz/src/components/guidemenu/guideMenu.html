@@ -1,6 +1,6 @@
 <div class = "contain">
     <div class="sidebar-header">
-        <h2>Navigation</h2>
+        <h2>Guided navigation</h2>
         <div class="features">
             <div id="typeselectcontain">
             <label for="typeselect">Feature type</label>
@@ -10,9 +10,9 @@
             </select>
             </div>
             <div>
-            <label for="markselect">Mark</label>
+            <label for="markselect">Abstraction</label>
             <select class="markselect" id="markselect" ng-model="prop.mark"
-                    ng-options="type for type in marks"
+                    ng-options="item.mark as item.label for item in marks"
                     ng-change="markChange()"></select>
             </div>
         </div>

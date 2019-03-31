@@ -1,7 +1,8 @@
 'use strict';
 
 var gulp = require('gulp'),
-bower = require('gulp-bower');
+bower = require('gulp-bower'),
+inject = require('gulp-inject');
 
 gulp.paths = {
   src: 'src',

@@ -1,5 +1,5 @@
 'use strict';
-var uglify = require('gulp-uglify');
+
 var gulp = require('gulp');
 
 var paths = gulp.paths;
@@ -26,9 +26,6 @@ gulp.task('inject', ['styles'], function () {
     '!' + paths.src + '/{app,components}/**/*.mock.js'
   ]).pipe($.angularFilesort());
 
-  var injectWorker = gulp.src(['../bower_components/ng-webworker/src/ng-webworker.js', '../bower_components/ng-webworker/src/worker_wrapper.js'])
-      .pipe(uglify());
-
   var injectOptions = {
     ignorePath: [paths.src, paths.tmp + '/serve'],
     addRootSlash: false
@@ -48,7 +45,7 @@ gulp.task('inject', ['styles'], function () {
 
   return gulp.src(paths.src + '/*.html')
     .pipe($.inject(injectStyles, injectOptions))
-    .pipe($.inject(series(injectVendor, injectScripts,injectWorker), injectOptions))
+    .pipe($.inject(series(injectVendor, injectScripts), injectOptions))
     .pipe(wiredep(wiredepOptions))
     .pipe(gulp.dest(paths.tmp + '/serve'));
 

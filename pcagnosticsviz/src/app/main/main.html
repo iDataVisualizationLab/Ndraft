@@ -34,7 +34,7 @@
         </div>
         <h3>Overview</h3>
         <bi-plot></bi-plot>
-          <h3>Exemplar</h3>
+          <h3>Exemplar plots</h3>
         <div class = "scroll-y-nox scroll-y">
           <vl-plot-group
                   ng-if="PCAplot.chart"
@@ -89,41 +89,45 @@
       </div>Ma
     </div>
     <!--<div class="pane encoding-pane" ng-hide = "PCAplot.prop && !showEncoding">-->
-    <div class="pane encoding-pane">
-    <!--<div class="pane encoding-pane" ng-hide = "true">-->
-      <!-- true shelf -->
-      <shelves
-        spec="Spec.spec"
-        filter-manager="FilterManager"
-        preview="false"
-        support-any="true"
-      ></shelves>
-      <!-- preview shelf -->
-      <shelves
-        class="preview"
-        ng-show="Spec.previewedSpec"
-        spec="Spec.previewedSpec || Spec.emptySpec"
-        preview="true"
-        support-any="true"
-      ></shelves>
-    </div>
-    <button class="toggleEncoding" ng-show = "PCAplot.prop" ng-click = "showEncoding=!showEncoding"></button>
+
+
+    <!--<button class="toggleEncoding" ng-show = "PCAplot.prop" ng-click = "showEncoding=!showEncoding"></button>-->
     <div class="pane vis-pane">
+
       <div class="vis-pane-container abs-100"
           ng-class="{'scroll-y': !hideExplore || !Spec.isSpecific, 'no-scroll-y': hideExplore && Spec.isSpecific}"
         >
+        <div class = "mainareacustom full-width">
+          <div class="pane encoding-pane" style="min-height: 200px;">
+            <!--<div class="pane encoding-pane" ng-hide = "true">-->
+            <!-- true shelf -->
+            <shelves
+                    spec="Spec.spec"
+                    filter-manager="FilterManager"
+                    preview="false"
+                    support-any="true"
+                    ng-class = "shelvescustom"
+            ></shelves>
+            <!-- preview shelf -->
+            <shelves
+                    class="preview"
+                    ng-show="Spec.previewedSpec"
+                    spec="Spec.previewedSpec || Spec.emptySpec"
+                    preview="true"
+                    support-any="true"
+            ></shelves>
+          </div>
+          <slide-graph
+                  ng-if = "PCAplot.prop.charts"
+                  charts = "PCAplot.prop.charts"
+                  pos = "PCAplot.prop.pos"
+                  limitup = "PCAplot.limitup"
+                  limit = "PCAplot.limit"
+          ></slide-graph>
+        </div>
 
-        <slide-graph
-                ng-if = "PCAplot.prop.charts"
-                charts = "PCAplot.prop.charts"
-                pos = "PCAplot.prop.pos"
-                limitup = "PCAplot.limitup"
-                limit = "PCAplot.limit"
-        ></slide-graph>
 
-
-
-        <div class="alternatives-pane card" ng-class="{collapse: hideExplore}" ng-if="Spec.isSpecific">
+        <div class="alternatives-pane card" ng-class="{collapse: hideExplore}" ng-if="Spec.isSpecific && !Spec.isEmptyPlot">
           <div class="alternatives-header">
             <div class="right alternatives-jump">
 

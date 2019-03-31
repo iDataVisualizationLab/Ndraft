@@ -11,9 +11,18 @@ $fa-font-path: "../../bower_components/fontawesome/fonts";
 
 $iron: #ccc;
 $paddingheader: 10px;
-$maincolor: #2f5597;
+
+$maincolor: #757571;
+$headercolor: linear-gradient(to left, #000000, #342937, #465778, #248fb1, #00c9c8);;
+$subdetailColor: #353535;
+$panelColor: rgba(0, 0, 0, 0.21);
+$panel2Color: rgba(255, 255, 255, 0.33);
+$fontColor: #f0f0f0;
+$fontContractColor: #000000;
+$highlightColor: #6abedb;
+$chartbackgroundcolor: #ffffff;
 #logo {
-  background: url("../assets/images/logov3.png") center no-repeat;
+  background: url("../assets/images/logov2.png") center no-repeat;
   background-size: contain;
   display: block;
   width: 176px;
@@ -44,7 +53,7 @@ null-filter-directive {
   width: 235px;
   flex-shrink: 0;
   .card {
-    background-color: #e2e0ff;
+    background-color: $panel2Color;
   }
 }
 
@@ -56,7 +65,7 @@ null-filter-directive {
     a {
       color: #95a4b9;
       &:hover {
-        color: #e505fa;
+        color: $highlightColor;
       }
     }
   }
@@ -64,7 +73,7 @@ null-filter-directive {
 
 .pane.encoding-pane, .pane.vis-pane {
   h2, h3 {
-    color: #3f1952;
+    color: $fontContractColor;
   }
 }
 
@@ -104,7 +113,7 @@ null-filter-directive {
 
 .alternatives-pane {
   margin-top: 20px;
-  background: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.85);
 
 
 
@@ -242,7 +251,6 @@ null-filter-directive {
 .modifedside {
   display: flex;
   justify-content: flex-start;
-  height: 100%;
   flex-flow: column;
 }
 
@@ -325,4 +333,31 @@ bi-plot {
 .mainstroke {
   stroke: #000000;
   stroke-width: 0.2;
+}
+
+.displaynone {
+  display: none;
+}
+
+.shelvescustom {
+  max-height: 500px;
+}
+
+.flex_row {
+  position: relative;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: row;
+  flex-direction: row;
+}
+.flex_col {
+  position: relative;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: row;
+  flex-direction: row;
+}
+.mainareacustom {
+  display: flex;
+  flex-direction: row;
 }

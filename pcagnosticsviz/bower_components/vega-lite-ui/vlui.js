@@ -3246,7 +3246,7 @@
         $templateCache.put("components/propertyeditor/propertyeditor.html","<div><label class=\"prop-label\" for=\"{{ id }}\"><span class=\"name\" title=\"{{ propName }}\">{{ propName }}</span> <span ng-if=\"description\" class=\"fa fa-info-circle\" tooltips=\"\" tooltip-size=\"small\" tooltip-html=\"<strong>{{ propName }}</strong><div class=\'tooltip-content\'>{{ description }}</div>\" tooltip-side=\"right\"></span></label><form class=\"inline-block\" ng-switch=\"type + (enum !== undefined ? \'list\' : \'\')\"><input id=\"{{ id }}\" ng-switch-when=\"boolean\" type=\"checkbox\" ng-model=\"group[propName]\" ng-hide=\"automodel.value\"><select id=\"{{ id }}\" ng-switch-when=\"stringlist\" ng-model=\"group[propName]\" ng-options=\"choice for choice in enum track by choice\" ng-hide=\"automodel.value\"></select><input id=\"{{ id }}\" ng-switch-when=\"integer\" ng-attr-type=\"{{ isRange ? \'range\' : \'number\'}}\" ng-model=\"group[propName]\" ng-model-options=\"{debounce: 200}\" ng-attr-min=\"{{min}}\" ng-attr-max=\"{{max}}\" ng-hide=\"automodel.value\" ng-attr-title=\"{{ isRange ? group[propName] : undefined }}\"> <input id=\"{{ id }}\" ng-attr-type=\"{{ role === \'color\' ? \'color\' : \'string\' }}\" ng-switch-when=\"string\" ng-model=\"group[propName]\" ng-model-options=\"{debounce: 500}\" ng-hide=\"automodel.value\"> <small ng-if=\"hasAuto\"><label>Auto <input ng-model=\"automodel.value\" type=\"checkbox\"></label></small></form></div>");
         $templateCache.put("components/schemalist/schemalist.html","<div class=\"schema no-top-margin full-width\"><schema-list-item ng-repeat=\"fieldDef in fieldDefs | orderBy : orderBy\" field-def=\"fieldDef\" filter-manager=\"filterManager\" id=\"{{ fieldDef.field }}\" show-add=\"showAdd\"></schema-list-item><schema-list-item ng-if=\"showCount\" field-def=\"countFieldDef\" show-add=\"true\"></schema-list-item><div class=\"schema-list-drop\" ng-show=\"showDrop\" ng-model=\"droppedFieldDef\" data-drop=\"true\" jqyoui-droppable=\"{onDrop:\'fieldDropped\'}\" data-jqyoui-options=\"{activeClass: \'drop-active\'}\">Create a new wildcard.</div></div>");
         $templateCache.put("components/schemalist/schemalistitem.html","<div class=\"schema-list-item\" ng-model=\"droppedFieldDef\" data-drop=\"isAnyField && fieldDef.field !== \'?\'\" jqyoui-droppable=\"{onDrop:\'fieldDropped\'}\" data-jqyoui-options=\"{activeClass: \'drop-active\'}\"><field-info ng-show=\"!isAnyField || fieldDef.field === \'?\' || fieldDef.field.enum.length > 0\" class=\"pill draggable full-width no-right-margin\" ng-class=\"{any: isEnumSpec(fieldDef.field)}\" ng-dblclick=\"fieldAdd(fieldDef)\" field-def=\"fieldDef\" ng-model=\"pill\" data-drag=\"true\" jqyoui-draggable=\"{placeholder: \'keep\', deepCopy: true, onStart: \'fieldDragStart\', onStop:\'fieldDragStop\'}\" data-jqyoui-options=\"{revert: \'invalid\', helper: \'clone\'}\" show-add=\"showAdd\" show-caret=\"true\" disable-caret=\"fieldDef.immutable || fieldDef.aggregate === \'count\' || allowedTypes.length<=1\" show-type=\"true\" add-action=\"fieldAdd(fieldDef)\" show-filter=\"!!filterManager\" filter-action=\"toggleFilter()\" use-title=\"true\" popup-content=\"fieldInfoPopupContent\"></field-info></div><div class=\"drop-container\"><div class=\"popup-menu schema-menu\" ng-hide=\"!allowedTypes || allowedTypes.length<=1\"><div class=\"mb5 field-type\" ng-if=\"allowedTypes.length>1 && !isAnyField\"><h4>Type</h4><label class=\"type-label\" ng-repeat=\"type in allowedTypes\" ng-if=\"type !== \'ordinal\' || !consts.hideOrdinalTypeSelect\"><input type=\"radio\" ng-value=\"type\" ng-model=\"fieldDef.type\"> {{type}}</label></div><div class=\"wildcard-menu\" ng-show=\"isAnyField && fieldDef.field.enum\"><div><label class=\"wildcard-title-label\"><h4>Name</h4><input type=\"text\" ng-model=\"fieldDef.title\" placeholder=\"{{fieldTitle(fieldDef.field)}}\"></label></div><h4>Wildcard Fields</h4><div class=\"wildcard-fields\"><field-info ng-repeat=\"field in fieldDef.field.enum\" class=\"pill list-item full-width no-right-margin\" field-def=\"field === \'*\' ? countFieldDef : Dataset.schema.fieldSchema(field)\" show-type=\"true\" show-remove=\"true\" remove-action=\"removeWildcardField($index)\"></field-info></div><a class=\"remove-action\" ng-click=\"removeWildcard()\"><i class=\"fa fa-times\"></i> Delete Wildcard</a></div></div></div>");
-        $templateCache.put("components/shelves/shelves.html","<div class=\"card vflex shelves no-top-margin no-right-margin abs-100\"><div class=\"shelf-pane shelf-encoding-pane full-width\"><a class=\"right\" ng-click=\"clear()\"><i class=\"fa fa-eraser\"></i> Clear</a><h2>Encoding</h2><div class=\"shelf-pane shelf-positional-pane full-width\"><channel-shelf channel-id=\"\'x\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf><channel-shelf channel-id=\"\'y\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf><channel-shelf channel-id=\"\'column\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\" disabled=\"!spec.encoding.x.field\">></channel-shelf><channel-shelf channel-id=\"\'row\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\" disabled=\"!spec.encoding.y.field\"></channel-shelf></div><div class=\"shelf-pane shelf-marks-pane full-width\"><div class=\"right\"><select class=\"markselect\" ng-model=\"spec.mark\" ng-class=\"{auto: spec.mark === ANY}\" ng-options=\"(type === ANY ? \'auto\' : type) for type in (supportAny || supportAutoMark ? marksWithAny : marks)\" ng-change=\"markChange()\"></select></div><h3>Marks</h3><channel-shelf channel-id=\"\'size\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf><channel-shelf channel-id=\"\'color\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf><channel-shelf channel-id=\"\'shape\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf><channel-shelf channel-id=\"\'detail\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf><channel-shelf channel-id=\"\'text\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf></div><div class=\"shelf-pane shelf-any-pane full-width\" ng-if=\"supportAny && !preview\"><br><channel-shelf ng-repeat=\"channelId in anyChannelIds\" preview=\"preview\" channel-id=\"channelId\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf></div></div><div class=\"shelf-pane shelf-filter-pane full-width\" ng-if=\"!preview\"><filter-shelves spec=\"spec\"></filter-shelves></div></div>");
+        $templateCache.put("components/shelves/shelves.html","<div class=\"card vflex shelves no-top-margin no-right-margin abs-100\"><div class=\"shelf-pane shelf-encoding-pane full-width\"><a class=\"right\" ng-click=\"clear()\"><i class=\"fa fa-eraser\"></i> Clear</a><h2>Dimension</h2><div class=\"shelf-pane shelf-positional-pane full-width\"><channel-shelf channel-id=\"\'x\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf><channel-shelf channel-id=\"\'y\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf><channel-shelf channel-id=\"\'column\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\" disabled=\"!spec.encoding.x.field\">></channel-shelf><channel-shelf channel-id=\"\'row\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\" disabled=\"!spec.encoding.y.field\"></channel-shelf></div><div class=\"shelf-pane shelf-marks-pane full-width displaynone\"><div class=\"right\"><select class=\"markselect\" ng-model=\"spec.mark\" ng-class=\"{auto: spec.mark === ANY}\" ng-options=\"(type === ANY ? \'auto\' : type) for type in (supportAny || supportAutoMark ? marksWithAny : marks)\" ng-change=\"markChange()\"></select></div><h3>Marks</h3><channel-shelf channel-id=\"\'size\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf><channel-shelf channel-id=\"\'color\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf><channel-shelf channel-id=\"\'shape\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf><channel-shelf channel-id=\"\'detail\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf><channel-shelf channel-id=\"\'text\'\" preview=\"preview\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf></div><div class=\"shelf-pane shelf-any-pane full-width displaynone\" ng-if=\"supportAny && !preview\"><br><channel-shelf ng-repeat=\"channelId in anyChannelIds\" preview=\"preview\" channel-id=\"channelId\" encoding=\"spec.encoding\" support-any=\"supportAny\" mark=\"spec.mark\"></channel-shelf></div></div><div class=\"shelf-pane shelf-filter-pane full-width displaynone\" ng-if=\"!preview\"><filter-shelves spec=\"spec\"></filter-shelves></div></div>");
         $templateCache.put("components/tabs/tab.html","<div ng-if=\"active\" ng-transclude=\"\"></div>");
         $templateCache.put("components/tabs/tabset.html","<div class=\"tab-container\"><div><a class=\"tab\" ng-repeat=\"tab in tabset.tabs\" ng-class=\"{\'active\': tab.active}\" ng-click=\"tabset.showTab(tab)\">{{tab.heading}}</a></div><div class=\"tab-contents\" ng-transclude=\"\"></div></div>");
         $templateCache.put("components/vlplot/vlplot.html","<div class=\"vl-plot\" id=\"vis-{{visId}}\" ng-class=\"{ fit: !alwaysScrollable && !overflow && height > vlPlotHeight() && width > vlPlotWidth(), \'overflow-y\': (alwaysScrollable || overflow) && height > vlPlotHeight(), \'overflow-x\': (alwaysScrollable || overflow) && width > vlPlotWidth(), scroll: alwaysScrollable || unlocked || hoverFocus }\" ng-mousedown=\"unlocked=!thumbnail\" ng-mouseup=\"unlocked=false\" ng-mouseenter=\"mouseenter()\" ng-mouseleave=\"mouseleave()\"></div>");
@@ -3457,7 +3457,7 @@
             var datasets = SampleData;
 
             Dataset.datasets = datasets;
-            Dataset.dataset = datasets[11]; // change default data
+            Dataset.dataset = datasets[1]; // change default data
             Dataset.currentDataset = undefined;  // dataset before update
             Dataset.stats = {};
             Dataset.type = undefined;
@@ -5571,6 +5571,10 @@
                                 // draw boxplot inspirted by http://bl.ocks.org/jensgrubert/7789216
                                 var labels = true; // show the text labels beside individual boxplots?
                                 // my zone \(=o=)\
+                                    var config = scope.chart.vlSpec.config||{};
+                                    config.axis = config.axis||{};
+                                    config.axis.titleOffset = config.axis.titleOffset || 40;
+                                    config.axis.ticks = (config.axis.ticks === undefined)? 5 :  config.axis.ticks;
                                 var margin = {top: 10, right: 20, bottom: 40, left: 20};
                                 var titleOffset = spec.marks[0].axes[0].titleOffset||30;
                                 margin.bottom += (titleOffset===30?30:0);
@@ -5626,9 +5630,11 @@
                                     .range([0,width]);
 
                                 var xAxis = d3.svg.axis()
-                                    .scale(x)
+                                    .scale(x.nice())
                                     .orient("bottom")
                                     .tickFormat(d3.format("s"));
+                                xAxis.ticks(config.axis.ticks);
+
                                 if (!spec.marks[0].axes[0].ticks)
                                     xAxis.ticks(0);
                                 var yAxis = d3.svg.axis()
@@ -5679,47 +5685,48 @@
                                     .style('opacity',1);
                                 // outliers
 
-                                boxs.append('g')
-                                    .attr('class','outliers')
-                                    .attr("transform", function(d) { return "translate(" +  0  + "," +  Math.min((Math.max(y(d.field),10)),30)/2+ ")"; })
-                                    .selectAll(".circleo")
-                                    .data(function(d) {return Object.keys(d.stats.unique)
-                                        .filter(function(it){return it<(d.stats.q1iqr)||it>d.stats.q3iqr})})
-                                    .enter()
-                                    .append("circle")
-                                    .attr('class','circleo')
-                                    .attr("cx", function(d) {return x(d)})
-                                    .attr("cy",0)
-                                    .attr('r',2)
-                                    .on('mouseover', function (d,i){
-                                        //Dim all blobs
-                                        var currentindex = d3.select(this).datum().index;
-                                        d3.selectAll(".circleo")[0].forEach(function(d){
-                                            if (d.__data__.index === currentindex)
-                                                d3.select(d).transition().duration(200)
-                                                    .style("opacity", 1);
-                                            else
-                                                d3.select(d).transition().duration(200)
-                                                    .style("opacity", 0.1);
-                                        });
-                                        //Bring back the hovered over blob
-
-                                        scope.tip.show(tiptext.find(function(t){
-                                            var data_or = t.find(function(e){return e.key==fieldset[0] && e.value ==d});// improve later
-                                            return data_or != undefined}), '');
-                                    })
-                                    .on('mouseout', function (d,i){
-                                        d3.selectAll(".circleo")
-                                            .transition().duration(200)
-                                            .style("opacity", 1);
-                                        scope.tip.hide();
-                                    });
+                                // boxs.append('g')
+                                //     .attr('class','outliers')
+                                //     .attr("transform", function(d) { return "translate(" +  0  + "," +  Math.min((Math.max(y(d.field),10)),30)/2+ ")"; })
+                                //     .selectAll(".circleo")
+                                //     .data(function(d) {return Object.keys(d.stats.unique)
+                                //         .filter(function(it){return it<(d.stats.q1iqr)||it>d.stats.q3iqr})})
+                                //     .enter()
+                                //     .append("circle")
+                                //     .attr('class','circleo')
+                                //     .attr("cx", function(d) {return x(d)})
+                                //     .attr("cy",0)
+                                //     .attr('r',2)
+                                //     .on('mouseover', function (d,i){
+                                //         //Dim all blobs
+                                //         var currentindex = d3.select(this).datum().index;
+                                //         d3.selectAll(".circleo")[0].forEach(function(d){
+                                //             if (d.__data__.index === currentindex)
+                                //                 d3.select(d).transition().duration(200)
+                                //                     .style("opacity", 1);
+                                //             else
+                                //                 d3.select(d).transition().duration(200)
+                                //                     .style("opacity", 0.1);
+                                //         });
+                                //         //Bring back the hovered over blob
+                                //
+                                //         scope.tip.show(tiptext.find(function(t){
+                                //             var data_or = t.find(function(e){return e.key==fieldset[0] && e.value ==d});// improve later
+                                //             return data_or != undefined}), '');
+                                //     })
+                                //     .on('mouseout', function (d,i){
+                                //         d3.selectAll(".circleo")
+                                //             .transition().duration(200)
+                                //             .style("opacity", 1);
+                                //         scope.tip.hide();
+                                //     });
                                     boxs.append('g')
                                         .attr('class','outliersfar')
                                         .attr("transform", function(d) { return "translate(" +  0  + "," +  Math.min((Math.max(y(d.field),10)),30)/2+ ")"; })
                                         .selectAll(".circleo")
                                         .data(function(d) {return Object.keys(d.stats.unique)
-                                            .filter(function(it){return it<(d.stats.q1iqr-d.stats.iqr)||it>(d.stats.q3iqr+d.stats.iqr)})})
+                                            .filter(function(it){return it<(d.stats.q1iqr)||it>(d.stats.q3iqr)})})
+                                            // .filter(function(it){return it<(d.stats.q1iqr-d.stats.iqr)||it>(d.stats.q3iqr+d.stats.iqr)})})
                                         .enter()
                                         .append("circle")
                                         .attr("class",".circleo")
@@ -5782,28 +5789,36 @@
                                     // draw boxplot inspirted by http://bl.ocks.org/jensgrubert/7789216
                                     var labels = true; // show the text labels beside individual boxplots?
                                     // my zone \(=o=)\
-                                    var margin = {top: 3, right: 5, bottom: 20, left: 20};
+                                    var margin = {top: 3, right: 5, bottom: 10, left: 10};
                                     margin.bottom += +$(boxplotdiv[0]).parent().parent().find('.vl-plot-group-header').outerHeight(true);
+
+                                    var config = scope.chart.vlSpec.config||{};
+                                    config.axis = config.axis||{};
+                                    config.axis.titleOffset = config.axis.titleOffset || 40;
+                                    config.axis.ticks = (config.axis.ticks === undefined)? 5 :  config.axis.ticks;
+                                    margin.bottom = margin.bottom + config.axis.titleOffset;
+                                    margin.left = margin.left + config.axis.titleOffset;
+
                                     var  width = $(boxplotdiv[0]).width() - margin.left - margin.right;
                                     //var height = $(old_canvas[0]).height() - margin.top - margin.bottom;
                                     var height = (parseInt($(boxplotdiv[0]).parent().parent().css("max-height"),10)||parseInt($(boxplotdiv[0]).parent().parent().parent()[0].offsetHeight,10)) - margin.top - margin.bottom;//||width/3;
-
                                     var scalem = Math.min(width,height);
-                                    // margin.top = margin.top + (height-scalem)/2;
-                                    // margin.bottom = margin.bottom + (height-scalem)/2;
-                                    // margin.left = margin.left + (width-scalem)/2;
-                                    // margin.right = margin.right + (width-scalem)/2;
-                                    width = scalem;
-                                    height = scalem;
 
+                                    width = scalem+margin.left+margin.right;
+                                    height = scalem+margin.top+margin.bottom;
+
+                                    //width = height =340;
                                     //draw
 
                                     var g = boxplotdiv.append('svg')
-                                        .attr("width",width + margin.left + margin.right)
-                                        .attr("height",height + margin.top + margin.bottom)
-                                        .attr("class", "point-graph")
-                                        .append("g")
-                                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                                        .style('max-height',height+'px')
+                                        .attr("viewBox", "0 0 "+(width)+" "+(height))
+                                        .attr("preserveAspectRatio", "xMidYMax meet")
+                                        .attr("class", "hexagon-graph")//
+                                        .append("g");
+                                    //runtGraph
+                                    var w = scalem;
+                                    var h = scalem;
                                     //runtGraph
                                     svg_d3 = boxplotdiv.selectAll('svg');
                                     var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
@@ -5824,13 +5839,13 @@
                                     // the y-axis
                                     var scaleY = d3.scale.linear()
                                         .domain(d3.extent(points,function(d){return d.val[1]}))
-                                        .range([height,0]);
+                                        .range([h,0]);
 
 
                                     // the x-axis
                                     var scaleX = d3.scale.linear()
                                         .domain(d3.extent(points,function(d){return d.val[0]}))
-                                        .range([0,width]);
+                                        .range([0,w]);
 
 
                                     var bins = g
@@ -5865,36 +5880,41 @@
                                     g.call(scope.tip);
 
                                     var xAxis = d3.svg.axis()
-                                        .scale(scaleX)
+                                        .scale(scaleX.nice())
                                         .orient("bottom");
-                                    xAxis.ticks(0);
+
                                     var yAxis = d3.svg.axis()
-                                        .scale(scaleY)
+                                        .scale(scaleY.nice())
                                         .orient("left");
-                                    yAxis.ticks(0);
+
+                                    xAxis.ticks(config.axis.ticks);
+                                    yAxis.ticks(config.axis.ticks);
+                                    xAxis.tickFormat(d3.format(".2s"));
+                                    yAxis.tickFormat(d3.format(".2s"));
 
                                     // draw y axis
                                     g.append("g")
                                         .attr("class", "y axis")
+                                        .attr("transform", "translate(" + (-deltax) + ",0)")
                                         .call(yAxis)
                                         .append('text')
                                         .text(spec.marks[0].axes[1].title)
                                         .attr("text-anchor", "middle")
-                                        .attr("transform", "translate("+-10+","+height/2+") rotate(-90)")
+                                        .attr("transform", "translate("+(config.axis.ticks?-config.axis.titleOffset:-config.axis.titleOffset/2)+","+(h/2)+") rotate(-90)")
                                         .style("font-weight",'bold' );
                                     // draw x axis
                                     g.append("g")
                                         .attr("class", "x axis")
-                                        .attr("transform", "translate(0," + (height) + ")")
+                                        .attr("transform", "translate(0," + scaleY.range()[0] + ")")
                                         .call(xAxis)
                                         .append('text')
                                         .attr("text-anchor", "middle")
                                         .text(spec.marks[0].axes[0].title)
-                                        .attr("transform", "translate("+ (width/2) +","+18+")")
+                                        .attr("transform", "translate("+ (w/2) +","+(config.axis.titleOffset)+")")
                                         .style("font-weight",'bold' );
 
                                     plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
-
+                                    g.attr("transform", "translate(" + (margin.left) + "," + (margin.top) + ")");
                                     Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
                                         list: scope.listTitle
                                     });
@@ -5914,38 +5934,53 @@
                                     // draw boxplot inspirted by http://bl.ocks.org/jensgrubert/7789216
                                     var labels = true; // show the text labels beside individual boxplots?
                                     // my zone \(=o=)\
-                                    var margin = {top: 3, right: 5, bottom: 20, left: 20};
+                                    var margin = {top: 3, right: 5, bottom: 10, left: 10};
                                     margin.bottom += +$(boxplotdiv[0]).parent().parent().find('.vl-plot-group-header').outerHeight(true);
+
+                                    var config = scope.chart.vlSpec.config||{};
+                                    config.axis = config.axis||{};
+                                    config.axis.titleOffset = config.axis.titleOffset || 40;
+                                    config.axis.ticks = (config.axis.ticks === undefined)? 5 :  config.axis.ticks;
+                                    margin.bottom = margin.bottom + config.axis.titleOffset;
+                                    margin.left = margin.left + config.axis.titleOffset;
+
                                     var  width = $(boxplotdiv[0]).width() - margin.left - margin.right;
                                     //var height = $(old_canvas[0]).height() - margin.top - margin.bottom;
                                     var height = (parseInt($(boxplotdiv[0]).parent().parent().css("max-height"),10)||parseInt($(boxplotdiv[0]).parent().parent().parent()[0].offsetHeight,10)) - margin.top - margin.bottom;//||width/3;
                                     var scalem = Math.min(width,height);
-                                    // margin.top = margin.top + (height-scalem)/2;
-                                    // margin.bottom = margin.bottom + (height-scalem)/2;
-                                    // margin.left = margin.left + (width-scalem)/2;
-                                    // margin.right = margin.right + (width-scalem)/2;
-                                    width = scalem;
-                                    height = scalem;
-                                    console.log("REDERLOG")
-                                    console.log(scope.width+"x"+scope.height);
-                                    console.log(width+"x"+height);
+
+                                    width = scalem+margin.left+margin.right;
+                                    height = scalem+margin.top+margin.bottom;
+
                                     //width = height =340;
                                     //draw
 
                                     var g = boxplotdiv.append('svg')
                                         .style('max-height',height+'px')
-                                        .attr("viewBox", "0 0 "+(width + margin.left + margin.right)+" "+(height + margin.top + margin.bottom))
+                                        .attr("viewBox", "0 0 "+(width)+" "+(height))
                                         .attr("preserveAspectRatio", "xMidYMax meet")
                                         .attr("class", "hexagon-graph")//
-                                        .append("g")
-                                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                                        .append("g");
                                     //runtGraph
+                                    var w = scalem;
+                                    var h = scalem;
                                     svg_d3 = boxplotdiv.selectAll('svg');
                                     var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
-                                    var points =  Dataset.data.map(function(d,i){
-                                        var point = [d[fieldset[0]],d[fieldset[1]]];
+                                    var points =  Dataset.data.map(function(d){
+                                        var point = fieldset.map(
+                                            f =>{
+                                                const fieldValue = Dataset.schema._fieldSchemaIndex[f];
+                                                if (fieldValue.primitiveType === 'string') {
+                                                    return Object.keys(fieldValue.stats.unique).indexOf(d[f]);
+                                                }
+                                                return d[f];
+                                            });
                                         point.data={key: i, value: d};
                                         return point;});
+                                    // var points =  Dataset.data.map(function(d,i){
+                                    //     var point = [d[fieldset[0]],d[fieldset[1]]];
+                                    //     point.data={key: i, value: d};
+                                    //     return point;});
 
                                     try{
                                         var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});
@@ -5955,6 +5990,7 @@
                                         var scaleYv = d3.scale.linear()
                                             .domain([0,1])
                                             .range([fieldDefs[1].stats.min,fieldDefs[1].stats.max]);
+
                                     var scag = scagnostics(points,{
                                         binType: 'hexagon',
                                         startBinGridSize: 40,
@@ -5967,13 +6003,13 @@
                                     // the y-axis
                                     var scaleY = d3.scale.linear()
                                         .domain([0,1])
-                                        .range([height,0]);
+                                        .range([h,0]);
 
 
                                     // the x-axis
                                     var scaleX = d3.scale.linear()
                                         .domain([0,1])
-                                        .range([0,width]);
+                                        .range([0,w]);
 
                                         // var color = d3.scale.linear()
                                         //     .domain(d3.extent(scag.bins.map(function(b) {return b.length})))
@@ -6029,11 +6065,21 @@
                                         .scale(scaleX)
                                         .orient("bottom");
 
-                                        xAxis.ticks(0);
                                     var yAxis = d3.svg.axis()
                                         .scale(scaleY)
                                         .orient("left");
-                                        yAxis.ticks(0);
+                                    var xOrs = d3v4.scaleLinear().domain(d3.extent(points,d=>d[0])).range([0,1]).nice();
+                                    var xOr = xOrs.ticks(config.axis.ticks);
+                                    var yOrs = d3v4.scaleLinear().domain(d3.extent(points,d=>d[1])).range([0,1]).nice();
+                                    var yOr = yOrs.ticks(config.axis.ticks);
+                                    var xticks = xOr.map (d=> xOrs(d));
+                                    var yticks = yOr.map (d=> yOrs(d));
+                                        xAxis.tickValues(xticks)
+                                        yAxis.tickValues(yticks)
+                                        xAxis.tickFormat(d=>d3.format(".2s")(xOrs.invert(d)))
+                                        yAxis.tickFormat(d=>d3.format(".2s")(yOrs.invert(d)))
+                                    // var xAxis = xAxis.ticks( config.axis.ticks);
+                                    // var yAxis = yAxis.ticks( config.axis.ticks);
 
                                     // draw y axis
                                     g.append("g")
@@ -6043,7 +6089,7 @@
                                         .append('text')
                                         .text(spec.marks[0].axes[1].title)
                                         .attr("text-anchor", "middle")
-                                        .attr("transform", "translate("+-10+","+height/2+") rotate(-90)")
+                                        .attr("transform", "translate("+(config.axis.ticks?-config.axis.titleOffset:-config.axis.titleOffset/2)+","+(h/2)+") rotate(-90)")
                                         .style("font-weight",'bold' );
                                     // draw x axis
                                     g.append("g")
@@ -6053,12 +6099,15 @@
                                         .append('text')
                                         .attr("text-anchor", "middle")
                                         .text(spec.marks[0].axes[0].title)
-                                        .attr("transform", "translate("+ (width/2) +","+21+")")
+                                        .attr("transform", "translate("+ (w/2) +","+(config.axis.titleOffset)+")")
                                         .style("font-weight",'bold' );
 
                                         plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
 
-                                     g.attr("transform", "translate(" + (margin.left-deltax) + "," + (margin.top+deltax) + ")");
+                                     //g.attr("transform", "translate(" + (margin.left-deltax) + "," + (margin.top+deltax) + ")");
+                                        g.attr("transform", "translate(" + (margin.left-deltax) + "," + (margin.top+deltax) + ")");
+                                        boxplotdiv.select('svg')
+                                            .attr("viewBox", "0 0 "+(width+deltax)+" "+(height+deltax));
 
                                     Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
                                         list: scope.listTitle
@@ -6077,41 +6126,60 @@
                                     boxplotdiv.selectAll('*').remove();
 
                                     // my zone \(=o=)\
-                                    var margin = {top: 3, right: 5, bottom: 20, left: 20};
+                                    var margin = {top: 3, right: 5, bottom: 10, left: 10};
                                     margin.bottom += +$(boxplotdiv[0]).parent().parent().find('.vl-plot-group-header').outerHeight(true);
+
+                                    var config = scope.chart.vlSpec.config||{};
+                                    config.axis = config.axis||{};
+                                    config.axis.titleOffset = config.axis.titleOffset || 40;
+                                    config.axis.ticks = (config.axis.ticks === undefined)? 5 :  config.axis.ticks;
+                                    margin.bottom = margin.bottom + config.axis.titleOffset;
+                                    margin.left = margin.left + config.axis.titleOffset;
+
                                     var  width = $(boxplotdiv[0]).width() - margin.left - margin.right;
                                     //var height = $(old_canvas[0]).height() - margin.top - margin.bottom;
                                     var height = (parseInt($(boxplotdiv[0]).parent().parent().css("max-height"),10)||parseInt($(boxplotdiv[0]).parent().parent().parent()[0].offsetHeight,10)) - margin.top - margin.bottom;//||width/3;
-
                                     var scalem = Math.min(width,height);
-                                    // margin.top = margin.top + (height-scbalem)/2;
-                                    // margin.bottom = margin.bottom + (height-scalem)/2;
-                                    // margin.left = margin.left + (width-scalem)/2;
-                                    // margin.right = margin.right + (width-scalem)/2;
-                                    width = scalem;
-                                    height = scalem;
 
+                                    width = scalem+margin.left+margin.right;
+                                    height = scalem+margin.top+margin.bottom;
+
+                                    //width = height =340;
                                     //draw
 
-                                    var g = boxplotdiv.append('svg') .style('max-height',height+'px')
-                                        .attr("viewBox", "0 0 "+(width + margin.left + margin.right)+" "+(height + margin.top + margin.bottom))
+                                    var g = boxplotdiv.append('svg')
+                                        .style('max-height',height+'px')
+                                        .attr("viewBox", "0 0 "+(width)+" "+(height))
                                         .attr("preserveAspectRatio", "xMidYMax meet")
-                                        .attr("class", "leader-graph")
-                                        .append("g")
-                                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                                        .attr("class", "leader-graph")//
+                                        .append("g");
+                                    //runtGraph
+                                    var w = scalem;
+                                    var h = scalem;
                                     //runtGraph
                                     svg_d3 = boxplotdiv.selectAll('svg');
                                     var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
-                                    var points =  Dataset.data.map(function(d,i){
-                                        var point = [d[fieldset[0]],d[fieldset[1]]];
+                                    var points =  Dataset.data.map(function(d){
+                                        var point = fieldset.map(
+                                            f =>{
+                                                const fieldValue = Dataset.schema._fieldSchemaIndex[f];
+                                                if (fieldValue.primitiveType === 'string') {
+                                                    return Object.keys(fieldValue.stats.unique).indexOf(d[f]);
+                                                }
+                                                return d[f];
+                                            });
                                         point.data={key: i, value: d};
                                         return point;});
+                                    // var points =  Dataset.data.map(function(d,i){
+                                    //     var point = [d[fieldset[0]],d[fieldset[1]]];
+                                    //     point.data={key: i, value: d};
+                                    //     return point;});
 
                                     try{
                                         var dataPointRadius = 2;
                                         var scag = scagnostics(points,{
                                             binType: 'leader',
-                                            startBinGridSize: 20,
+                                            startBinGridSize: 10,
                                             isNormalized: false,
                                             isBinned: false,
                                             outlyingUpperBound: undefined,
@@ -6121,13 +6189,13 @@
                                         // the y-axis
                                         var scaleY = d3.scale.linear()
                                             .domain([0,1])
-                                            .range([height,0]);
+                                            .range([h,0]);
 
 
                                         // the x-axis
                                         var scaleX = d3.scale.linear()
                                             .domain([0,1])
-                                            .range([0,width]);
+                                            .range([0,w]);
 
                                         var color = d3.scale.linear()
                                             .domain(d3.extent(scag.bins.map(function(b) {return b.length})))
@@ -6144,7 +6212,7 @@
                                             .enter().append("circle")
                                             .attr("class", "bin-point mainstroke")
                                             .attr("r", function(d)  {
-                                                var distances = d.map(function(p){return distance([d.x, d.y], p)});
+                                                var distances = d.map(function(p){return distance([d.x, d.y], p)*0.6});
                                                 var radius = d3.max(distances);
                                                 return radius === 0 ? dataPointRadius : scaleX(radius);
                                             })
@@ -6177,6 +6245,7 @@
                                                     .style("opacity", 1);
                                                 scope.tip.hide();
                                             });
+                                        scag.binRadius = scag.binRadius*0.6
                                         g.call(scope.tip);
                                         var deltax = scaleX(scag.binRadius);
                                         scaleX.domain([-scag.binRadius,1+scag.binRadius])
@@ -6184,16 +6253,23 @@
                                         scaleY.domain([-scag.binRadius,1+scag.binRadius])
                                             .range([scaleY.range()[0]+deltax,scaleY.range()[1]-deltax]);
                                         var xAxis = d3.svg.axis()
-                                            .scale(scaleX)
+                                            .scale(scaleX.nice())
                                             .orient("bottom");
-
-                                        xAxis.ticks(0);
                                         var yAxis = d3.svg.axis()
-                                            .scale(scaleY)
+                                            .scale(scaleY.nice())
                                             .orient("left");
-                                        yAxis.ticks(0);
+                                        var xOrs = d3v4.scaleLinear().domain(d3.extent(points,d=>d[0])).range([0,1]).nice();
+                                        var xOr = xOrs.ticks(config.axis.ticks);
+                                        var yOrs = d3v4.scaleLinear().domain(d3.extent(points,d=>d[1])).range([0,1]).nice();
+                                        var yOr = yOrs.ticks(config.axis.ticks);
+                                        var xticks = xOr.map (d=> xOrs(d));
+                                        var yticks = yOr.map (d=> yOrs(d));
+                                        xAxis.tickValues(xticks)
+                                        yAxis.tickValues(yticks)
+                                        xAxis.tickFormat(d=>d3.format(".2s")(xOrs.invert(d)))
+                                        yAxis.tickFormat(d=>d3.format(".2s")(yOrs.invert(d)))
 
-                                        // draw y axis
+                                        /// draw y axis
                                         g.append("g")
                                             .attr("class", "y axis")
                                             .attr("transform", "translate(" + (-deltax) + ",0)")
@@ -6201,7 +6277,7 @@
                                             .append('text')
                                             .text(spec.marks[0].axes[1].title)
                                             .attr("text-anchor", "middle")
-                                            .attr("transform", "translate("+-10+","+height/2+") rotate(-90)")
+                                            .attr("transform", "translate("+(config.axis.ticks?-config.axis.titleOffset:-config.axis.titleOffset/2)+","+(h/2)+") rotate(-90)")
                                             .style("font-weight",'bold' );
                                         // draw x axis
                                         g.append("g")
@@ -6211,13 +6287,14 @@
                                             .append('text')
                                             .attr("text-anchor", "middle")
                                             .text(spec.marks[0].axes[0].title)
-                                            .attr("transform", "translate("+ (width/2) +","+21+")")
+                                            .attr("transform", "translate("+ (w/2) +","+(config.axis.titleOffset)+")")
                                             .style("font-weight",'bold' );
 
                                         plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
 
                                         g.attr("transform", "translate(" + (margin.left-deltax) + "," + (margin.top+deltax) + ")");
-
+                                        boxplotdiv.select('svg')
+                                            .attr("viewBox", "0 0 "+(width+deltax)+" "+(height+deltax));
                                         Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
                                             list: scope.listTitle
                                         });
@@ -6237,6 +6314,13 @@
                                     // draw boxplot inspirted by http://bl.ocks.org/jensgrubert/7789216
                                     //var labels = true; // show the text labels beside individual boxplots?
                                     // my zone \(=o=)\
+
+                                    var config = scope.chart.vlSpec.config||{};
+                                    config.axis = config.axis||{};
+                                    config.axis.titleOffset = config.axis.titleOffset || 40;
+                                    config.axis.ticks = (config.axis.ticks === undefined)? 5 :  config.axis.ticks;
+                                    margin.bottom = margin.bottom + config.axis.titleOffset;
+                                    margin.left = margin.left + config.axis.titleOffset;
 
                                     var  width = $(boxplotdiv[0]).width() ;
                                     //var height = $(old_canvas[0]).height() - margin.top - margin.bottom;
@@ -6263,154 +6347,188 @@
                                         .style('height',(height+margin.top+margin.bottom)+'px')
                                         .style('width',(width+margin.left+margin.right)+'px');
 
-                                    var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
-                                    var points =  Dataset.data.map(function(d){return [d[fieldset[0]],d[fieldset[1]]]});
-                                    var scag = scagnostics(points, {
-                                        binType: 'hexagon',
-                                        startBinGridSize: 40,
-                                        isNormalized: false,
-                                        isBinned: false,
-                                        outlyingUpperBound: undefined,
-                                        minBins:1,
-                                        maxBins:Infinity});
-                                    var colorchoice = maincolor;
-                                    var level= 7;
-                                    var colorlevel = colorchoice.ticks(level).slice(-level-2);
-                                    var color_names =[];
-                                    var colorscale = [[0,emptycolor],
-                                        [(1-0.5)/(level),emptycolor]];
-                                    for (var i =1; i<level;i++){
-                                        colorscale.push ([(i-0.5)/level,colorchoice(colorlevel[i])]);
-                                        colorscale.push ([(i+1-0.5)/level,colorchoice(colorlevel[i])]);
-                                        color_names.push(""+i);
-                                    }
-                                    color_names[level-2] = "≥"+ (level-1);
-                                    colorscale.push ([(level-0.5)/level,colorchoice(colorlevel[level])]);
-                                    colorscale.push ([1,colorchoice(colorlevel[level])]);
-                                    try{
-                                        var plotMargins = {
-                                            l: margin.left,
-                                            r: margin.right,
-                                            t: margin.top,
-                                            b: margin.bottom,
-                                            pad: 0,
-                                            autoexpand: false,
-                                        };
-                                        // var plotType = 'contour';
-                                        var plotType = 'histogram2dcontour';
+                                    try {
 
-                                        var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});
+                                        var fieldset = scope.chart.fieldSet.map(function (d) {
+                                            return d.field
+                                        });
+                                        var points =  Dataset.data.map(function(d){
+                                            var point = fieldset.map(
+                                                f =>{
+                                                    const fieldValue = Dataset.schema._fieldSchemaIndex[f];
+                                                    if (fieldValue.primitiveType === 'string') {
+                                                        return Object.keys(fieldValue.stats.unique).indexOf(d[f]);
+                                                    }
+                                                    return d[f];
+                                                });
+                                            point.data={key: i, value: d};
+                                            return point;});
+                                        // var points = Dataset.data.map(function (d) {
+                                        //     return [d[fieldset[0]], d[fieldset[1]]]
+                                        // });
+                                        var scag = scagnostics(points, {
+                                            binType: 'hexagon',
+                                            startBinGridSize: 20,
+                                            isNormalized: false,
+                                            isBinned: false,
+                                            outlyingUpperBound: undefined,
+                                            minBins: 1,
+                                            maxBins: Infinity
+                                        });
 
-                                        var scaleX = d3.scale.linear()
-                                            .domain([0,1])
-                                            .range([fieldDefs[0].stats.min,fieldDefs[0].stats.max]);
-                                        var scaleY = d3.scale.linear()
-                                            .domain([0,1])
-                                            .range([fieldDefs[1].stats.min,fieldDefs[1].stats.max]);
-                                        var contourData = [{
-
-                                            type: plotType,
-                                            colorscale: colorscale,
-                                            zmin:0,
-                                            zmax:7,
-                                            line: {
-                                                smoothing: 0.85,
-                                                color: 'rgba(1, 1, 1,1)',
-                                                width: 0.2,
-                                            },
-                                            connectgaps: true,
-                                            showscale: small,
-                                            colorbar: {
-                                                x: 0.98,
-                                                thickness: 10,
-                                                thicknessmode: 'pixels',
-                                                len: 0.9,
-                                                lenmode: 'fraction',
-                                                outlinewidth: 0,
-                                                tickvals: d3.range(1,level,1),
-                                                ticktext: color_names,
-                                            },
-                                            xaxis: 'x',
-                                            yaxis: 'y',
-                                            contour:{
-                                                start:1,
-                                                size:1,
-                                                end:6,
-                                            },
-                                            nbinsx: scag.binSize,
-                                            nbinsy: scag.binSize,
-                                            // histfunc: "count",
-                                        }];
-                                       //if (scope.chart.vlSpec.config.colorbar)
-
-                                        var scalexy = (scaleX.range()[1]-scaleX.range()[0])/(scaleY.range()[1]-scaleY.range()[0]);
-
-                                        //         return item===undefined?null:item.z;})});
-                                            contourData[0].x = Dataset.data.map(function(d){return d[fieldset[0]]});
-                                            contourData[0].y = Dataset.data.map(function(d){return d[fieldset[1]]});
-                                            //contourData[0].z = matrix;
-                                        var contourLayout = {
-                                            paper_bgcolor: 'rgba(0,0,0,0)',
-                                            plot_bgcolor: 'rgba(0,0,0,0)',
-                                            margin: plotMargins,
-                                            autosize: true,
-                                            font: {
-                                                size: 11,
-                                            },
-                                            yaxis:{
-                                                title: "<b>"+fieldset[1]+"<b>",
-                                                gridcolor: '#bdbdbd',
-                                                showticklabels: false,
-                                                titlefont: {
-                                                    size: 11,
-                                                },
-                                                ticks:'',
-                                                // tickangle: 'auto',
-                                                autorange: true,
-                                                showgrid: false,
-                                                zeroline: false,
-                                                linecolor: '#000000',
-                                                linewidth: 1
-                                            },
-                                            xaxis:{
-                                                title: "<b>"+fieldset[0]+"<b>",
-                                                showticklabels: false,
-                                                titlefont: {
-                                                    size: 11,
-                                                },
-                                                ticks:'',
-                                                // tickangle: 'auto',
-                                                autorange: true,
-                                                showgrid: false,
-                                                zeroline: false,
-                                                linecolor: '#000000',
-                                                linewidth: 1
-                                            },
-
-                                        };
-                                        if (scalem ==='y'){
-                                            contourLayout.xaxis.scaleanchor = 'y';
-                                            contourLayout.xaxis.scaleratio = 1/scalexy;
-                                            //contourLayout.xaxis.anchor= 'y';
-                                        }else{
-                                            contourLayout.yaxis.scaleanchor = 'x';
-                                            contourLayout.yaxis.scaleratio =scalexy;
-                                            //contourLayout.yaxis.anchor= 'x';
+                                        var colorchoice = d3v4.scaleSequential(d3v4.interpolateSpectral).domain([7, 0]);
+                                        var level = 7;
+                                        var colorlevel = colorchoice.ticks(level).slice(-level - 2);
+                                        var color_names = [];
+                                        var tempa = []
+                                        for (var i = level; i > -1; i--) {
+                                            tempa.push(colorchoice(colorlevel[i]));
                                         }
-                                        var extraconfig = {
-                                            staticPlot: (config.staticPlot !== undefined),responsive: true,
-                                            displaylogo: false,
-                                        };
-                                        if (config.displayModeBar ===false)
-                                            extraconfig.displayModeBar=false;
-                                        Plotly.newPlot('contour' + scope.visId, contourData, contourLayout,extraconfig);
 
-                                        plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
+                                        var colorscale = [[0, emptycolor],
+                                            [(1 - 0.5) / (level), emptycolor]];
+                                        for (var i = 1; i < level; i++) {
+                                            colorscale.push([(i - 0.5) / level, tempa[i - 1]]);
+                                            colorscale.push([(i + 1 - 0.5) / level, tempa[i - 1]]);
+                                            color_names.push("" + i);
+                                        }
+                                        color_names[level - 2] = "≥" + (level - 1);
+                                        colorscale.push([(level - 0.5) / level, tempa[level - 1]]);
+                                        colorscale.push([1, tempa[level - 1]]);
 
-                                        Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
-                                        list: scope.listTitle
-                                    });
-                                    rescaleIfEnable();}catch(e){}
+                                        try {
+                                            var plotMargins = {
+                                                l: margin.left,
+                                                r: margin.right,
+                                                t: margin.top,
+                                                b: margin.bottom,
+                                                pad: 0,
+                                                autoexpand: false,
+                                            };
+                                            // var plotType = 'contour';
+                                            var plotType = 'histogram2dcontour';
+
+                                            var fieldDefs = fieldset.map(function (d) {
+                                                return Dataset.schema.fieldSchema(d)
+                                            });
+
+                                            var scaleX = d3.scale.linear()
+                                                .domain([0, 1])
+                                                .range([fieldDefs[0].stats.min, fieldDefs[0].stats.max]);
+                                            var scaleY = d3.scale.linear()
+                                                .domain([0, 1])
+                                                .range([fieldDefs[1].stats.min, fieldDefs[1].stats.max]);
+                                            var contourData = [{
+
+                                                type: plotType,
+                                                colorscale: colorscale,
+                                                zmin: 0,
+                                                zmax: 7,
+                                                line: {
+                                                    smoothing: 0.85,
+                                                    color: 'rgba(1, 1, 1,1)',
+                                                    width: 0.2,
+                                                },
+                                                connectgaps: true,
+                                                showscale: small,
+                                                colorbar: {
+                                                    x: 0.98,
+                                                    thickness: 10,
+                                                    thicknessmode: 'pixels',
+                                                    len: 0.9,
+                                                    lenmode: 'fraction',
+                                                    outlinewidth: 0,
+                                                    tickvals: d3.range(1, level, 1),
+                                                    ticktext: color_names,
+                                                },
+                                                xaxis: 'x',
+                                                yaxis: 'y',
+                                                contour: {
+                                                    start: 0,
+                                                    size: 0,
+                                                    end: 6,
+                                                },
+                                                nbinsx: scag.binSize,
+                                                nbinsy: scag.binSize,
+                                                // histfunc: "count",
+                                            }];
+                                            //if (scope.chart.vlSpec.config.colorbar)
+
+                                            var scalexy = (scaleX.range()[1] - scaleX.range()[0]) / (scaleY.range()[1] - scaleY.range()[0]);
+
+                                            //         return item===undefined?null:item.z;})});
+                                            contourData[0].x = Dataset.data.map(function (d) {
+                                                return d[fieldset[0]]
+                                            });
+                                            contourData[0].y = Dataset.data.map(function (d) {
+                                                return d[fieldset[1]]
+                                            });
+                                            //contourData[0].z = matrix;
+                                            var contourLayout = {
+                                                paper_bgcolor: 'rgba(0,0,0,0)',
+                                                plot_bgcolor: 'rgba(0,0,0,0)',
+                                                margin: plotMargins,
+                                                autosize: true,
+                                                font: {
+                                                    size: 11,
+                                                },
+                                                yaxis: {
+                                                    title: "<b>" + fieldset[1] + "</b>",
+                                                    gridcolor: '#bdbdbd',
+                                                    showticklabels: config.axis.ticks?true:false,
+                                                    titlefont: {
+                                                        size: 11,
+                                                    },
+                                                    ticks: config.axis.ticks||'',
+                                                    // tickangle: 'auto',
+                                                    autorange: true,
+                                                    showgrid: false,
+                                                    zeroline: false,
+                                                    linecolor: '#000000',
+                                                    linewidth: 1
+                                                },
+                                                xaxis: {
+                                                    title: "<b>" + fieldset[0] + "</b>",
+                                                    showticklabels: config.axis.ticks?true:false,
+                                                    titlefont: {
+                                                        size: 11,
+                                                    },
+                                                    ticks: config.axis.ticks||'',
+                                                    // tickangle: 'auto',
+                                                    autorange: true,
+                                                    showgrid: false,
+                                                    zeroline: false,
+                                                    linecolor: '#000000',
+                                                    linewidth: 1
+                                                }
+
+                                            };
+                                            if (scalem === 'y') {
+                                                contourLayout.xaxis.scaleanchor = 'y';
+                                                contourLayout.xaxis.scaleratio = 1 / scalexy;
+                                                //contourLayout.xaxis.anchor= 'y';
+                                            } else {
+                                                contourLayout.yaxis.scaleanchor = 'x';
+                                                contourLayout.yaxis.scaleratio = scalexy;
+                                                //contourLayout.yaxis.anchor= 'x';
+                                            }
+                                            var extraconfig = {
+                                                staticPlot: (config.staticPlot !== undefined), responsive: true,
+                                                displaylogo: false
+                                            };
+                                            if (config.displayModeBar === false)
+                                                extraconfig.displayModeBar = false;
+                                            Plotly.newPlot('contour' + scope.visId, contourData, contourLayout, extraconfig);
+
+                                            plotTyper(boxplotdiv, scope.chart.vlSpec.config.typer);
+
+                                            Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
+                                                list: scope.listTitle
+                                            });
+                                            rescaleIfEnable();
+                                        } catch (e) {
+                                        }
+                                    }catch (e) {}
                                     renderQueueNextPromise = $timeout(renderQueueNext, 1);
                                     return;
                                 case "scatter3D":
@@ -6450,28 +6568,26 @@
                                     var scaleY = d3.scale.linear()
                                         .domain([0,1])
                                         .range([fieldDefs[1].stats.min,fieldDefs[1].stats.max]);
+                                    var scaleZ = d3.scale.linear()
+                                        .domain([0,1])
+                                        .range([fieldDefs[2].stats.min,fieldDefs[2].stats.max]);
                                     // to do
+
                                     var points =  Dataset.data.map(function(d){
-                                        var point = [d[fieldset[0]],d[fieldset[1]]];
+                                        var point = fieldset.map(
+                                            f =>{
+                                                const fieldValue = Dataset.schema._fieldSchemaIndex[f];
+                                                if (fieldValue.primitiveType === 'string') {
+                                                    return Object.keys(fieldValue.stats.unique).indexOf(d[f]);
+                                                }
+                                                return d[f];
+                                            });
                                         point.data = {'x': d[fieldset[0]], 'y': d[fieldset[1]], 'z': d[fieldset[2]]};
                                     return point;});
                                     // to do
-                                    var config = scope.chart.vlSpec.config;
-                                    var small = (config.colorbar != undefined?config.colorbar:true);
-                                    if (config.extraconfig !== 'point') {
-                                        var scag = scagnostics(points, {
-                                            binType: 'leader',
-                                            startBinGridSize: 10,
-                                            isNormalized: false,
-                                            isBinned: false,
-                                            outlyingUpperBound: undefined,
-                                            minBins:1,
-                                            maxBins:Infinity});
-                                        var color = d3.scale.linear()
-                                            .domain(d3.extent(scag.bins.map(function(b) {return b.length})))
-                                            .range([maincolor(0.1),maincolor(0.7)]);
-                                    }
                                     try{
+                                        var config = scope.chart.vlSpec.config;
+                                        var small = (config.colorbar != undefined?config.colorbar:true);
                                         var plotType = 'scatter3d';
 
                                         var plotMargins = {
@@ -6507,42 +6623,80 @@
                                         var scaleXs = d3.scale.linear()
                                             .domain([0, 1])
                                             .range([dataPointRadius, width*4/5]);
+
+                                        var scatterLayout = {
+                                            paper_bgcolor: 'rgba(0,0,0,0)',
+                                            plot_bgcolor: 'rgba(0,0,0,0)',
+                                            autosize: true,
+                                            margin: plotMargins,
+                                            //width: scalem+plotMargins.l,
+                                            scene:{
+                                                autosize: true,
+                                                margin: plotMargins,
+                                                aspectratio: {
+                                                    x: 1,
+                                                    y: 1,
+                                                    z: 1
+                                                },
+                                                yaxis:{
+                                                    title: fieldset[1],
+                                                    automargin: true,
+                                                    titlefont: {
+                                                        size: 11,
+                                                    },
+                                                },
+                                                xaxis:{
+                                                    title: fieldset[0],
+                                                    automargin: true,
+                                                    titlefont: {
+                                                        size: 11,
+                                                    },
+                                                },
+                                                zaxis:{
+                                                    title: fieldset[2],
+                                                    automargin: true,
+                                                    titlefont: {
+                                                        size: 11,
+                                                    },
+                                                }
+                                            }
+                                        };
                                         if (config.extraconfig === undefined) {
+                                            var datain =Dataset.data.map(function (d){
+                                                var dd = fieldDefs.map(function(f){return d[f.field] });
+                                                dd.data = dd;
+                                                return dd;});
+                                            var bin = binnerN()
+                                                .startBinGridSize(5)
+                                                .isNormalized(false)
+                                                .minNumOfBins(1)
+                                                .maxNumOfBins(datain.length)
+                                                .data([]).updateRadius(true).binType("leader");
+                                            bin.data(datain)
+                                                .calculate();
+                                            var color = d3.scale.linear()
+                                                .domain(d3.extent(bin.bins.map(function(b) {return b.length})))
+                                                .range([maincolor(0.1),maincolor(0.7)]);
                                             var distance = function (a, b) {
                                                 var dx = a[0] - b[0],
-                                                    dy = a[1] - b[1];
-                                                return Math.round(Math.sqrt((dx * dx) + (dy * dy)) * Math.pow(10, 10)) / Math.pow(10, 10)
+                                                    dy = a[1] - b[1],
+                                                    dz = a[2] - b[2];
+                                                return Math.round(Math.sqrt((dx * dx) + (dy * dy) + (dz * dz))*0.6 * Math.pow(10, 10)) / Math.pow(10, 10)
                                             };
-                                            var minz = Infinity;
-                                            var maxz = -Infinity;
-                                            scag.bins.forEach(function (d) {
-                                                var z = 0;
-                                                d.forEach(function (i) {
-                                                    z = z + i.data.z;
-                                                });
-                                                z = z / d.length;
-                                                d.z = z;
-                                                minz = Math.min(minz, z);
-                                                maxz = Math.max(maxz, z);
-                                            });
-                                            var scalez = d3.scale.linear()
-                                                .domain([minz, maxz])
-                                                .range([0, 1]);
 
-
-                                            scag.bins.forEach(function (d) {
+                                            bin.bins.forEach(function (d) {
                                                 var distances = d.map(function (p) {
-                                                    return distance([d.x, d.y], p)
+                                                    return distance(d.val, p)
                                                 });
                                                 var radius = d3.max(distances);
-                                                scatterData[0].x.push(scaleX(d.x));
-                                                scatterData[0].y.push(scaleY(d.y));
-                                                scatterData[0].z.push(d.z);
+                                                scatterData[0].x.push(d.val.data[0]);
+                                                scatterData[0].y.push(d.val.data[1]);
+                                                scatterData[0].z.push(d.val.data[2]);
                                                 scatterData[0].marker.size.push(scaleXs(radius));
                                                 scatterData[0].marker.color.push(color(d.length));
-                                                var text = fieldset[0] + ": " + scaleX(d.x) + "<br>";
-                                                text += fieldset[1] + ": " + scaleY(d.y) + "<br>";
-                                                text += fieldset[2] + ": " + d.z;
+                                                var text = fieldset[0] + ": " + d3.extent(d,e=>e.data[0]) + "<br>";
+                                                text += fieldset[1] + ": " + d3.extent(d,e=>e.data[1]) + "<br>";
+                                                text += fieldset[2] + ": " +d3.extent(d,e=>e.data[2]);
                                                 scatterData[0].text.push(text);
                                             });
                                         }else
@@ -6585,7 +6739,9 @@
                                                 .data([]).updateRadius(true).binType("evenbin");
                                             bin.data(datain)
                                                 .calculate();
-                                            color.domain(d3.extent(bin.bins.map(function(b) {return b.length})));
+                                            var color = d3.scale.linear()
+                                                    .domain(d3.extent(bin.bins.map(function(b) {return b.length})))
+                                                    .range([maincolor(0.1),maincolor(0.7)]);
                                             var opacitys = d3.scale.linear().domain(color.domain()).range([0.1,1]);
                                             scatterData[0].marker.opacity=[];
                                             bin.bins.forEach(function(d,index) {
@@ -6606,14 +6762,21 @@
                                                 scatterData[index].type= 'mesh3d';
                                                 scatterData[index].color=(color(d.length));
                                                 scatterData[index].opacity=(opacitys(d.length));
-                                                // scatterData[i].marker.size.push(scaleXs(bin.binRadius/2));
-                                                // scatterData[i].marker.color.push(color(d.length));
-                                                // scatterData[i].marker.opacity.push(opacitys(d.length));
                                                 var text = fieldset[0] + ": " + point[0] + "<br>";
                                                 text += fieldset[1] + ": " + point[1] + "<br>";
                                                 text += fieldset[2] + ": " + point[2];
                                                 scatterData[index].text= text;
-                                            })
+                                            });
+                                                var textticks = d3v4.scaleLinear().domain(scaleX.range()).range([0,1]).ticks(5)
+                                                scatterLayout.scene.xaxis.tickvals = textticks.map(t=>scaleX.invert(t));
+                                                scatterLayout.scene.xaxis.ticktext  = textticks;
+                                                var textticks = d3v4.scaleLinear().domain(scaleY.range()).range([0,1]).ticks(5)
+                                                scatterLayout.scene.yaxis.tickvals = textticks.map(t=>scaleY.invert(t));
+                                                scatterLayout.scene.yaxis.ticktext  = textticks;
+                                                var textticks = d3v4.scaleLinear().domain(scaleZ.range()).range([0,1]).ticks(5)
+                                                scatterLayout.scene.zaxis.tickvals = textticks.map(t=>scaleZ.invert(t));
+                                                scatterLayout.scene.zaxis.ticktext  = textticks;
+
                                         }else
                                             if(config.extraconfig ==="contour"){
                                             var datain =Dataset.data.map(function (d){
@@ -6628,10 +6791,21 @@
                                                 .data([]).updateRadius(true).binType("evenbin");
                                             bin.data(datain)
                                                 .calculate();
-                                            color.domain(d3.extent(bin.bins.map(function(b) {return b.length})));
-                                            var opacitys = d3.scale.linear().domain(color.domain()).range([0.3,1]);
+
+                                            // color.domain(d3.extent(bin.bins.map(function(b) {return b.length})));
+                                            var opacitys = d3.scale.linear().domain(d3.extent(bin.bins.map(function(b) {return b.length}))).range([0.3,1]);
                                             scatterData[0].marker.opacity=[];
                                             //scatterData[0].type = "surface";
+
+                                                //<editor-fold desc=“color part">
+                                                var colorchoice = d3v4.scaleSequential(d3v4.interpolateSpectral).domain([7,0]);
+                                                var level= 7;
+                                                var colorlevel = colorchoice.ticks(level).slice(-level-2);
+                                                var tempa = []
+                                                for (var i =level; i>-1;i--){
+                                                    tempa.push(colorchoice(colorlevel[i]));
+                                                }
+                                                //</editor-fold>
                                             bin.bins.forEach(function(d) {
                                                 var point = bin.normalizedFun.scaleBackPoint(d.val);
                                                 //var matrizz = scatterData[0].x.map(function(e){return 0;});
@@ -6642,7 +6816,7 @@
                                                 // scatterData[0].z.push(matrizz);
 
                                                 scatterData[0].marker.size.push(scaleXs(bin.binRadius/2));
-                                                scatterData[0].marker.color.push(color(d.length));
+                                               // scatterData[0].marker.color.push(color(d.length));
                                                 scatterData[0].marker.opacity.push(opacitys(d.length));
                                                 var text = fieldset[0] + ": " + point[0] + "<br>";
                                                 text += fieldset[1] + ": " + point[1] + "<br>";
@@ -6651,7 +6825,8 @@
                                             });
                                             scatterData.push({
                                                 alphahull: 2,
-                                                color:maincolor(0.3),
+                                                // color:maincolor(0.3),
+                                                color:tempa[2],
                                                 opacity: 0.05,
                                                 type: 'mesh3d',
                                                 x: [],
@@ -6665,7 +6840,8 @@
                                             });
                                             scatterData.push({
                                                 alphahull: 3,
-                                                color:maincolor(0.4),
+                                                // color:maincolor(0.4),
+                                                color:tempa[4],
                                                 opacity: 0.1,
                                                 type: 'mesh3d',
                                                 x: scatterData[1].x,
@@ -6674,7 +6850,8 @@
                                             });
                                             scatterData.push({
                                                 alphahull: 4,
-                                                color:maincolor(0.2),
+                                                // color:maincolor(0.2),
+                                                color:tempa[2],
                                                 opacity: 0.15,
                                                 type: 'mesh3d',
                                                 x: scatterData[1].x,
@@ -6683,7 +6860,8 @@
                                             });
                                             scatterData.push({
                                                 alphahull: 5,
-                                                color:maincolor(0.5),
+                                                // color:maincolor(0.5),
+                                                color:tempa[5],
                                                 opacity: 0.2,
                                                 type: 'mesh3d',
                                                 x: scatterData[1].x,
@@ -6692,7 +6870,8 @@
                                             });
                                             scatterData.push({
                                                 alphahull: 6,
-                                                color:maincolor(0.6),
+                                                // color:maincolor(0.6),
+                                                color:tempa[6],
                                                 opacity: 0.25,
                                                 type: 'mesh3d',
                                                 x: scatterData[1].x,
@@ -6701,7 +6880,8 @@
                                             });
                                             scatterData.push({
                                                 alphahull: 7,
-                                                color:maincolor(0.7),
+                                                // color:maincolor(0.7),
+                                                color:tempa[7],
                                                 opacity: 0.3,
                                                 type: 'mesh3d',
                                                 x: scatterData[1].x,
@@ -6716,7 +6896,7 @@
 
                                         }
                                         else{
-
+                                            // point
                                             points.forEach(function(d) {
                                                 scatterData[0].x.push(d.data.x);
                                                 scatterData[0].y.push(d.data.y);
@@ -6729,49 +6909,7 @@
                                                 scatterData[0].text.push(text);
                                             })
                                         }
-                                        var scatterLayout = {
-                                            paper_bgcolor: 'rgba(0,0,0,0)',
-                                            plot_bgcolor: 'rgba(0,0,0,0)',
-                                            autosize: true,
-                                            margin: plotMargins,
-                                            //width: scalem+plotMargins.l,
-                                            scene:{
-                                                autosize: true,
-                                                margin: plotMargins,
-                                                aspectratio: {
-                                                    x: 1,
-                                                    y: 1,
-                                                    z: 1
-                                                },
-                                                yaxis:{
-                                                    title: fieldset[1],
-                                                    /*ticks:'',
-                                                    showticklabels: false,*/
-                                                    automargin: true,
-                                                    titlefont: {
-                                                        size: 11,
-                                                    },
-                                                },
-                                                xaxis:{
-                                                    title: fieldset[0],
-                                                    /*ticks:'',
-                                                    showticklabels: false,*/
-                                                    automargin: true,
-                                                    titlefont: {
-                                                        size: 11,
-                                                    },
-                                                },
-                                                zaxis:{
-                                                    title: fieldset[2],
-                                                    /*ticks:'',
-                                                    showticklabels: false,*/
-                                                    automargin: true,
-                                                    titlefont: {
-                                                        size: 11,
-                                                    },
-                                                }
-                                            }
-                                        };
+
                                         var extraconfig = {
                                             displayModeBar: (config.displayModeBar === undefined),
                                             staticPlot: (config.staticPlot !== undefined),
@@ -6843,7 +6981,6 @@
                                         var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});
                                         //var color = d3.scale.ordinal().range(["#EDC951","#CC333F","#00A0B0"]);
                                         var tiptext=[];
-                                        console.log("RADAR BUG");
                                         var binType = scope.chart.vlSpec.config.extraconfig;
                                         if (binType){
                                             if (binType =="leader"||binType =="evenbin") {
@@ -6855,15 +6992,14 @@
                                                     return dd;
                                                 });
                                                 var bin = binnerN()
-                                                    .startBinGridSize(binType === "leader" ? 2.5 : 10)
+                                                    // .startBinGridSize(binType === "leader" ? 2.5 : 10)
+                                                    .startBinGridSize(binType === "leader" ? 1.5 : 7)
                                                     .isNormalized(false)
                                                     .minNumOfBins(1)
                                                     .maxNumOfBins(datain.length)
                                                     .data([]).updateRadius(true).binType(binType);
                                                 bin.data(datain)
                                                     .calculate();
-                                                console.log(bin.bins.length);
-                                                console.log(bin.binRadius);
                                                 var distance = function (a, b) {
                                                     var dsum = 0;
                                                     a.forEach(function (d, i) {
@@ -6893,7 +7029,7 @@
                                                             return {value: e};
                                                         });
                                                         dd.radius = binType === "leader" ? d3.max(d.map(function (p) {
-                                                            return distance(d.val, p)
+                                                            return distance(d.val, p)*0.6
                                                         })) * 2 : bin.binRadius;
                                                         dd.density = d.length / datain.length;
                                                         return dd;
@@ -7082,7 +7218,7 @@
                                     rg.append("stop")
                                         .attr("offset", i / legntharrColor * 100 + "%")
                                         .attr("stop-color", d)
-                                        .attr("stop-opacity", 0.8);
+                                        .attr("stop-opacity", opGradientScale(i));
                                     if (i != legntharrColor)
                                         rg.append("stop")
                                             .attr("offset", (i + 1) / legntharrColor * 100 + "%")
@@ -7116,7 +7252,8 @@
                                 return radius / cfg.levels * d;
                             })
                             .style("fill", "#CDCDCD")
-                            .style("stroke", function(d,i){ return cfg.gcolor?cfg.gcolor(d/cfg.levels):"#CDCDCD"})
+                            // .style("stroke", function(d,i){ return cfg.gcolor?cfg.gcolor(d/cfg.levels):"#CDCDCD"})
+                            .style("stroke", function(d,i){ return "#CDCDCD"})
                             .style("stroke-width", 0.3)
                             .style("stroke-opacity", 1)
                             .style("fill-opacity", cfg.opacityCircles)
@@ -7185,7 +7322,7 @@
                         function drawCluster(paths){
                             return paths.attr("d", function (d){
                                 return radialAreaGenerator(d);})
-                                .style("stroke-width", 0.5)
+                                .style("stroke-width", 0.85)
                                 .style("stroke", "#2f5597")//function(d,i) { return cfg.color(i); })
                                 .style("fill", cfg.gcolor?"transparent":"#2f5597")
                                 // .style("filter" , "url(#glow)")

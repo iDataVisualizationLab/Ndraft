@@ -3,9 +3,19 @@ $pill-radius: 3px;
 $pill-height: 20px;
 $pill-min-width: 150px;
 $text-color: #212121;
-$link-color: #4c425d;
+$link-color: #474849;
 $link-hover-color: #72757B;
 $background-color: #c9cdf7;
+
+$maincolor: #757571;
+$headercolor: linear-gradient(to left, #232526, #414345);
+$subdetailColor: #5f5f5f;
+$panelColor: linear-gradient(to top, #303030, #545553);
+$panel2Color: #4B4A54;
+$fontColor: #f0f0f0;
+$fontHightlightColor: #99e5f0;
+$highlightColor: #6abedb;
+$chartbackgroundcolor: #ffffff;
 
 html {
   height: 100%;
@@ -17,7 +27,7 @@ body{
   overflow: hidden;
   margin: 0;
   padding: 0;
-  background-color: #ecebff;
+  background-color: $subdetailColor;
   font-size: 12px;
   line-height: 18px;
 }
@@ -35,11 +45,11 @@ a:hover {
 }
 
 .top-card a {
-  color: #4f445d;
+  color: $fontColor;
 }
 
 .top-card a:hover {
-  color: #72757B;
+  color: $fontHightlightColor;
 }
 
 .controls {
@@ -117,7 +127,7 @@ textarea {
 }
 
 .top-card {
-  background-color: #FCFDFE;
+  background-image: $headercolor;
 }
 
 .no-right-margin {
@@ -418,7 +428,7 @@ h4 {
   .current-dataset {
     color: white;
   }
-  background-color: #31224c;
+  background-image: $panelColor;
 
   #footer {
     a {
@@ -1514,7 +1524,7 @@ select.markselect {
 .vl-plot-group-list-container {
   margin-bottom: 20px;
   .vis-list-more {
-    background: hsl(216,42%,92%);
+    background: hsl(240, 7%, 83%);
   }
 }
 

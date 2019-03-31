@@ -1693,6 +1693,7 @@ exports.SHARED_DOMAIN_OPS = [
     AggregateOp.STDEV,
     AggregateOp.STDEVP,
     AggregateOp.MEDIAN,
+    AggregateOp.VARIANCEP,
     AggregateOp.Q1,
     AggregateOp.Q3,
     AggregateOp.MIN,
@@ -2348,7 +2349,7 @@ function initMarkConfig(mark, encoding, config) {
                         }
                     }
                     if (mark === mark_1.AREA) {
-                        cfg[property] = 0.7;
+                        cfg[property] = 1;
                     }
                 }
                 break;

@@ -20,8 +20,6 @@ angular.module('pcagnosticsviz')
                 $scope.limit = $scope.initialLimit || (($scope.prop.dim<1)?10:5);
                 console.log("dim: " + $scope.prop.dim + "limit: " + $scope.limit);
                 $scope.limitup =  ($scope.prop.pos > $scope.limit)? ($scope.prop.pos-2) : 0;
-                //$scope.marks = ['tick', 'bar','area','boxplot'];
-                //$scope.props = ['PCA1', 'skewness', 'outlier', 'PCA2'];
                 $scope.typeChange =function (){
                     var tolog = {level_explore: $scope.prop.dim, abtraction: $scope.prop.mark, visual_feature: $scope.prop.type};
                     Logger.logInteraction(Logger.actions.FEATURE_SELECT, $scope.prop.type,{
