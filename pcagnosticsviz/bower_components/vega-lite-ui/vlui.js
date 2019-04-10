@@ -3457,7 +3457,7 @@
             var datasets = SampleData;
 
             Dataset.datasets = datasets;
-            Dataset.dataset = datasets[1]; // change default data
+            Dataset.dataset = datasets[12]; // change default data
             Dataset.currentDataset = undefined;  // dataset before update
             Dataset.stats = {};
             Dataset.type = undefined;
@@ -3856,6 +3856,12 @@
         description:'Soil example',
         url: 'data/soil.json',
         id: 'soil',
+        group: 'sample'
+    },{
+        name: 'NRC',
+        description:'',
+        url: 'data/NRC.json',
+        id: 'nrc',
         group: 'sample'
     }]);
 }());
@@ -5993,7 +5999,7 @@
 
                                     var scag = scagnostics(points,{
                                         binType: 'hexagon',
-                                        startBinGridSize: 40,
+                                        startBinGridSize: 20,
                                         isNormalized: false,
                                         isBinned: false,
                                         outlyingUpperBound: undefined,
@@ -6179,7 +6185,7 @@
                                         var dataPointRadius = 2;
                                         var scag = scagnostics(points,{
                                             binType: 'leader',
-                                            startBinGridSize: 10,
+                                            startBinGridSize: 7,
                                             isNormalized: false,
                                             isBinned: false,
                                             outlyingUpperBound: undefined,
@@ -6375,9 +6381,8 @@
                                             minBins: 1,
                                             maxBins: Infinity
                                         });
-
-                                        var colorchoice = d3v4.scaleSequential(d3v4.interpolateSpectral).domain([7, 0]);
-                                        var level = 7;
+                                        var level = 10;
+                                        var colorchoice = d3v4.scaleSequential(d3v4.interpolateSpectral).domain([level, 0]);
                                         var colorlevel = colorchoice.ticks(level).slice(-level - 2);
                                         var color_names = [];
                                         var tempa = []
@@ -6423,7 +6428,7 @@
                                                 type: plotType,
                                                 colorscale: colorscale,
                                                 zmin: 0,
-                                                zmax: 7,
+                                                zmax: level,
                                                 line: {
                                                     smoothing: 0.85,
                                                     color: 'rgba(1, 1, 1,1)',
@@ -6444,9 +6449,9 @@
                                                 xaxis: 'x',
                                                 yaxis: 'y',
                                                 contour: {
-                                                    start: 0,
-                                                    size: 0,
-                                                    end: 6,
+                                                    start: 1,
+                                                    size: 1,
+                                                    end: level-1,
                                                 },
                                                 nbinsx: scag.binSize,
                                                 nbinsy: scag.binSize,
@@ -6742,7 +6747,7 @@
                                             var color = d3.scale.linear()
                                                     .domain(d3.extent(bin.bins.map(function(b) {return b.length})))
                                                     .range([maincolor(0.1),maincolor(0.7)]);
-                                            var opacitys = d3.scale.linear().domain(color.domain()).range([0.1,1]);
+                                            var opacitys = d3.scale.linear().domain(color.domain()).range([0.4,1]);
                                             scatterData[0].marker.opacity=[];
                                             bin.bins.forEach(function(d,index) {
                                                 //var point = bin.normalizedFun.scaleBackPoint(d.val);
@@ -6817,7 +6822,7 @@
 
                                                 scatterData[0].marker.size.push(scaleXs(bin.binRadius/2));
                                                // scatterData[0].marker.color.push(color(d.length));
-                                                scatterData[0].marker.opacity.push(opacitys(d.length));
+                                                scatterData[0].marker.opacity.push(d.length==1?1:opacitys(d.length));
                                                 var text = fieldset[0] + ": " + point[0] + "<br>";
                                                 text += fieldset[1] + ": " + point[1] + "<br>";
                                                 text += fieldset[2] + ": " + point[2];

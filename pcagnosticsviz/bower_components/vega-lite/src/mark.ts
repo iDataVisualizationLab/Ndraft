@@ -29,4 +29,9 @@ export const CIRCLE = Mark.CIRCLE;
 export const SQUARE = Mark.SQUARE;
 
 export const ERRORBAR = Mark.ERRORBAR;
+export const HEXAGON = Mark.HEXAGON;
+export const LEADER = Mark.LEADER;
+export const CONTOUR = Mark.CONTOUR;
+export const SCATTER3D = Mark.SCATTER3D;
+
 export const PRIMITIVE_MARKS = [AREA, BAR, LINE, POINT, TEXT, TICK, RULE, CIRCLE, SQUARE, BOXPLOT];

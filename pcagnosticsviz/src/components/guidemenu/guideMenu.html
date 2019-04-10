@@ -18,12 +18,43 @@
         </div>
     </div>
     <div class="thum">
-        <div class="scroll-y">
+        <!--<div class="scroll-y">-->
+            <!--<vl-plot-group-->
+                    <!--ng-if="prop.previewcharts"-->
+                    <!--class="main-vl-plot-group card thumplot no-shrink"-->
+                    <!--ng-class="{'square':prop.dim, 'active': prop.pos== $index + limitup}"-->
+                    <!--ng-repeat="chart in prop.previewcharts| limitTo: limit : limitup"-->
+                    <!--ng-click="previewSlider($index)"-->
+                    <!--chart="chart"-->
+                    <!--show-bookmark="false"-->
+                    <!--show-debug="false"-->
+                    <!--show-select="false"-->
+                    <!--show-axis-prop="true"-->
+                    <!--show-sort="false"-->
+                    <!--show-transpose="false"-->
+                    <!--enable-pills-preview="true"-->
+                    <!--always-scrollable="false"-->
+                    <!--overflow="false"-->
+                    <!--show-label="false"-->
+                    <!--tooltip="true"-->
+                    <!--toggle-shelf="false"-->
+                    <!--priority="priority * $index"-->
+            <!--&gt;</vl-plot-group>-->
+            <!--<a ng-click="increaseLimit()">-->
+                <!--<div class="vis-list-more" ng-show="limit < prop.previewcharts.length">-->
+                    <!--Load more...-->
+                <!--</div>-->
+            <!--</a>-->
+        <!--</div>-->
+        <svg width = 1200 height = 800>
+            <foreignObject
+                    width = 200 height = 200
+                    ng-repeat="chart in prop.previewcharts| limitTo: limit : limitup"
+            >
             <vl-plot-group
                     ng-if="prop.previewcharts"
                     class="main-vl-plot-group card thumplot no-shrink"
                     ng-class="{'square':prop.dim, 'active': prop.pos== $index + limitup}"
-                    ng-repeat="chart in prop.previewcharts| limitTo: limit : limitup"
                     ng-click="previewSlider($index)"
                     chart="chart"
                     show-bookmark="false"
@@ -40,11 +71,12 @@
                     toggle-shelf="false"
                     priority="priority * $index"
             ></vl-plot-group>
-            <a ng-click="increaseLimit()">
-                <div class="vis-list-more" ng-show="limit < prop.previewcharts.length">
-                    Load more...
-                </div>
-            </a>
-        </div>
+            </foreignObject>
+        </svg>
+        <a ng-click="increaseLimit()">
+            <div class="vis-list-more" ng-show="limit < prop.previewcharts.length">
+                Load more...
+            </div>
+        </a>
     </div>
 </div>

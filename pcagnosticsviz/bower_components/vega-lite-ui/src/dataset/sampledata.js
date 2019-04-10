@@ -63,4 +63,10 @@ angular.module('vlui').constant('SampleData', [{
     url: 'data/soil.json',
     id: 'soil',
     group: 'sample'
+},{
+    name: 'NRC',
+    description:'',
+    url: 'data/NRC.json',
+    id: 'nrc',
+    group: 'sample'
 }]);

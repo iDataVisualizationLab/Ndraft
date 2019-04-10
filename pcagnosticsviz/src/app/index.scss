@@ -111,9 +111,18 @@ null-filter-directive {
   flex-grow: 1;
 }
 
+.guidemenu .alternatives-pane {
+  margin: 0px;
+  height: calc(100% - 10px);
+}
+.guidemenu .alternatives-content {
+  height: calc(100% - 10px);
+}
+
+
 .alternatives-pane {
   margin-top: 20px;
-  background: rgba(255,255,255,0.85);
+  background: $panelColor;
 
 
 
@@ -276,7 +285,7 @@ bi-plot {
     color: #808080;
   }
   .pct {
-    text-align: left;
+    text-align: right;
     color: black;
     padding-left: 5px;
   }

@@ -5,7 +5,7 @@ angular.module('pcagnosticsviz')
         var keys =  _.keys(Schema.schema.definitions.Encoding.properties).concat([ANY+0]);
         var colordot = '#4682b4';
         var states = {IDLE:0,GENERATE_GUIDE:1,GENERATE_ALTERNATIVE:2,FREE:3, UPDATEPOSITION:4};
-        var limitDefault = 10;
+        var limitDefault = Infinity;
         function instantiate() {
             return {
                 data: Config.data,
@@ -578,7 +578,7 @@ angular.module('pcagnosticsviz')
                              return this.parentNode.insertBefore(this.cloneNode(true), this.nextSibling);
                          });*/
                         temp_drag = d3.select('bi-plot').append('span').html(ori);
-                        temp_drag.attr("class", 'pill draggable full-width no-right-margin field-info ng-pristine ng-untouched ng-valid ng-isolate-scope ui-draggable ui-draggable-handle ng-empty ui-draggable-dragging')
+                        temp_drag.attr("class", 'pill draggable cafull-width no-right-margin field-info ng-pristine ng-untouched ng-valid ng-isolate-scope ui-draggable ui-draggable-handle ng-empty ui-draggable-dragging')
                             .style("position", "absolute")
                             .style("z-index", '9999')
                             .style("left", function () {
@@ -734,7 +734,9 @@ angular.module('pcagnosticsviz')
                             if (values[i].key != 'pc1' && values[i].key != 'pc2') {
                                 str += "<tr>";
                                 str += "<td>" + values[i].key + "</td>";
-                                str += "<td class=pct>" + values[i].value + "</td>";
+                                var val = d3.format('.2f')(values[i].value);
+                                val = isNaN(val)?values[i].value:val;
+                                str += "<td class=pct>" + val + "</td>";
                                 str + "</tr>";
                             }
                         }
@@ -1942,7 +1944,8 @@ angular.module('pcagnosticsviz')
                     var matrix = data.map(function(d){return fields.map(f => d[f])});
                     try {
                         var scag = this.scagnostics(matrix,{
-                            binType: 'leader',
+                            isBinned: false,
+                            // binType: 'hexagon',
                             startBinGridSize: 40});
                         if (!isNaN(scag.skinnyScore))
                             return {

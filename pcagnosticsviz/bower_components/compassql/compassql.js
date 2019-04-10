@@ -1408,7 +1408,6 @@ stats.profile = function(values, f) {
   // compute summary stats
   for (i=0; i<values.length; ++i) {
     v = f ? f(values[i]) : values[i];
-
     // update unique values
     u[v] = (v in u) ? u[v] + 1 : (distinct += 1, 1);
 

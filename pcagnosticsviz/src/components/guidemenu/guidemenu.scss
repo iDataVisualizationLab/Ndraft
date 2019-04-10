@@ -1,4 +1,5 @@
 .pane.guidemenu {
+  overflow-y: hidden;
   max-width: 300px;
   background-color: $panelColor;
   .contain {

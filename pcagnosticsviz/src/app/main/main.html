@@ -126,44 +126,54 @@
           ></slide-graph>
         </div>
 
-
         <div class="alternatives-pane card" ng-class="{collapse: hideExplore}" ng-if="Spec.isSpecific && !Spec.isEmptyPlot">
-          <div class="alternatives-header">
-            <div class="right alternatives-jump">
-
-              <a class="toggle-hide-explore" ng-click="toggleHideExplore()">
-                <span ng-show="hideExplore">
-                  Show
-                  <i class="fa fa-toggle-up"></i>
-                </span>
-                <span ng-show="!hideExplore">
-                  Hide
-                  <i class="fa fa-toggle-down"></i>
-                </span>
-              </a>
-            </div>
-            <h2>Expanded views</h2>
-          </div>
-          <div class="alternatives-content" ng-if="!hideExplore">
-            <!--<div class="description">
-              Here are refinement to your visualization that you might want to consider.
-            </div>-->
-            <vl-plot-group-list
-                    ng-repeat="alternative in PCAplot.alternatives"
-                    ng-if="alternative.charts.length > 0 && (!$parent.alternativeType || $parent.alternativeType === alternative.type)"
-                    id="alternatives-{{alternative.type}}"
-                    list-title="alternative.title"
-                    charts="alternative.charts"
-                    enable-pills-preview="true"
-                    priority="$index * 1000"
-                    initial-limit="alternative.limit || null"
-                    post-select-action="$parent.scrollToTop()"
-                    show-query-select="true"
-                    query="alternative.query"
-            >
-            </vl-plot-group-list>
-          </div>
+          <guide-menu
+                  prop="PCAplot.prop"
+                  priority="2"
+                  marks ="PCAplot.marks"
+                  props ="PCAplot.types"
+                  limitup = "PCAplot.limitup"
+                  limit = "PCAplot.limit">
+          </guide-menu>
         </div>
+
+        <!--<div class="alternatives-pane card" ng-class="{collapse: hideExplore}" ng-if="Spec.isSpecific && !Spec.isEmptyPlot">-->
+          <!--<div class="alternatives-header">-->
+            <!--<div class="right alternatives-jump">-->
+
+              <!--<a class="toggle-hide-explore" ng-click="toggleHideExplore()">-->
+                <!--<span ng-show="hideExplore">-->
+                  <!--Show-->
+                  <!--<i class="fa fa-toggle-up"></i>-->
+                <!--</span>-->
+                <!--<span ng-show="!hideExplore">-->
+                  <!--Hide-->
+                  <!--<i class="fa fa-toggle-down"></i>-->
+                <!--</span>-->
+              <!--</a>-->
+            <!--</div>-->
+            <!--<h2>Expanded views</h2>-->
+          <!--</div>-->
+          <!--<div class="alternatives-content" ng-if="!hideExplore">-->
+            <!--&lt;!&ndash;<div class="description">-->
+              <!--Here are refinement to your visualization that you might want to consider.-->
+            <!--</div>&ndash;&gt;-->
+            <!--<vl-plot-group-list-->
+                    <!--ng-repeat="alternative in PCAplot.alternatives"-->
+                    <!--ng-if="alternative.charts.length > 0 && (!$parent.alternativeType || $parent.alternativeType === alternative.type)"-->
+                    <!--id="alternatives-{{alternative.type}}"-->
+                    <!--list-title="alternative.title"-->
+                    <!--charts="alternative.charts"-->
+                    <!--enable-pills-preview="true"-->
+                    <!--priority="$index * 1000"-->
+                    <!--initial-limit="alternative.limit || null"-->
+                    <!--post-select-action="$parent.scrollToTop()"-->
+                    <!--show-query-select="true"-->
+                    <!--query="alternative.query"-->
+            <!--&gt;-->
+            <!--</vl-plot-group-list>-->
+          <!--</div>-->
+        <!--</div>-->
       </div>
     </div>
 
@@ -295,14 +305,44 @@
 
     <div class="pane guidemenu grow-1"
          ng-if="showExtraGuide||PCAplot.prop">
-      <guide-menu
-      prop="PCAplot.prop"
-      priority="2"
-      marks ="PCAplot.marks"
-      props ="PCAplot.types"
-      limitup = "PCAplot.limitup"
-      limit = "PCAplot.limit">
-      </guide-menu>
+      <div class="alternatives-pane card" ng-class="{collapse: hideExplore}" ng-if="Spec.isSpecific && !Spec.isEmptyPlot">
+        <div class="alternatives-header">
+          <div class="right alternatives-jump">
+
+            <a class="toggle-hide-explore" ng-click="toggleHideExplore()">
+                <span ng-show="hideExplore">
+                  Show
+                  <i class="fa fa-toggle-up"></i>
+                </span>
+              <span ng-show="!hideExplore">
+                  Hide
+                  <i class="fa fa-toggle-down"></i>
+                </span>
+            </a>
+          </div>
+          <h2>Expanded views</h2>
+        </div>
+        <div class="alternatives-content scroll-y" ng-if="!hideExplore">
+          <!--<div class="description">
+            Here are refinement to your visualization that you might want to consider.
+          </div>-->
+          <vl-plot-group-list
+                  ng-repeat="alternative in PCAplot.alternatives"
+                  ng-if="alternative.charts.length > 0 && (!$parent.alternativeType || $parent.alternativeType === alternative.type)"
+                  id="alternatives-{{alternative.type}}"
+                  list-title="alternative.title"
+                  charts="alternative.charts"
+                  enable-pills-preview="true"
+                  priority="$index * 1000"
+                  initial-limit="alternative.limit || null"
+                  post-select-action="$parent.scrollToTop()"
+                  show-query-select="true"
+                  query="alternative.query"
+          >
+          </vl-plot-group-list>
+        </div>
+      </div>
+
     </div>
   </div>
 
