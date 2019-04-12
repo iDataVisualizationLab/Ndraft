@@ -1894,6 +1894,14 @@ angular.module('pcagnosticsviz')
         function combineName (flieds){
             return flieds.map(d=>d.replace(/-/g,'')).naturalSort().join('-');
         }
+
+        /**
+         *
+         * @param primfield
+         * @param dataschema
+         * @param data
+         * @param maxCombine
+         */
         function calscagnotic (primfield,dataschema,data,maxCombine){
             importScripts("https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.20/require.min.js");
             const collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
