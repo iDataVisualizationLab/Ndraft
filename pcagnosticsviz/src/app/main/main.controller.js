@@ -27,6 +27,7 @@ angular.module('pcagnosticsviz')
     $scope.PCAplot= PCAplot;
     $scope.showEncoding = false;
     $scope.showExtraGuide = false;
+    $scope.themeDrak = false;
       $scope.fieldAdd = function(fieldDef) {
           Pills.add(fieldDef);
       };
@@ -109,6 +110,10 @@ angular.module('pcagnosticsviz')
       if (modalId == 'bookmark-list') {
         Logger.logInteraction(Logger.actions.BOOKMARK_OPEN);
       }
+    };
+
+    $scope.changetheme = function(){
+        $scope.themeDrak = !$scope.themeDrak;
     };
 
     if (Bookmarks.isSupported) {

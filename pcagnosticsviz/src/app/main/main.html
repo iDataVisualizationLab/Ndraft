@@ -1,10 +1,12 @@
-<div ng-controller="MainCtrl" class="flex-root vflex full-width full-height"
+<div ng-controller="MainCtrl"
+     ng-class = "{light: themeDrak}"
+     class="flex-root vflex full-width full-height"
      ng-mousedown="onMouseDownLog($event)"
      ng-mouseenter="onMouseEnterLog($event)"
      ng-mouseover="onMouseOverLog($event)">
   <div class="full-width no-shrink">
     <div class="card top-card no-right-margin no-top-margin">
-      <div class="hflex">
+      <div class="hflex" style="justify-content: space-between;">
         <div id="logo" ng-click="Logger.export()"></div>
         <div class="pane">
           <div class="controls">
@@ -14,6 +16,14 @@
             </a>
             <a class="command" ng-click="chron.undo()" ng-class="{disabled: !canUndo}"><i class="fa fa-undo"></i> Undo</a>
             <a class="command" ng-click="chron.redo()" ng-class="{disabled: !canRedo}"><i class="fa fa-repeat"></i> Redo</a>
+          </div>
+        </div>
+        <div class="pane">
+          <div class="controls">
+            <a class="command" ng-if = "themeDrak"  ng-click="changetheme()" >
+              <i class="fa fa-moon-o"></i> Drak</a>
+            <a class="command" ng-if = "!themeDrak" ng-click="changetheme()" >
+              <i class="fa fa-sun-o"></i> Light</a>
           </div>
         </div>
 

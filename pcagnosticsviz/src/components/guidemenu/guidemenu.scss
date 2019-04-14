@@ -1,7 +1,7 @@
 .pane.guidemenu {
   overflow-y: hidden;
   max-width: 300px;
-  background-color: $panelColor;
+  background-color: var(--panelColor);
   .contain {
     display: flex;
     flex-direction: column;
@@ -30,6 +30,16 @@
       min-width: 80px;
       align-items: center;
       overflow-x: auto;
+    }
+    .mlabeltext {
+      fill: white;
+      .hightlight {
+        stroke: var(--highlightColor);
+      }
+    }
+    .cell.active {
+      stroke: #ffffff;
+      stroke-width: 2px;
     }
     .active {
       margin: 5px;
@@ -64,3 +74,37 @@
 
 }
 
+.thum {
+  .mlabeltext {
+    fill: white;
+    .hightlight {
+      stroke: var(--highlightColor);
+    }
+  }
+  .cell.active {
+    stroke: #ffffff;
+    stroke-width: 2px;
+  }
+  foreignObject {
+    transition: all .2s ease-in-out;
+    transform: scale(0.5);
+  }
+
+
+  .active {
+    width: 270px;
+    height: 130px;
+    .card {
+      border: var(--highlightColor) solid 2px
+    }
+    foreignObject {
+      transform: scale(1);
+    }
+  }
+
+  .hover {
+    foreignObject {
+      transform: scale(1);
+    }
+  }
+}

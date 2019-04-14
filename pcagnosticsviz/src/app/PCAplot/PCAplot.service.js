@@ -1067,7 +1067,7 @@ angular.module('pcagnosticsviz')
                 chart.vlSpec.config.typer = {type: prop.type,val: (prop.dim>1?0:getTypeVal(undefined,d.fieldDefs||d))};
                 return chart;});
 
-            prop.previewcharts = prop.charts.map(function (d) {
+            prop.previewcharts = prop.charts.map(function (d,i) {
                 var thum =_.cloneDeep(d);
                 // console.log(d);
                 var typer = {};
@@ -1092,6 +1092,7 @@ angular.module('pcagnosticsviz')
                 if (d.fieldSet[0].type!=="temporal"){
                     thum.vlSpec.config.axis.ticks = false;
                 }
+                thum.order = i;
                 return thum;});
             var pos = 0;
             pos = findinList(axis,prop.charts);
@@ -1500,7 +1501,7 @@ angular.module('pcagnosticsviz')
                     chart.vlSpec.config.typer = {type: prop.type,val: getTypeVal(undefined,d.fieldDefs||d)};
                     return chart; });
             //while (nprop[nprop.length-1])
-            nprop.previewcharts = nprop.charts.map(function(d) {
+            nprop.previewcharts = nprop.charts.map(function(d,i) {
                 var thum =_.cloneDeep(d);
                 var typer = {};
                 typer[prop.type] = d.vlSpec.config.typer.val[prop.type];
@@ -1530,6 +1531,7 @@ angular.module('pcagnosticsviz')
                 if (d.fieldSet[0].type!=="temporal"){
                     thum.vlSpec.config.axis.ticks = false;
                 }
+                thum.order = i;
                 return thum;});
             var fields = nprop.fieldDefs.map(function(f){return f.field});
             nprop.pos = findinList(fields,nprop.charts);
@@ -1952,8 +1954,8 @@ angular.module('pcagnosticsviz')
                     var matrix = data.map(function(d){return fields.map(f => d[f])});
                     try {
                         var scag = this.scagnostics(matrix,{
-                            isBinned: false,
-                            // binType: 'hexagon',
+                            // isBinned: false,
+                            binType: 'leader',
                             startBinGridSize: 40});
                         if (!isNaN(scag.skinnyScore))
                             return {
@@ -2068,6 +2070,12 @@ angular.module('pcagnosticsviz')
                 PCAplot.workerScagnotic = Webworker.create(calscagnotic, {async: true});
                 PCAplot.workerScagnotic.run(primfield, Dataset.schema, Dataset.data).then(function (result) {
                     console.log("----------done---------------");
+                    // PCAplot.firstrun = true;
+                    // if(PCAplot.dim==1)
+                    // PCAplot.plot(Dataset.schema.fieldSchemas.map(function(d){
+                    //     var tem = {field: d.field};
+                    //     tem[d.field] = d.scag;
+                    //     return tem;}),PCAplot.dim);
                     PCAplot.workerScagnotic = undefined;
                 }, null, function (progress) {
                     if (Dataset.schema.fieldSchema(progress.source).scag === undefined)

@@ -6,7 +6,7 @@ angular.module('pcagnosticsviz')
             templateUrl: 'components/d3-slidegraph/slide-com.html',
             replace: true,
             scope: {
-                chart: '=', // Two-way
+                chart: '<', // Two-way
             },
 
             link: function postLink(scope, element) {

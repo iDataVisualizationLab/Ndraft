@@ -8,19 +8,33 @@ $fa-font-path: "../../bower_components/fontawesome/fonts";
 
 @import "../../bower_components/angular-tooltips/dist/_angular-tooltips.scss";
 
+//:root {
+//  --iron: #ccc;
+//  --paddingheader: 10px;
+//
+//  --maincolor: #757571;
+//  --headercolor: linear-gradient(to left, #000000, #342937, #465778, #248fb1, #00c9c8);;
+//  --subdetailColor: #353535;
+//  --panelColor: rgba(0, 0, 0, 0.21);
+//  --panel2Color: rgba(255, 255, 255, 0.33);
+//  --fontColor: #f0f0f0;
+//  --fontContractColor: #000000;
+//  --highlightColor: #6abedb;
+//  --chartbackgroundcolor: #ffffff;
+//}
 
-$iron: #ccc;
-$paddingheader: 10px;
-
-$maincolor: #757571;
-$headercolor: linear-gradient(to left, #000000, #342937, #465778, #248fb1, #00c9c8);;
-$subdetailColor: #353535;
-$panelColor: rgba(0, 0, 0, 0.21);
-$panel2Color: rgba(255, 255, 255, 0.33);
-$fontColor: #f0f0f0;
-$fontContractColor: #000000;
-$highlightColor: #6abedb;
-$chartbackgroundcolor: #ffffff;
+//var(--iron: #ccc;
+//var(--paddingheader: 10px;
+//
+//var(--maincolor: #757571;
+//var(--headercolor: linear-gradient(to left, #000000, #342937, #465778, #248fb1, #00c9c8);;
+//var(--subdetailColor: #353535;
+//var(--panelColor: rgba(0, 0, 0, 0.21);
+//var(--panel2Color: rgba(255, 255, 255, 0.33);
+//var(--fontColor: #f0f0f0;
+//var(--fontContractColor: #000000;
+//var(--highlightColor: #6abedb;
+//var(--chartbackgroundcolor: #ffffff;
 #logo {
   background: url("../assets/images/logov2.png") center no-repeat;
   background-size: contain;
@@ -28,6 +42,10 @@ $chartbackgroundcolor: #ffffff;
   width: 176px;
   height: 33px;
   margin-right: 47px; /* This margin further pushes the menu to the right */
+}
+
+.flex-root {
+  background-color: var(--subdetailColor);
 }
 
 .type-select {
@@ -53,7 +71,7 @@ null-filter-directive {
   width: 235px;
   flex-shrink: 0;
   .card {
-    background-color: $panel2Color;
+    background-color: var(--panel2Color);
   }
 }
 
@@ -65,7 +83,7 @@ null-filter-directive {
     a {
       color: #95a4b9;
       &:hover {
-        color: $highlightColor;
+        color: var(--highlightColor);
       }
     }
   }
@@ -73,7 +91,7 @@ null-filter-directive {
 
 .pane.encoding-pane, .pane.vis-pane {
   h2, h3 {
-    color: $fontContractColor;
+    color: var(--fontContractColor);
   }
 }
 
@@ -122,7 +140,7 @@ null-filter-directive {
 
 .alternatives-pane {
   margin-top: 20px;
-  background: $panelColor;
+  background: var(--panelColor);
 
 
 
@@ -253,7 +271,7 @@ null-filter-directive {
 
 .data-pane {
   h3{
-    padding-top: $paddingheader;
+    padding-top: var(--paddingheader);
   }
 }
 

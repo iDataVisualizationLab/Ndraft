@@ -4,10 +4,12 @@
         <button class ="butSlider" ng-click="prev()"><i class="fa fa-angle-double-up"></i></button>
         <div class ="scroller">
             <ul class="items-slider">
+
                 <slide-com
-                ng-repeat = "chart in  charts | limitTo: limit : limitup"
-                chart="chart">
+                        ng-repeat = "chart in  buffer track by $index"
+                        chart="chart">
                 </slide-com>
+
             </ul>
         </div>
         <button class ="butSlider" ng-click="next()"><i class="fa fa-angle-double-down"></i></button>
