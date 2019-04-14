@@ -1536,7 +1536,7 @@ stats.k_means1 = function(x, n, means) {
         });
     }
     return newvals;
-}
+};
 // Compute profiles for all variables in a data set.
 stats.summary = function(data, fields) {
   fields = fields || util.keys(data[0]);
