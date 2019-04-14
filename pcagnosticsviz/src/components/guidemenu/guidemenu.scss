@@ -73,7 +73,22 @@
   }
 
 }
+.alternatives-pane {
+  .contain {
+    display: flex;
+    flex-direction: column;
+    margin: 5px;
+    height: calc(100% - 10px);
+  }
+  .headermenu {
+    height: 50px;
+    padding: 20px;
+  }
 
+  h2 {
+    color: white;
+  }
+}
 .thum {
   .mlabeltext {
     fill: white;
@@ -88,6 +103,9 @@
   foreignObject {
     transition: all .2s ease-in-out;
     transform: scale(0.5);
+    .card {
+      border: black solid 2px
+    }
   }
 
 

@@ -127,28 +127,34 @@ angular.module('pcagnosticsviz')
                     matrix = data2Num(data);
 
                     outlier = brand_names.map(function (d, i) {
-                        var outliernum = 0,
-                            row = matrix.map(function (r) {
-                                return r[i]
-                            }),
-                            q1 = ss.quantile(row, 0.25),
-                            q3 = ss.quantile(row, 0.75),
-                            iqr = (q3 - q1) * 1.5;
-                        //iqr = Dataset.schema.fieldSchema(d).stats.stdev*1.35;
-                        // console.log('q1: '+q1+'q3: '+q3+'iqr: '+iqr);
-                        Dataset.schema.fieldSchema(d).stats.q1 = q1;
-                        Dataset.schema.fieldSchema(d).stats.q3 = q3;
-                        Dataset.schema.fieldSchema(d).stats.q1iqr = Math.max(q1 - iqr, ss.min(row));
-                        Dataset.schema.fieldSchema(d).stats.q3iqr = Math.min(q3 + iqr, ss.max(row));
-                        Dataset.schema.fieldSchema(d).stats.iqr = iqr;
-                        //console.log(Dataset.schema.fieldSchema(d).stats);
-                        row.forEach(function (e) {
-                            if ((e < q1 - 2 * iqr) || (e > q3 + 2 * iqr))
-                                outliernum += 10;
-                            else if ((e < q1 - iqr) || (e > q3 + iqr))
-                                outliernum = outliernum + 1;
-                        });
-                        return outliernum;
+                        // var outliernum = 0,
+                        //     row = matrix.map(function (r) {
+                        //         return r[i]
+                        //     }),
+                        //     q1 = ss.quantile(row, 0.25),
+                        //     q3 = ss.quantile(row, 0.75),
+                        //     iqr = (q3 - q1) * 1.5;
+                        // //iqr = Dataset.schema.fieldSchema(d).stats.stdev*1.35;
+                        // // console.log('q1: '+q1+'q3: '+q3+'iqr: '+iqr);
+                        // Dataset.schema.fieldSchema(d).stats.q1 = q1;
+                        // Dataset.schema.fieldSchema(d).stats.q3 = q3;
+                        // Dataset.schema.fieldSchema(d).stats.q1iqr = Math.max(q1 - iqr, ss.min(row));
+                        // Dataset.schema.fieldSchema(d).stats.q3iqr = Math.min(q3 + iqr, ss.max(row));
+                        // Dataset.schema.fieldSchema(d).stats.iqr = iqr;
+                        // //console.log(Dataset.schema.fieldSchema(d).stats);
+                        // row.forEach(function (e) {
+                        //     if ((e < q1 - 2 * iqr) || (e > q3 + 2 * iqr))
+                        //         outliernum += 10;
+                        //     else if ((e < q1 - iqr) || (e > q3 + iqr))
+                        //         outliernum = outliernum + 1;
+                        // });
+                        if (Dataset.schema.fieldSchema(d).type !== "quantitative") {
+                            Dataset.schema.fieldSchema(d).stats.outlier = 0;
+                            Dataset.schema.fieldSchema(d).stats.variance = 0;
+                            Dataset.schema.fieldSchema(d).stats.modeskew = 0;
+                            Dataset.schema.fieldSchema(d).stats.multimodality = 0;
+                        }
+                        return Dataset.schema.fieldSchema(d).stats.outlier;
                     });
                     var outlier_scale = d3v4.scaleLinear().domain(d3.extent(outlier)).range([0,1]);
                     outlier = outlier.map(o=>outlier_scale(o));

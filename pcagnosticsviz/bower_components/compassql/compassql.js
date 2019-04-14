@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.cql = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.cql = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 
 },{}],2:[function(require,module,exports){
 (function (global, factory) {
@@ -651,7 +651,7 @@ var PARSERS = {
   integer: util.number,
   number:  util.number,
   date:    util.date,
-  string:  function(x) { return x==='' ? null : x; }
+  string:  function(x) { return x == null || x === '' ? null : x + ''; }
 };
 
 var TESTS = {
@@ -664,6 +664,14 @@ var TESTS = {
 function annotation(data, types) {
   if (!types) return data && data[TYPES] || null;
   data[TYPES] = types;
+}
+
+function fieldNames(datum) {
+  return util.keys(datum);
+}
+
+function bracket(fieldName) {
+  return '[' + fieldName + ']';
 }
 
 function type(values, f) {
@@ -689,13 +697,13 @@ function type(values, f) {
 
 function typeAll(data, fields) {
   if (!data.length) return;
-  fields = fields || util.keys(data[0]);
+  var get = fields ? util.identity : (fields = fieldNames(data[0]), bracket);
   return fields.reduce(function(types, f) {
-    return (types[f] = type(data, f), types);
+    return (types[f] = type(data, get(f)), types);
   }, {});
 }
 
-function infer(values, f) {
+function infer(values, f, ignore) {
   values = util.array(values);
   f = util.$(f);
   var i, j, v;
@@ -708,7 +716,7 @@ function infer(values, f) {
     v = f ? f(values[i]) : values[i];
     // test value against remaining types
     for (j=0; j<types.length; ++j) {
-      if (util.isValid(v) && !TESTS[types[j]](v)) {
+      if ((!ignore || !ignore.test(v)) && util.isValid(v) && !TESTS[types[j]](v)) {
         types.splice(j, 1);
         j -= 1;
       }
@@ -720,10 +728,10 @@ function infer(values, f) {
   return types[0];
 }
 
-function inferAll(data, fields) {
-  fields = fields || util.keys(data[0]);
+function inferAll(data, fields, ignore) {
+  var get = fields ? util.identity : (fields = fieldNames(data[0]), bracket);
   return fields.reduce(function(types, f) {
-    types[f] = infer(data, f);
+    types[f] = infer(data, get(f), ignore);
     return types;
   }, {});
 }
@@ -1402,12 +1410,15 @@ stats.profile = function(values, f) {
       M2 = 0,
       M2s = 0,
       multimodality = 0,
+      outlier = 0,
+      q1,q3,iqr,
       vals = [],
       u = {}, delta, sd, i, v, x;
 
   // compute summary stats
   for (i=0; i<values.length; ++i) {
     v = f ? f(values[i]) : values[i];
+
     // update unique values
     u[v] = (v in u) ? u[v] + 1 : (distinct += 1, 1);
 
@@ -1424,37 +1435,43 @@ stats.profile = function(values, f) {
       vals.push(x);
     }
   }
-
   M2 = M2 / (valid - 1);
   sd = Math.sqrt(M2);
 
   // sort values for median and iqr
   vals.sort(util.cmp);
+    q1 = stats.quantile(vals, 0.25);
+    q3 = stats.quantile(vals, 0.75);
+    iqr = (q3 - q1);
+    if (max !==min) {
+        var means = (stats.mean(vals) - min) / (max - min);
+        var standardizedData = []
+        for (i = 0; i < vals.length; ++i) {
+            x = (vals[i] - min) / (max - min);
+            standardizedData.push(x);
+            delta = x - means;
+            M2s = M2s + delta * delta;
+            // outlier
+            if ((vals[i] < q1 - 1.5 * iqr) || (vals[i] > q3 + 1.5 * iqr))
+                outlier += 1;
+        }
+        M2s = M2s / (valid*0.25);
 
-  if (max !==min) {
-      var means = (stats.mean(vals) - min) / (max - min);
-      var standardizedData = []
-      for (i = 0; i < vals.length; ++i) {
-          x = (vals[i] - min) / (max - min);
-          standardizedData.push(x);
-          delta = x - means;
-          M2s = M2s + delta * delta;
-      }
-      M2s = M2s / (valid*0.25);
+        // Apply K-means
+        var k_mean = stats.k_means1(standardizedData, 2);
+        var count_loop = 0;
+        var deltaerror = 2;
+        while (count_loop<100 && deltaerror > 0.0001){
+            var k_mean_new = stats.k_means1(standardizedData, 2,k_mean);
+            deltaerror =  Math.abs(k_mean_new[0].val-k_mean[0].val)+Math.abs(k_mean_new[1].val-k_mean[1].val);
+            k_mean = k_mean_new;
+            count_loop++
+        }
+        // Compute multimodality feature
+        multimodality = Math.sqrt(Math.abs(k_mean[0].val-k_mean[1].val))
+    }
 
-      // Apply K-means
-      var k_mean = stats.k_means1(standardizedData, 2);
-      var count_loop = 0;
-      var deltaerror = 2;
-      while (count_loop<100 && deltaerror > 0.0001){
-          var k_mean_new = stats.k_means1(standardizedData, 2,k_mean);
-          deltaerror =  Math.abs(k_mean_new[0].val-k_mean[0].val)+Math.abs(k_mean_new[1].val-k_mean[1].val);
-          k_mean = k_mean_new;
-          count_loop++
-      }
-      // Compute multimodality feature
-      multimodality = Math.sqrt(Math.abs(k_mean[0].val-k_mean[1].val))
-  }
+
 
   return {
     type:     type(values, f),
@@ -1468,8 +1485,12 @@ stats.profile = function(values, f) {
     mean:     mean,
     stdev:    sd,
     median:   (v = stats.quantile(vals, 0.5)),
-    q1:       stats.quantile(vals, 0.25),
-    q3:       stats.quantile(vals, 0.75),
+    q1:       q1,
+    q3:       q3,
+    iqr:      iqr,
+    q1iqr:    Math.max(q1 - iqr, min),
+    q3iqr:    Math.min(q3 + iqr, max),
+    outlier: outlier,
     modeskew: sd === 0 ? 0 : (mean - v) / sd,
     variance: M2s,
     multimodality: multimodality
@@ -1536,7 +1557,7 @@ stats.k_means1 = function(x, n, means) {
         });
     }
     return newvals;
-};
+}
 // Compute profiles for all variables in a data set.
 stats.summary = function(data, fields) {
   fields = fields || util.keys(data[0]);
@@ -1911,30 +1932,23 @@ u.comparator = function(sort) {
     sign.push(s);
     return u.accessor(f);
   });
-  return function(a,b) {
-    var i, n, f, x, y;
+  return function(a, b) {
+    var i, n, f, c;
     for (i=0, n=sort.length; i<n; ++i) {
-      f = sort[i]; x = f(a); y = f(b);
-      if (x < y) return -1 * sign[i];
-      if (x > y) return sign[i];
+      f = sort[i];
+      c = u.cmp(f(a), f(b));
+      if (c) return c * sign[i];
     }
     return 0;
   };
 };
 
 u.cmp = function(a, b) {
-  if (a < b) {
-    return -1;
-  } else if (a > b) {
-    return 1;
-  } else if (a >= b) {
-    return 0;
-  } else if (a === null) {
-    return -1;
-  } else if (b === null) {
-    return 1;
-  }
-  return NaN;
+  return (a < b || a == null) && b != null ? -1 :
+    (a > b || b == null) && a != null ? 1 :
+    ((b = b instanceof Date ? +b : b),
+     (a = a instanceof Date ? +a : a)) !== a && b === b ? -1 :
+    b !== b && a === a ? 1 : 0;
 };
 
 u.numcmp = function(a, b) { return a - b; };
@@ -2028,6 +2042,1819 @@ var truncate_word_re = /([\u0009\u000A\u000B\u000C\u000D\u0020\u00A0\u1680\u180E
 }).call(this,require("buffer").Buffer)
 
 },{"buffer":1}],9:[function(require,module,exports){
+var json = typeof JSON !== 'undefined' ? JSON : require('jsonify');
+
+module.exports = function (obj, opts) {
+    if (!opts) opts = {};
+    if (typeof opts === 'function') opts = { cmp: opts };
+    var space = opts.space || '';
+    if (typeof space === 'number') space = Array(space+1).join(' ');
+    var cycles = (typeof opts.cycles === 'boolean') ? opts.cycles : false;
+    var replacer = opts.replacer || function(key, value) { return value; };
+
+    var cmp = opts.cmp && (function (f) {
+        return function (node) {
+            return function (a, b) {
+                var aobj = { key: a, value: node[a] };
+                var bobj = { key: b, value: node[b] };
+                return f(aobj, bobj);
+            };
+        };
+    })(opts.cmp);
+
+    var seen = [];
+    return (function stringify (parent, key, node, level) {
+        var indent = space ? ('\n' + new Array(level + 1).join(space)) : '';
+        var colonSeparator = space ? ': ' : ':';
+
+        if (node && node.toJSON && typeof node.toJSON === 'function') {
+            node = node.toJSON();
+        }
+
+        node = replacer.call(parent, key, node);
+
+        if (node === undefined) {
+            return;
+        }
+        if (typeof node !== 'object' || node === null) {
+            return json.stringify(node);
+        }
+        if (isArray(node)) {
+            var out = [];
+            for (var i = 0; i < node.length; i++) {
+                var item = stringify(node, i, node[i], level+1) || json.stringify(null);
+                out.push(indent + space + item);
+            }
+            return '[' + out.join(',') + indent + ']';
+        }
+        else {
+            if (seen.indexOf(node) !== -1) {
+                if (cycles) return json.stringify('__cycle__');
+                throw new TypeError('Converting circular structure to JSON');
+            }
+            else seen.push(node);
+
+            var keys = objectKeys(node).sort(cmp && cmp(node));
+            var out = [];
+            for (var i = 0; i < keys.length; i++) {
+                var key = keys[i];
+                var value = stringify(node, key, node[key], level+1);
+
+                if(!value) continue;
+
+                var keyValue = json.stringify(key)
+                    + colonSeparator
+                    + value;
+                ;
+                out.push(indent + space + keyValue);
+            }
+            seen.splice(seen.indexOf(node), 1);
+            return '{' + out.join(',') + indent + '}';
+        }
+    })({ '': obj }, '', obj, 0);
+};
+
+var isArray = Array.isArray || function (x) {
+    return {}.toString.call(x) === '[object Array]';
+};
+
+var objectKeys = Object.keys || function (obj) {
+    var has = Object.prototype.hasOwnProperty || function () { return true };
+    var keys = [];
+    for (var key in obj) {
+        if (has.call(obj, key)) keys.push(key);
+    }
+    return keys;
+};
+
+},{"jsonify":10}],10:[function(require,module,exports){
+exports.parse = require('./lib/parse');
+exports.stringify = require('./lib/stringify');
+
+},{"./lib/parse":11,"./lib/stringify":12}],11:[function(require,module,exports){
+var at, // The index of the current character
+    ch, // The current character
+    escapee = {
+        '"':  '"',
+        '\\': '\\',
+        '/':  '/',
+        b:    '\b',
+        f:    '\f',
+        n:    '\n',
+        r:    '\r',
+        t:    '\t'
+    },
+    text,
+
+    error = function (m) {
+        // Call error when something is wrong.
+        throw {
+            name:    'SyntaxError',
+            message: m,
+            at:      at,
+            text:    text
+        };
+    },
+    
+    next = function (c) {
+        // If a c parameter is provided, verify that it matches the current character.
+        if (c && c !== ch) {
+            error("Expected '" + c + "' instead of '" + ch + "'");
+        }
+        
+        // Get the next character. When there are no more characters,
+        // return the empty string.
+        
+        ch = text.charAt(at);
+        at += 1;
+        return ch;
+    },
+    
+    number = function () {
+        // Parse a number value.
+        var number,
+            string = '';
+        
+        if (ch === '-') {
+            string = '-';
+            next('-');
+        }
+        while (ch >= '0' && ch <= '9') {
+            string += ch;
+            next();
+        }
+        if (ch === '.') {
+            string += '.';
+            while (next() && ch >= '0' && ch <= '9') {
+                string += ch;
+            }
+        }
+        if (ch === 'e' || ch === 'E') {
+            string += ch;
+            next();
+            if (ch === '-' || ch === '+') {
+                string += ch;
+                next();
+            }
+            while (ch >= '0' && ch <= '9') {
+                string += ch;
+                next();
+            }
+        }
+        number = +string;
+        if (!isFinite(number)) {
+            error("Bad number");
+        } else {
+            return number;
+        }
+    },
+    
+    string = function () {
+        // Parse a string value.
+        var hex,
+            i,
+            string = '',
+            uffff;
+        
+        // When parsing for string values, we must look for " and \ characters.
+        if (ch === '"') {
+            while (next()) {
+                if (ch === '"') {
+                    next();
+                    return string;
+                } else if (ch === '\\') {
+                    next();
+                    if (ch === 'u') {
+                        uffff = 0;
+                        for (i = 0; i < 4; i += 1) {
+                            hex = parseInt(next(), 16);
+                            if (!isFinite(hex)) {
+                                break;
+                            }
+                            uffff = uffff * 16 + hex;
+                        }
+                        string += String.fromCharCode(uffff);
+                    } else if (typeof escapee[ch] === 'string') {
+                        string += escapee[ch];
+                    } else {
+                        break;
+                    }
+                } else {
+                    string += ch;
+                }
+            }
+        }
+        error("Bad string");
+    },
+
+    white = function () {
+
+// Skip whitespace.
+
+        while (ch && ch <= ' ') {
+            next();
+        }
+    },
+
+    word = function () {
+
+// true, false, or null.
+
+        switch (ch) {
+        case 't':
+            next('t');
+            next('r');
+            next('u');
+            next('e');
+            return true;
+        case 'f':
+            next('f');
+            next('a');
+            next('l');
+            next('s');
+            next('e');
+            return false;
+        case 'n':
+            next('n');
+            next('u');
+            next('l');
+            next('l');
+            return null;
+        }
+        error("Unexpected '" + ch + "'");
+    },
+
+    value,  // Place holder for the value function.
+
+    array = function () {
+
+// Parse an array value.
+
+        var array = [];
+
+        if (ch === '[') {
+            next('[');
+            white();
+            if (ch === ']') {
+                next(']');
+                return array;   // empty array
+            }
+            while (ch) {
+                array.push(value());
+                white();
+                if (ch === ']') {
+                    next(']');
+                    return array;
+                }
+                next(',');
+                white();
+            }
+        }
+        error("Bad array");
+    },
+
+    object = function () {
+
+// Parse an object value.
+
+        var key,
+            object = {};
+
+        if (ch === '{') {
+            next('{');
+            white();
+            if (ch === '}') {
+                next('}');
+                return object;   // empty object
+            }
+            while (ch) {
+                key = string();
+                white();
+                next(':');
+                if (Object.hasOwnProperty.call(object, key)) {
+                    error('Duplicate key "' + key + '"');
+                }
+                object[key] = value();
+                white();
+                if (ch === '}') {
+                    next('}');
+                    return object;
+                }
+                next(',');
+                white();
+            }
+        }
+        error("Bad object");
+    };
+
+value = function () {
+
+// Parse a JSON value. It could be an object, an array, a string, a number,
+// or a word.
+
+    white();
+    switch (ch) {
+    case '{':
+        return object();
+    case '[':
+        return array();
+    case '"':
+        return string();
+    case '-':
+        return number();
+    default:
+        return ch >= '0' && ch <= '9' ? number() : word();
+    }
+};
+
+// Return the json_parse function. It will have access to all of the above
+// functions and variables.
+
+module.exports = function (source, reviver) {
+    var result;
+    
+    text = source;
+    at = 0;
+    ch = ' ';
+    result = value();
+    white();
+    if (ch) {
+        error("Syntax error");
+    }
+
+    // If there is a reviver function, we recursively walk the new structure,
+    // passing each name/value pair to the reviver function for possible
+    // transformation, starting with a temporary root object that holds the result
+    // in an empty key. If there is not a reviver function, we simply return the
+    // result.
+
+    return typeof reviver === 'function' ? (function walk(holder, key) {
+        var k, v, value = holder[key];
+        if (value && typeof value === 'object') {
+            for (k in value) {
+                if (Object.prototype.hasOwnProperty.call(value, k)) {
+                    v = walk(value, k);
+                    if (v !== undefined) {
+                        value[k] = v;
+                    } else {
+                        delete value[k];
+                    }
+                }
+            }
+        }
+        return reviver.call(holder, key, value);
+    }({'': result}, '')) : result;
+};
+
+},{}],12:[function(require,module,exports){
+var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+    escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+    gap,
+    indent,
+    meta = {    // table of character substitutions
+        '\b': '\\b',
+        '\t': '\\t',
+        '\n': '\\n',
+        '\f': '\\f',
+        '\r': '\\r',
+        '"' : '\\"',
+        '\\': '\\\\'
+    },
+    rep;
+
+function quote(string) {
+    // If the string contains no control characters, no quote characters, and no
+    // backslash characters, then we can safely slap some quotes around it.
+    // Otherwise we must also replace the offending characters with safe escape
+    // sequences.
+    
+    escapable.lastIndex = 0;
+    return escapable.test(string) ? '"' + string.replace(escapable, function (a) {
+        var c = meta[a];
+        return typeof c === 'string' ? c :
+            '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+    }) + '"' : '"' + string + '"';
+}
+
+function str(key, holder) {
+    // Produce a string from holder[key].
+    var i,          // The loop counter.
+        k,          // The member key.
+        v,          // The member value.
+        length,
+        mind = gap,
+        partial,
+        value = holder[key];
+    
+    // If the value has a toJSON method, call it to obtain a replacement value.
+    if (value && typeof value === 'object' &&
+            typeof value.toJSON === 'function') {
+        value = value.toJSON(key);
+    }
+    
+    // If we were called with a replacer function, then call the replacer to
+    // obtain a replacement value.
+    if (typeof rep === 'function') {
+        value = rep.call(holder, key, value);
+    }
+    
+    // What happens next depends on the value's type.
+    switch (typeof value) {
+        case 'string':
+            return quote(value);
+        
+        case 'number':
+            // JSON numbers must be finite. Encode non-finite numbers as null.
+            return isFinite(value) ? String(value) : 'null';
+        
+        case 'boolean':
+        case 'null':
+            // If the value is a boolean or null, convert it to a string. Note:
+            // typeof null does not produce 'null'. The case is included here in
+            // the remote chance that this gets fixed someday.
+            return String(value);
+            
+        case 'object':
+            if (!value) return 'null';
+            gap += indent;
+            partial = [];
+            
+            // Array.isArray
+            if (Object.prototype.toString.apply(value) === '[object Array]') {
+                length = value.length;
+                for (i = 0; i < length; i += 1) {
+                    partial[i] = str(i, value) || 'null';
+                }
+                
+                // Join all of the elements together, separated with commas, and
+                // wrap them in brackets.
+                v = partial.length === 0 ? '[]' : gap ?
+                    '[\n' + gap + partial.join(',\n' + gap) + '\n' + mind + ']' :
+                    '[' + partial.join(',') + ']';
+                gap = mind;
+                return v;
+            }
+            
+            // If the replacer is an array, use it to select the members to be
+            // stringified.
+            if (rep && typeof rep === 'object') {
+                length = rep.length;
+                for (i = 0; i < length; i += 1) {
+                    k = rep[i];
+                    if (typeof k === 'string') {
+                        v = str(k, value);
+                        if (v) {
+                            partial.push(quote(k) + (gap ? ': ' : ':') + v);
+                        }
+                    }
+                }
+            }
+            else {
+                // Otherwise, iterate through all of the keys in the object.
+                for (k in value) {
+                    if (Object.prototype.hasOwnProperty.call(value, k)) {
+                        v = str(k, value);
+                        if (v) {
+                            partial.push(quote(k) + (gap ? ': ' : ':') + v);
+                        }
+                    }
+                }
+            }
+            
+        // Join all of the member texts together, separated with commas,
+        // and wrap them in braces.
+
+        v = partial.length === 0 ? '{}' : gap ?
+            '{\n' + gap + partial.join(',\n' + gap) + '\n' + mind + '}' :
+            '{' + partial.join(',') + '}';
+        gap = mind;
+        return v;
+    }
+}
+
+module.exports = function (value, replacer, space) {
+    var i;
+    gap = '';
+    indent = '';
+    
+    // If the space parameter is a number, make an indent string containing that
+    // many spaces.
+    if (typeof space === 'number') {
+        for (i = 0; i < space; i += 1) {
+            indent += ' ';
+        }
+    }
+    // If the space parameter is a string, it will be used as the indent string.
+    else if (typeof space === 'string') {
+        indent = space;
+    }
+
+    // If there is a replacer, it must be a function or an array.
+    // Otherwise, throw an error.
+    rep = replacer;
+    if (replacer && typeof replacer !== 'function'
+    && (typeof replacer !== 'object' || typeof replacer.length !== 'number')) {
+        throw new Error('JSON.stringify');
+    }
+    
+    // Make a fake root object containing our value under the key of ''.
+    // Return the result of stringifying the value.
+    return str('', {'': value});
+};
+
+},{}],13:[function(require,module,exports){
+"use strict";
+(function (AggregateOp) {
+    AggregateOp[AggregateOp["VALUES"] = 'values'] = "VALUES";
+    AggregateOp[AggregateOp["COUNT"] = 'count'] = "COUNT";
+    AggregateOp[AggregateOp["VALID"] = 'valid'] = "VALID";
+    AggregateOp[AggregateOp["MISSING"] = 'missing'] = "MISSING";
+    AggregateOp[AggregateOp["DISTINCT"] = 'distinct'] = "DISTINCT";
+    AggregateOp[AggregateOp["SUM"] = 'sum'] = "SUM";
+    AggregateOp[AggregateOp["MEAN"] = 'mean'] = "MEAN";
+    AggregateOp[AggregateOp["AVERAGE"] = 'average'] = "AVERAGE";
+    AggregateOp[AggregateOp["VARIANCE"] = 'variance'] = "VARIANCE";
+    AggregateOp[AggregateOp["VARIANCEP"] = 'variancep'] = "VARIANCEP";
+    AggregateOp[AggregateOp["STDEV"] = 'stdev'] = "STDEV";
+    AggregateOp[AggregateOp["STDEVP"] = 'stdevp'] = "STDEVP";
+    AggregateOp[AggregateOp["MEDIAN"] = 'median'] = "MEDIAN";
+    AggregateOp[AggregateOp["Q1"] = 'q1'] = "Q1";
+    AggregateOp[AggregateOp["Q3"] = 'q3'] = "Q3";
+    AggregateOp[AggregateOp["MODESKEW"] = 'modeskew'] = "MODESKEW";
+    AggregateOp[AggregateOp["MIN"] = 'min'] = "MIN";
+    AggregateOp[AggregateOp["MAX"] = 'max'] = "MAX";
+    AggregateOp[AggregateOp["ARGMIN"] = 'argmin'] = "ARGMIN";
+    AggregateOp[AggregateOp["ARGMAX"] = 'argmax'] = "ARGMAX";
+})(exports.AggregateOp || (exports.AggregateOp = {}));
+var AggregateOp = exports.AggregateOp;
+exports.AGGREGATE_OPS = [
+    AggregateOp.VALUES,
+    AggregateOp.COUNT,
+    AggregateOp.VALID,
+    AggregateOp.MISSING,
+    AggregateOp.DISTINCT,
+    AggregateOp.SUM,
+    AggregateOp.MEAN,
+    AggregateOp.AVERAGE,
+    AggregateOp.VARIANCE,
+    AggregateOp.VARIANCEP,
+    AggregateOp.STDEV,
+    AggregateOp.STDEVP,
+    AggregateOp.MEDIAN,
+    AggregateOp.Q1,
+    AggregateOp.Q3,
+    AggregateOp.MODESKEW,
+    AggregateOp.MIN,
+    AggregateOp.MAX,
+    AggregateOp.ARGMIN,
+    AggregateOp.ARGMAX,
+];
+/** Additive-based aggregation operations.  These can be applied to stack. */
+exports.SUM_OPS = [
+    AggregateOp.COUNT,
+    AggregateOp.SUM,
+    AggregateOp.DISTINCT,
+    AggregateOp.VALID,
+    AggregateOp.MISSING
+];
+exports.SHARED_DOMAIN_OPS = [
+    AggregateOp.MEAN,
+    AggregateOp.AVERAGE,
+    AggregateOp.STDEV,
+    AggregateOp.STDEVP,
+    AggregateOp.MEDIAN,
+    AggregateOp.Q1,
+    AggregateOp.Q3,
+    AggregateOp.MIN,
+    AggregateOp.MAX,
+];
+
+},{}],14:[function(require,module,exports){
+"use strict";
+(function (AxisOrient) {
+    AxisOrient[AxisOrient["TOP"] = 'top'] = "TOP";
+    AxisOrient[AxisOrient["RIGHT"] = 'right'] = "RIGHT";
+    AxisOrient[AxisOrient["LEFT"] = 'left'] = "LEFT";
+    AxisOrient[AxisOrient["BOTTOM"] = 'bottom'] = "BOTTOM";
+})(exports.AxisOrient || (exports.AxisOrient = {}));
+var AxisOrient = exports.AxisOrient;
+// TODO: add comment for properties that we rely on Vega's default to produce
+// more concise Vega output.
+exports.defaultAxisConfig = {
+    offset: undefined,
+    grid: undefined,
+    labels: true,
+    labelMaxLength: 25,
+    tickSize: undefined,
+    characterWidth: 6
+};
+exports.defaultFacetAxisConfig = {
+    axisWidth: 0,
+    labels: true,
+    grid: false,
+    tickSize: 0
+};
+
+},{}],15:[function(require,module,exports){
+"use strict";
+var channel_1 = require('./channel');
+function autoMaxBins(channel) {
+    switch (channel) {
+        case channel_1.ROW:
+        case channel_1.COLUMN:
+        case channel_1.SIZE:
+        // Facets and Size shouldn't have too many bins
+        // We choose 6 like shape to simplify the rule
+        case channel_1.SHAPE:
+            return 6; // Vega's "shape" has 6 distinct values
+        default:
+            return 10;
+    }
+}
+exports.autoMaxBins = autoMaxBins;
+
+},{"./channel":16}],16:[function(require,module,exports){
+/*
+ * Constants and utilities for encoding channels (Visual variables)
+ * such as 'x', 'y', 'color'.
+ */
+"use strict";
+var util_1 = require('./util');
+(function (Channel) {
+    Channel[Channel["X"] = 'x'] = "X";
+    Channel[Channel["Y"] = 'y'] = "Y";
+    Channel[Channel["X2"] = 'x2'] = "X2";
+    Channel[Channel["Y2"] = 'y2'] = "Y2";
+    Channel[Channel["ROW"] = 'row'] = "ROW";
+    Channel[Channel["COLUMN"] = 'column'] = "COLUMN";
+    Channel[Channel["SHAPE"] = 'shape'] = "SHAPE";
+    Channel[Channel["SIZE"] = 'size'] = "SIZE";
+    Channel[Channel["COLOR"] = 'color'] = "COLOR";
+    Channel[Channel["TEXT"] = 'text'] = "TEXT";
+    Channel[Channel["DETAIL"] = 'detail'] = "DETAIL";
+    Channel[Channel["LABEL"] = 'label'] = "LABEL";
+    Channel[Channel["PATH"] = 'path'] = "PATH";
+    Channel[Channel["ORDER"] = 'order'] = "ORDER";
+    Channel[Channel["OPACITY"] = 'opacity'] = "OPACITY";
+})(exports.Channel || (exports.Channel = {}));
+var Channel = exports.Channel;
+exports.X = Channel.X;
+exports.Y = Channel.Y;
+exports.X2 = Channel.X2;
+exports.Y2 = Channel.Y2;
+exports.ROW = Channel.ROW;
+exports.COLUMN = Channel.COLUMN;
+exports.SHAPE = Channel.SHAPE;
+exports.SIZE = Channel.SIZE;
+exports.COLOR = Channel.COLOR;
+exports.TEXT = Channel.TEXT;
+exports.DETAIL = Channel.DETAIL;
+exports.LABEL = Channel.LABEL;
+exports.PATH = Channel.PATH;
+exports.ORDER = Channel.ORDER;
+exports.OPACITY = Channel.OPACITY;
+exports.CHANNELS = [exports.X, exports.Y, exports.X2, exports.Y2, exports.ROW, exports.COLUMN, exports.SIZE, exports.SHAPE, exports.COLOR, exports.PATH, exports.ORDER, exports.OPACITY, exports.TEXT, exports.DETAIL, exports.LABEL];
+exports.UNIT_CHANNELS = util_1.without(exports.CHANNELS, [exports.ROW, exports.COLUMN]);
+exports.UNIT_SCALE_CHANNELS = util_1.without(exports.UNIT_CHANNELS, [exports.PATH, exports.ORDER, exports.DETAIL, exports.TEXT, exports.LABEL, exports.X2, exports.Y2]);
+exports.NONSPATIAL_CHANNELS = util_1.without(exports.UNIT_CHANNELS, [exports.X, exports.Y, exports.X2, exports.Y2]);
+exports.NONSPATIAL_SCALE_CHANNELS = util_1.without(exports.UNIT_SCALE_CHANNELS, [exports.X, exports.Y, exports.X2, exports.Y2]);
+/** Channels that can serve as groupings for stacked charts. */
+exports.STACK_GROUP_CHANNELS = [exports.COLOR, exports.DETAIL, exports.ORDER, exports.OPACITY, exports.SIZE];
+;
+/**
+ * Return whether a channel supports a particular mark type.
+ * @param channel  channel name
+ * @param mark the mark type
+ * @return whether the mark supports the channel
+ */
+function supportMark(channel, mark) {
+    return !!getSupportedMark(channel)[mark];
+}
+exports.supportMark = supportMark;
+/**
+ * Return a dictionary showing whether a channel supports mark type.
+ * @param channel
+ * @return A dictionary mapping mark types to boolean values.
+ */
+function getSupportedMark(channel) {
+    switch (channel) {
+        case exports.X:
+        case exports.Y:
+        case exports.COLOR:
+        case exports.DETAIL:
+        case exports.ORDER:
+        case exports.OPACITY:
+        case exports.ROW:
+        case exports.COLUMN:
+            return {
+                point: true, tick: true, rule: true, circle: true, square: true,
+                bar: true, line: true, area: true, text: true
+            };
+        case exports.X2:
+        case exports.Y2:
+            return {
+                rule: true, bar: true, area: true
+            };
+        case exports.SIZE:
+            return {
+                point: true, tick: true, rule: true, circle: true, square: true,
+                bar: true, text: true
+            };
+        case exports.SHAPE:
+            return { point: true };
+        case exports.TEXT:
+            return { text: true };
+        case exports.PATH:
+            return { line: true };
+    }
+    return {};
+}
+exports.getSupportedMark = getSupportedMark;
+;
+/**
+ * Return whether a channel supports dimension / measure role
+ * @param  channel
+ * @return A dictionary mapping role to boolean values.
+ */
+function getSupportedRole(channel) {
+    switch (channel) {
+        case exports.X:
+        case exports.Y:
+        case exports.COLOR:
+        case exports.OPACITY:
+        case exports.LABEL:
+        case exports.DETAIL:
+            return {
+                measure: true,
+                dimension: true
+            };
+        case exports.ROW:
+        case exports.COLUMN:
+        case exports.SHAPE:
+            return {
+                measure: false,
+                dimension: true
+            };
+        case exports.X2:
+        case exports.Y2:
+        case exports.SIZE:
+        case exports.TEXT:
+            return {
+                measure: true,
+                dimension: false
+            };
+        case exports.PATH:
+            return {
+                measure: false,
+                dimension: true
+            };
+    }
+    throw new Error('Invalid encoding channel' + channel);
+}
+exports.getSupportedRole = getSupportedRole;
+function hasScale(channel) {
+    return !util_1.contains([exports.DETAIL, exports.PATH, exports.TEXT, exports.LABEL, exports.ORDER], channel);
+}
+exports.hasScale = hasScale;
+
+},{"./util":25}],17:[function(require,module,exports){
+// DateTime definition object
+"use strict";
+var util_1 = require('./util');
+/*
+ * A designated year that starts on Sunday.
+ */
+var SUNDAY_YEAR = 2006;
+function isDateTime(o) {
+    return !!o && (!!o.year || !!o.quarter || !!o.month || !!o.date || !!o.day ||
+        !!o.hours || !!o.minutes || !!o.seconds || !!o.milliseconds);
+}
+exports.isDateTime = isDateTime;
+exports.MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+exports.SHORT_MONTHS = exports.MONTHS.map(function (m) { return m.substr(0, 3); });
+exports.DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+exports.SHORT_DAYS = exports.DAYS.map(function (d) { return d.substr(0, 3); });
+function normalizeQuarter(q) {
+    if (util_1.isNumber(q)) {
+        // We accept 1-based quarter, so need to readjust to 0-based quarter
+        return (q - 1) + '';
+    }
+    else {
+        // Simply an expression string, but normalize should not be called in this case.
+        console.warn('Potentially invalid quarter', q);
+        return q;
+    }
+}
+function normalizeMonth(m) {
+    if (util_1.isNumber(m)) {
+        // We accept 1-based month, so need to readjust to 0-based month
+        return (m - 1) + '';
+    }
+    else {
+        var lowerM = m.toLowerCase();
+        var monthIndex = exports.MONTHS.indexOf(lowerM);
+        if (monthIndex !== -1) {
+            return monthIndex + ''; // 0 for january, ...
+        }
+        var shortM = lowerM.substr(0, 3);
+        var shortMonthIndex = exports.SHORT_MONTHS.indexOf(shortM);
+        if (shortMonthIndex !== -1) {
+            return shortMonthIndex + '';
+        }
+        // Simply an expression string, but normalize should not be called in this case.
+        console.warn('Potentially invalid month', m);
+        return m;
+    }
+}
+function normalizeDay(d) {
+    if (util_1.isNumber(d)) {
+        // mod so that this can be both 0-based where 0 = sunday
+        // and 1-based where 7=sunday
+        return (d % 7) + '';
+    }
+    else {
+        var lowerD = d.toLowerCase();
+        var dayIndex = exports.DAYS.indexOf(lowerD);
+        if (dayIndex !== -1) {
+            return dayIndex + ''; // 0 for january, ...
+        }
+        var shortD = lowerD.substr(0, 3);
+        var shortDayIndex = exports.SHORT_DAYS.indexOf(shortD);
+        if (shortDayIndex !== -1) {
+            return shortDayIndex + '';
+        }
+        // Simply an expression string, but normalize should not be called in this case.
+        console.warn('Potentially invalid day', d);
+        return d;
+    }
+}
+function timestamp(d, normalize) {
+    var date = new Date(0, 0, 1, 0, 0, 0, 0); // start with uniform date
+    // FIXME support UTC
+    if (d.day !== undefined) {
+        if (util_1.keys(d).length > 1) {
+            console.warn('Dropping day from datetime', JSON.stringify(d), 'as day cannot be combined with other units.');
+            d = util_1.duplicate(d);
+            delete d.day;
+        }
+        else {
+            // Use a year that has 1/1 as Sunday so we can setDate below
+            date.setFullYear(SUNDAY_YEAR);
+            var day = normalize ? normalizeDay(d.day) : d.day;
+            date.setDate(+day + 1); // +1 since date start at 1 in JS
+        }
+    }
+    if (d.year !== undefined) {
+        date.setFullYear(d.year);
+    }
+    if (d.quarter !== undefined) {
+        var quarter = normalize ? normalizeQuarter(d.quarter) : d.quarter;
+        date.setMonth(+quarter * 3);
+    }
+    if (d.month !== undefined) {
+        var month = normalize ? normalizeMonth(d.month) : d.month;
+        date.setMonth(+month);
+    }
+    if (d.date !== undefined) {
+        date.setDate(d.date);
+    }
+    if (d.hours !== undefined) {
+        date.setHours(d.hours);
+    }
+    if (d.minutes !== undefined) {
+        date.setMinutes(d.minutes);
+    }
+    if (d.seconds !== undefined) {
+        date.setSeconds(d.seconds);
+    }
+    if (d.milliseconds !== undefined) {
+        date.setMilliseconds(d.milliseconds);
+    }
+    return date.getTime();
+}
+exports.timestamp = timestamp;
+/**
+ * Return Vega Expression for a particular date time.
+ * @param d
+ * @param normalize whether to normalize quarter, month, day.
+ */
+function dateTimeExpr(d, normalize) {
+    if (normalize === void 0) { normalize = false; }
+    var units = [];
+    if (normalize && d.day !== undefined) {
+        if (util_1.keys(d).length > 1) {
+            console.warn('Dropping day from datetime', JSON.stringify(d), 'as day cannot be combined with other units.');
+            d = util_1.duplicate(d);
+            delete d.day;
+        }
+    }
+    if (d.year !== undefined) {
+        units.push(d.year);
+    }
+    else if (d.day !== undefined) {
+        // Set year to 2006 for working with day since January 1 2006 is a Sunday
+        units.push(SUNDAY_YEAR);
+    }
+    else {
+        units.push(0);
+    }
+    if (d.month !== undefined) {
+        var month = normalize ? normalizeMonth(d.month) : d.month;
+        units.push(month);
+    }
+    else if (d.quarter !== undefined) {
+        var quarter = normalize ? normalizeQuarter(d.quarter) : d.quarter;
+        units.push(quarter + '*3');
+    }
+    else {
+        units.push(0); // months start at zero in JS
+    }
+    if (d.date !== undefined) {
+        units.push(d.date);
+    }
+    else if (d.day !== undefined) {
+        // HACK: Day only works as a standalone unit
+        // This is only correct because we always set year to 2006 for day
+        var day = normalize ? normalizeDay(d.day) : d.day;
+        units.push(day + '+1');
+    }
+    else {
+        units.push(1); // Date starts at 1 in JS
+    }
+    // Note: can't use TimeUnit enum here as importing it will create
+    // circular dependency problem!
+    for (var _i = 0, _a = ['hours', 'minutes', 'seconds', 'milliseconds']; _i < _a.length; _i++) {
+        var timeUnit = _a[_i];
+        if (d[timeUnit] !== undefined) {
+            units.push(d[timeUnit]);
+        }
+        else {
+            units.push(0);
+        }
+    }
+    return 'datetime(' + units.join(', ') + ')';
+}
+exports.dateTimeExpr = dateTimeExpr;
+
+},{"./util":25}],18:[function(require,module,exports){
+"use strict";
+var channel_1 = require('./channel');
+var util_1 = require('./util');
+function countRetinal(encoding) {
+    var count = 0;
+    if (encoding.color) {
+        count++;
+    }
+    if (encoding.opacity) {
+        count++;
+    }
+    if (encoding.size) {
+        count++;
+    }
+    if (encoding.shape) {
+        count++;
+    }
+    return count;
+}
+exports.countRetinal = countRetinal;
+function channels(encoding) {
+    return channel_1.CHANNELS.filter(function (channel) {
+        return has(encoding, channel);
+    });
+}
+exports.channels = channels;
+// TOD: rename this to hasChannelField and only use we really want it.
+function has(encoding, channel) {
+    var channelEncoding = encoding && encoding[channel];
+    return channelEncoding && (channelEncoding.field !== undefined ||
+        // TODO: check that we have field in the array
+        (util_1.isArray(channelEncoding) && channelEncoding.length > 0));
+}
+exports.has = has;
+function isAggregate(encoding) {
+    return util_1.some(channel_1.CHANNELS, function (channel) {
+        if (has(encoding, channel) && encoding[channel].aggregate) {
+            return true;
+        }
+        return false;
+    });
+}
+exports.isAggregate = isAggregate;
+function isRanged(encoding) {
+    return encoding && ((!!encoding.x && !!encoding.x2) || (!!encoding.y && !!encoding.y2));
+}
+exports.isRanged = isRanged;
+function fieldDefs(encoding) {
+    var arr = [];
+    channel_1.CHANNELS.forEach(function (channel) {
+        if (has(encoding, channel)) {
+            if (util_1.isArray(encoding[channel])) {
+                encoding[channel].forEach(function (fieldDef) {
+                    arr.push(fieldDef);
+                });
+            }
+            else {
+                arr.push(encoding[channel]);
+            }
+        }
+    });
+    return arr;
+}
+exports.fieldDefs = fieldDefs;
+;
+function forEach(encoding, f, thisArg) {
+    channelMappingForEach(channel_1.CHANNELS, encoding, f, thisArg);
+}
+exports.forEach = forEach;
+function channelMappingForEach(channels, mapping, f, thisArg) {
+    var i = 0;
+    channels.forEach(function (channel) {
+        if (has(mapping, channel)) {
+            if (util_1.isArray(mapping[channel])) {
+                mapping[channel].forEach(function (fieldDef) {
+                    f.call(thisArg, fieldDef, channel, i++);
+                });
+            }
+            else {
+                f.call(thisArg, mapping[channel], channel, i++);
+            }
+        }
+    });
+}
+exports.channelMappingForEach = channelMappingForEach;
+function map(encoding, f, thisArg) {
+    return channelMappingMap(channel_1.CHANNELS, encoding, f, thisArg);
+}
+exports.map = map;
+function channelMappingMap(channels, mapping, f, thisArg) {
+    var arr = [];
+    channels.forEach(function (channel) {
+        if (has(mapping, channel)) {
+            if (util_1.isArray(mapping[channel])) {
+                mapping[channel].forEach(function (fieldDef) {
+                    arr.push(f.call(thisArg, fieldDef, channel));
+                });
+            }
+            else {
+                arr.push(f.call(thisArg, mapping[channel], channel));
+            }
+        }
+    });
+    return arr;
+}
+exports.channelMappingMap = channelMappingMap;
+function reduce(encoding, f, init, thisArg) {
+    return channelMappingReduce(channel_1.CHANNELS, encoding, f, init, thisArg);
+}
+exports.reduce = reduce;
+function channelMappingReduce(channels, mapping, f, init, thisArg) {
+    var r = init;
+    channel_1.CHANNELS.forEach(function (channel) {
+        if (has(mapping, channel)) {
+            if (util_1.isArray(mapping[channel])) {
+                mapping[channel].forEach(function (fieldDef) {
+                    r = f.call(thisArg, r, fieldDef, channel);
+                });
+            }
+            else {
+                r = f.call(thisArg, r, mapping[channel], channel);
+            }
+        }
+    });
+    return r;
+}
+exports.channelMappingReduce = channelMappingReduce;
+
+},{"./channel":16,"./util":25}],19:[function(require,module,exports){
+"use strict";
+(function (Mark) {
+    Mark[Mark["AREA"] = 'area'] = "AREA";
+    Mark[Mark["BAR"] = 'bar'] = "BAR";
+    Mark[Mark["LINE"] = 'line'] = "LINE";
+    Mark[Mark["POINT"] = 'point'] = "POINT";
+    Mark[Mark["TEXT"] = 'text'] = "TEXT";
+    Mark[Mark["TICK"] = 'tick'] = "TICK";
+    Mark[Mark["RULE"] = 'rule'] = "RULE";
+    Mark[Mark["CIRCLE"] = 'circle'] = "CIRCLE";
+    Mark[Mark["SQUARE"] = 'square'] = "SQUARE";
+    Mark[Mark["ERRORBAR"] = 'errorBar'] = "ERRORBAR";
+})(exports.Mark || (exports.Mark = {}));
+var Mark = exports.Mark;
+exports.AREA = Mark.AREA;
+exports.BAR = Mark.BAR;
+exports.LINE = Mark.LINE;
+exports.POINT = Mark.POINT;
+exports.TEXT = Mark.TEXT;
+exports.TICK = Mark.TICK;
+exports.RULE = Mark.RULE;
+exports.CIRCLE = Mark.CIRCLE;
+exports.SQUARE = Mark.SQUARE;
+exports.ERRORBAR = Mark.ERRORBAR;
+exports.PRIMITIVE_MARKS = [exports.AREA, exports.BAR, exports.LINE, exports.POINT, exports.TEXT, exports.TICK, exports.RULE, exports.CIRCLE, exports.SQUARE];
+
+},{}],20:[function(require,module,exports){
+"use strict";
+(function (ScaleType) {
+    ScaleType[ScaleType["LINEAR"] = 'linear'] = "LINEAR";
+    ScaleType[ScaleType["LOG"] = 'log'] = "LOG";
+    ScaleType[ScaleType["POW"] = 'pow'] = "POW";
+    ScaleType[ScaleType["SQRT"] = 'sqrt'] = "SQRT";
+    ScaleType[ScaleType["QUANTILE"] = 'quantile'] = "QUANTILE";
+    ScaleType[ScaleType["QUANTIZE"] = 'quantize'] = "QUANTIZE";
+    ScaleType[ScaleType["ORDINAL"] = 'ordinal'] = "ORDINAL";
+    ScaleType[ScaleType["TIME"] = 'time'] = "TIME";
+    ScaleType[ScaleType["UTC"] = 'utc'] = "UTC";
+})(exports.ScaleType || (exports.ScaleType = {}));
+var ScaleType = exports.ScaleType;
+(function (NiceTime) {
+    NiceTime[NiceTime["SECOND"] = 'second'] = "SECOND";
+    NiceTime[NiceTime["MINUTE"] = 'minute'] = "MINUTE";
+    NiceTime[NiceTime["HOUR"] = 'hour'] = "HOUR";
+    NiceTime[NiceTime["DAY"] = 'day'] = "DAY";
+    NiceTime[NiceTime["WEEK"] = 'week'] = "WEEK";
+    NiceTime[NiceTime["MONTH"] = 'month'] = "MONTH";
+    NiceTime[NiceTime["YEAR"] = 'year'] = "YEAR";
+})(exports.NiceTime || (exports.NiceTime = {}));
+var NiceTime = exports.NiceTime;
+(function (BandSize) {
+    BandSize[BandSize["FIT"] = 'fit'] = "FIT";
+})(exports.BandSize || (exports.BandSize = {}));
+var BandSize = exports.BandSize;
+exports.BANDSIZE_FIT = BandSize.FIT;
+exports.defaultScaleConfig = {
+    round: true,
+    textBandWidth: 90,
+    bandSize: 21,
+    padding: 0.1,
+    useRawDomain: false,
+    opacity: [0.3, 0.8],
+    nominalColorRange: 'category10',
+    sequentialColorRange: ['#AFC6A3', '#09622A'],
+    shapeRange: 'shapes',
+    fontSizeRange: [8, 40],
+    ruleSizeRange: [1, 5],
+    tickSizeRange: [1, 20]
+};
+exports.defaultFacetScaleConfig = {
+    round: true,
+    padding: 16
+};
+
+},{}],21:[function(require,module,exports){
+"use strict";
+(function (SortOrder) {
+    SortOrder[SortOrder["ASCENDING"] = 'ascending'] = "ASCENDING";
+    SortOrder[SortOrder["DESCENDING"] = 'descending'] = "DESCENDING";
+    SortOrder[SortOrder["NONE"] = 'none'] = "NONE";
+})(exports.SortOrder || (exports.SortOrder = {}));
+var SortOrder = exports.SortOrder;
+function isSortField(sort) {
+    return !!sort && !!sort['field'] && !!sort['op'];
+}
+exports.isSortField = isSortField;
+
+},{}],22:[function(require,module,exports){
+"use strict";
+var aggregate_1 = require('./aggregate');
+var channel_1 = require('./channel');
+var encoding_1 = require('./encoding');
+var mark_1 = require('./mark');
+var scale_1 = require('./scale');
+var util_1 = require('./util');
+(function (StackOffset) {
+    StackOffset[StackOffset["ZERO"] = 'zero'] = "ZERO";
+    StackOffset[StackOffset["CENTER"] = 'center'] = "CENTER";
+    StackOffset[StackOffset["NORMALIZE"] = 'normalize'] = "NORMALIZE";
+    StackOffset[StackOffset["NONE"] = 'none'] = "NONE";
+})(exports.StackOffset || (exports.StackOffset = {}));
+var StackOffset = exports.StackOffset;
+function stack(mark, encoding, stacked) {
+    // Should not have stack explicitly disabled
+    if (util_1.contains([StackOffset.NONE, null, false], stacked)) {
+        return null;
+    }
+    // Should have stackable mark
+    if (!util_1.contains([mark_1.BAR, mark_1.AREA, mark_1.POINT, mark_1.CIRCLE, mark_1.SQUARE, mark_1.LINE, mark_1.TEXT, mark_1.TICK], mark)) {
+        return null;
+    }
+    // Should be aggregate plot
+    if (!encoding_1.isAggregate(encoding)) {
+        return null;
+    }
+    // Should have grouping level of detail
+    var stackByChannels = channel_1.STACK_GROUP_CHANNELS.reduce(function (sc, channel) {
+        if (encoding_1.has(encoding, channel) && !encoding[channel].aggregate) {
+            sc.push(channel);
+        }
+        return sc;
+    }, []);
+    if (stackByChannels.length === 0) {
+        return null;
+    }
+    // Has only one aggregate axis
+    var hasXField = encoding_1.has(encoding, channel_1.X);
+    var hasYField = encoding_1.has(encoding, channel_1.Y);
+    var xIsAggregate = hasXField && !!encoding.x.aggregate;
+    var yIsAggregate = hasYField && !!encoding.y.aggregate;
+    if (xIsAggregate !== yIsAggregate) {
+        var fieldChannel = xIsAggregate ? channel_1.X : channel_1.Y;
+        var fieldChannelAggregate = encoding[fieldChannel].aggregate;
+        var fieldChannelScale = encoding[fieldChannel].scale;
+        if (fieldChannelScale && fieldChannelScale.type && fieldChannelScale.type !== scale_1.ScaleType.LINEAR) {
+            console.warn('Cannot stack non-linear (' + fieldChannelScale.type + ') scale');
+            return null;
+        }
+        if (util_1.contains(aggregate_1.SUM_OPS, fieldChannelAggregate)) {
+            if (util_1.contains([mark_1.BAR, mark_1.AREA], mark)) {
+                // Bar and Area with sum ops are automatically stacked by default
+                stacked = stacked === undefined ? StackOffset.ZERO : stacked;
+            }
+        }
+        else {
+            console.warn('Cannot stack when the aggregate function is ' + fieldChannelAggregate + '(non-summative).');
+            return null;
+        }
+        if (!stacked) {
+            return null;
+        }
+        return {
+            groupbyChannel: xIsAggregate ? (hasYField ? channel_1.Y : null) : (hasXField ? channel_1.X : null),
+            fieldChannel: fieldChannel,
+            stackByChannels: stackByChannels,
+            offset: stacked
+        };
+    }
+    return null;
+}
+exports.stack = stack;
+
+},{"./aggregate":13,"./channel":16,"./encoding":18,"./mark":19,"./scale":20,"./util":25}],23:[function(require,module,exports){
+"use strict";
+var channel_1 = require('./channel');
+var datetime_1 = require('./datetime');
+var scale_1 = require('./scale');
+var util_1 = require('./util');
+(function (TimeUnit) {
+    TimeUnit[TimeUnit["YEAR"] = 'year'] = "YEAR";
+    TimeUnit[TimeUnit["MONTH"] = 'month'] = "MONTH";
+    TimeUnit[TimeUnit["DAY"] = 'day'] = "DAY";
+    TimeUnit[TimeUnit["DATE"] = 'date'] = "DATE";
+    TimeUnit[TimeUnit["HOURS"] = 'hours'] = "HOURS";
+    TimeUnit[TimeUnit["MINUTES"] = 'minutes'] = "MINUTES";
+    TimeUnit[TimeUnit["SECONDS"] = 'seconds'] = "SECONDS";
+    TimeUnit[TimeUnit["MILLISECONDS"] = 'milliseconds'] = "MILLISECONDS";
+    TimeUnit[TimeUnit["YEARMONTH"] = 'yearmonth'] = "YEARMONTH";
+    TimeUnit[TimeUnit["YEARMONTHDATE"] = 'yearmonthdate'] = "YEARMONTHDATE";
+    TimeUnit[TimeUnit["YEARMONTHDATEHOURS"] = 'yearmonthdatehours'] = "YEARMONTHDATEHOURS";
+    TimeUnit[TimeUnit["YEARMONTHDATEHOURSMINUTES"] = 'yearmonthdatehoursminutes'] = "YEARMONTHDATEHOURSMINUTES";
+    TimeUnit[TimeUnit["YEARMONTHDATEHOURSMINUTESSECONDS"] = 'yearmonthdatehoursminutesseconds'] = "YEARMONTHDATEHOURSMINUTESSECONDS";
+    // MONTHDATE always include 29 February since we use year 0th (which is a leap year)
+    TimeUnit[TimeUnit["MONTHDATE"] = 'monthdate'] = "MONTHDATE";
+    TimeUnit[TimeUnit["HOURSMINUTES"] = 'hoursminutes'] = "HOURSMINUTES";
+    TimeUnit[TimeUnit["HOURSMINUTESSECONDS"] = 'hoursminutesseconds'] = "HOURSMINUTESSECONDS";
+    TimeUnit[TimeUnit["MINUTESSECONDS"] = 'minutesseconds'] = "MINUTESSECONDS";
+    TimeUnit[TimeUnit["SECONDSMILLISECONDS"] = 'secondsmilliseconds'] = "SECONDSMILLISECONDS";
+    TimeUnit[TimeUnit["QUARTER"] = 'quarter'] = "QUARTER";
+    TimeUnit[TimeUnit["YEARQUARTER"] = 'yearquarter'] = "YEARQUARTER";
+    TimeUnit[TimeUnit["QUARTERMONTH"] = 'quartermonth'] = "QUARTERMONTH";
+    TimeUnit[TimeUnit["YEARQUARTERMONTH"] = 'yearquartermonth'] = "YEARQUARTERMONTH";
+})(exports.TimeUnit || (exports.TimeUnit = {}));
+var TimeUnit = exports.TimeUnit;
+/** Time Unit that only corresponds to only one part of Date objects. */
+exports.SINGLE_TIMEUNITS = [
+    TimeUnit.YEAR,
+    TimeUnit.QUARTER,
+    TimeUnit.MONTH,
+    TimeUnit.DAY,
+    TimeUnit.DATE,
+    TimeUnit.HOURS,
+    TimeUnit.MINUTES,
+    TimeUnit.SECONDS,
+    TimeUnit.MILLISECONDS,
+];
+var SINGLE_TIMEUNIT_INDEX = exports.SINGLE_TIMEUNITS.reduce(function (d, timeUnit) {
+    d[timeUnit] = true;
+    return d;
+}, {});
+function isSingleTimeUnit(timeUnit) {
+    return !!SINGLE_TIMEUNIT_INDEX[timeUnit];
+}
+exports.isSingleTimeUnit = isSingleTimeUnit;
+/**
+ * Converts a date to only have the measurements relevant to the specified unit
+ * i.e. ('yearmonth', '2000-12-04 07:58:14') -> '2000-12-01 00:00:00'
+ * Note: the base date is Jan 01 1900 00:00:00
+ */
+function convert(unit, date) {
+    var result = new Date(0, 0, 1, 0, 0, 0, 0); // start with uniform date
+    exports.SINGLE_TIMEUNITS.forEach(function (singleUnit) {
+        if (containsTimeUnit(unit, singleUnit)) {
+            switch (singleUnit) {
+                case TimeUnit.DAY:
+                    throw new Error('Cannot convert to TimeUnits containing \'day\'');
+                case TimeUnit.YEAR:
+                    result.setFullYear(date.getFullYear());
+                    break;
+                case TimeUnit.QUARTER:
+                    // indicate quarter by setting month to be the first of the quarter i.e. may (4) -> april (3)
+                    result.setMonth((Math.floor(date.getMonth() / 3)) * 3);
+                    break;
+                case TimeUnit.MONTH:
+                    result.setMonth(date.getMonth());
+                    break;
+                case TimeUnit.DATE:
+                    result.setDate(date.getDate());
+                    break;
+                case TimeUnit.HOURS:
+                    result.setHours(date.getHours());
+                    break;
+                case TimeUnit.MINUTES:
+                    result.setMinutes(date.getMinutes());
+                    break;
+                case TimeUnit.SECONDS:
+                    result.setSeconds(date.getSeconds());
+                    break;
+                case TimeUnit.MILLISECONDS:
+                    result.setMilliseconds(date.getMilliseconds());
+                    break;
+            }
+        }
+    });
+    return result;
+}
+exports.convert = convert;
+exports.MULTI_TIMEUNITS = [
+    TimeUnit.YEARQUARTER,
+    TimeUnit.YEARQUARTERMONTH,
+    TimeUnit.YEARMONTH,
+    TimeUnit.YEARMONTHDATE,
+    TimeUnit.YEARMONTHDATEHOURS,
+    TimeUnit.YEARMONTHDATEHOURSMINUTES,
+    TimeUnit.YEARMONTHDATEHOURSMINUTESSECONDS,
+    TimeUnit.QUARTERMONTH,
+    TimeUnit.HOURSMINUTES,
+    TimeUnit.HOURSMINUTESSECONDS,
+    TimeUnit.MINUTESSECONDS,
+    TimeUnit.SECONDSMILLISECONDS,
+];
+var MULTI_TIMEUNIT_INDEX = exports.MULTI_TIMEUNITS.reduce(function (d, timeUnit) {
+    d[timeUnit] = true;
+    return d;
+}, {});
+function isMultiTimeUnit(timeUnit) {
+    return !!MULTI_TIMEUNIT_INDEX[timeUnit];
+}
+exports.isMultiTimeUnit = isMultiTimeUnit;
+exports.TIMEUNITS = exports.SINGLE_TIMEUNITS.concat(exports.MULTI_TIMEUNITS);
+/** Returns true if fullTimeUnit contains the timeUnit, false otherwise. */
+function containsTimeUnit(fullTimeUnit, timeUnit) {
+    var fullTimeUnitStr = fullTimeUnit.toString();
+    var timeUnitStr = timeUnit.toString();
+    var index = fullTimeUnitStr.indexOf(timeUnitStr);
+    return index > -1 &&
+        (timeUnit !== TimeUnit.SECONDS ||
+            index === 0 ||
+            fullTimeUnitStr.charAt(index - 1) !== 'i' // exclude milliseconds
+        );
+}
+exports.containsTimeUnit = containsTimeUnit;
+function defaultScaleType(timeUnit) {
+    switch (timeUnit) {
+        case TimeUnit.HOURS:
+        case TimeUnit.DAY:
+        case TimeUnit.MONTH:
+        case TimeUnit.QUARTER:
+            return scale_1.ScaleType.ORDINAL;
+    }
+    // date, year, minute, second, yearmonth, monthday, ...
+    return scale_1.ScaleType.TIME;
+}
+exports.defaultScaleType = defaultScaleType;
+/**
+ * Returns Vega expresssion for a given timeUnit and fieldRef
+ */
+function fieldExpr(fullTimeUnit, field) {
+    var fieldRef = 'datum["' + field + '"]';
+    function func(timeUnit) {
+        if (timeUnit === TimeUnit.QUARTER) {
+            // Divide by 3 to get the corresponding quarter number, multiply by 3
+            // to scale to the first month of the corresponding quarter(0,3,6,9).
+            return 'floor(month(' + fieldRef + ')' + '/3)';
+        }
+        else {
+            return timeUnit + '(' + fieldRef + ')';
+        }
+    }
+    var d = exports.SINGLE_TIMEUNITS.reduce(function (_d, tu) {
+        if (containsTimeUnit(fullTimeUnit, tu)) {
+            _d[tu] = func(tu);
+        }
+        return _d;
+    }, {});
+    if (d.day && util_1.keys(d).length > 1) {
+        console.warn('Time unit "' + fullTimeUnit + '" is not supported. We are replacing it with ', (fullTimeUnit + '').replace('day', 'date') + '.');
+        delete d.day;
+        d.date = func(TimeUnit.DATE);
+    }
+    return datetime_1.dateTimeExpr(d);
+}
+exports.fieldExpr = fieldExpr;
+/** Generate the complete domain. */
+function imputedDomain(timeUnit, channel) {
+    if (util_1.contains([channel_1.ROW, channel_1.COLUMN, channel_1.SHAPE, channel_1.COLOR], channel)) {
+        return null;
+    }
+    switch (timeUnit) {
+        case TimeUnit.SECONDS:
+            return util_1.range(0, 60);
+        case TimeUnit.MINUTES:
+            return util_1.range(0, 60);
+        case TimeUnit.HOURS:
+            return util_1.range(0, 24);
+        case TimeUnit.DAY:
+            return util_1.range(0, 7);
+        case TimeUnit.DATE:
+            return util_1.range(1, 32);
+        case TimeUnit.MONTH:
+            return util_1.range(0, 12);
+        case TimeUnit.QUARTER:
+            return [0, 1, 2, 3]; // Q1-Q4 (0th-index)
+    }
+    return null;
+}
+exports.imputedDomain = imputedDomain;
+/** returns the smallest nice unit for scale.nice */
+function smallestUnit(timeUnit) {
+    if (!timeUnit) {
+        return undefined;
+    }
+    if (containsTimeUnit(timeUnit, TimeUnit.SECONDS)) {
+        return 'second';
+    }
+    if (containsTimeUnit(timeUnit, TimeUnit.MINUTES)) {
+        return 'minute';
+    }
+    if (containsTimeUnit(timeUnit, TimeUnit.HOURS)) {
+        return 'hour';
+    }
+    if (containsTimeUnit(timeUnit, TimeUnit.DAY) ||
+        containsTimeUnit(timeUnit, TimeUnit.DATE)) {
+        return 'day';
+    }
+    if (containsTimeUnit(timeUnit, TimeUnit.MONTH)) {
+        return 'month';
+    }
+    if (containsTimeUnit(timeUnit, TimeUnit.YEAR)) {
+        return 'year';
+    }
+    return undefined;
+}
+exports.smallestUnit = smallestUnit;
+/** returns the template name used for axis labels for a time unit */
+function template(timeUnit, field, shortTimeLabels) {
+    if (!timeUnit) {
+        return undefined;
+    }
+    var dateComponents = [];
+    var template = '';
+    var hasYear = containsTimeUnit(timeUnit, TimeUnit.YEAR);
+    if (containsTimeUnit(timeUnit, TimeUnit.QUARTER)) {
+        // special template for quarter as prefix
+        template = 'Q{{' + field + ' | quarter}}';
+    }
+    if (containsTimeUnit(timeUnit, TimeUnit.MONTH)) {
+        // By default use short month name
+        dateComponents.push(shortTimeLabels !== false ? '%b' : '%B');
+    }
+    if (containsTimeUnit(timeUnit, TimeUnit.DAY)) {
+        dateComponents.push(shortTimeLabels ? '%a' : '%A');
+    }
+    else if (containsTimeUnit(timeUnit, TimeUnit.DATE)) {
+        dateComponents.push('%d' + (hasYear ? ',' : '')); // add comma if there is year
+    }
+    if (hasYear) {
+        dateComponents.push(shortTimeLabels ? '%y' : '%Y');
+    }
+    var timeComponents = [];
+    if (containsTimeUnit(timeUnit, TimeUnit.HOURS)) {
+        timeComponents.push('%H');
+    }
+    if (containsTimeUnit(timeUnit, TimeUnit.MINUTES)) {
+        timeComponents.push('%M');
+    }
+    if (containsTimeUnit(timeUnit, TimeUnit.SECONDS)) {
+        timeComponents.push('%S');
+    }
+    if (containsTimeUnit(timeUnit, TimeUnit.MILLISECONDS)) {
+        timeComponents.push('%L');
+    }
+    var dateTimeComponents = [];
+    if (dateComponents.length > 0) {
+        dateTimeComponents.push(dateComponents.join(' '));
+    }
+    if (timeComponents.length > 0) {
+        dateTimeComponents.push(timeComponents.join(':'));
+    }
+    if (dateTimeComponents.length > 0) {
+        if (template) {
+            // Add space between quarter and main time format
+            template += ' ';
+        }
+        template += '{{' + field + ' | time:\'' + dateTimeComponents.join(' ') + '\'}}';
+    }
+    // If template is still an empty string, return undefined instead.
+    return template || undefined;
+}
+exports.template = template;
+
+},{"./channel":16,"./datetime":17,"./scale":20,"./util":25}],24:[function(require,module,exports){
+/** Constants and utilities for data type */
+"use strict";
+(function (Type) {
+    Type[Type["QUANTITATIVE"] = 'quantitative'] = "QUANTITATIVE";
+    Type[Type["ORDINAL"] = 'ordinal'] = "ORDINAL";
+    Type[Type["TEMPORAL"] = 'temporal'] = "TEMPORAL";
+    Type[Type["NOMINAL"] = 'nominal'] = "NOMINAL";
+})(exports.Type || (exports.Type = {}));
+var Type = exports.Type;
+exports.QUANTITATIVE = Type.QUANTITATIVE;
+exports.ORDINAL = Type.ORDINAL;
+exports.TEMPORAL = Type.TEMPORAL;
+exports.NOMINAL = Type.NOMINAL;
+/**
+ * Mapping from full type names to short type names.
+ * @type {Object}
+ */
+exports.SHORT_TYPE = {
+    quantitative: 'Q',
+    temporal: 'T',
+    nominal: 'N',
+    ordinal: 'O'
+};
+/**
+ * Mapping from short type names to full type names.
+ * @type {Object}
+ */
+exports.TYPE_FROM_SHORT_TYPE = {
+    Q: exports.QUANTITATIVE,
+    T: exports.TEMPORAL,
+    O: exports.ORDINAL,
+    N: exports.NOMINAL
+};
+/**
+ * Get full, lowercase type name for a given type.
+ * @param  type
+ * @return Full type name.
+ */
+function getFullName(type) {
+    var typeString = type; // force type as string so we can translate short types
+    return exports.TYPE_FROM_SHORT_TYPE[typeString.toUpperCase()] ||
+        typeString.toLowerCase();
+}
+exports.getFullName = getFullName;
+
+},{}],25:[function(require,module,exports){
+/// <reference path="../typings/datalib.d.ts"/>
+/// <reference path="../typings/json-stable-stringify.d.ts"/>
+"use strict";
+var stringify = require('json-stable-stringify');
+var util_1 = require('datalib/src/util');
+exports.keys = util_1.keys;
+exports.extend = util_1.extend;
+exports.duplicate = util_1.duplicate;
+exports.isArray = util_1.isArray;
+exports.vals = util_1.vals;
+exports.truncate = util_1.truncate;
+exports.toMap = util_1.toMap;
+exports.isObject = util_1.isObject;
+exports.isString = util_1.isString;
+exports.isNumber = util_1.isNumber;
+exports.isBoolean = util_1.isBoolean;
+var util_2 = require('datalib/src/util');
+var util_3 = require('datalib/src/util');
+/**
+ * Creates an object composed of the picked object properties.
+ *
+ * Example:  (from lodash)
+ *
+ * var object = { 'a': 1, 'b': '2', 'c': 3 };
+ * pick(object, ['a', 'c']);
+ * // → { 'a': 1, 'c': 3 }
+ *
+ */
+function pick(obj, props) {
+    var copy = {};
+    props.forEach(function (prop) {
+        if (obj.hasOwnProperty(prop)) {
+            copy[prop] = obj[prop];
+        }
+    });
+    return copy;
+}
+exports.pick = pick;
+// Copied from datalib
+function range(start, stop, step) {
+    if (arguments.length < 3) {
+        step = 1;
+        if (arguments.length < 2) {
+            stop = start;
+            start = 0;
+        }
+    }
+    if ((stop - start) / step === Infinity) {
+        throw new Error('Infinite range');
+    }
+    var range = [], i = -1, j;
+    if (step < 0) {
+        /* tslint:disable */
+        while ((j = start + step * ++i) > stop) {
+            range.push(j);
+        }
+    }
+    else {
+        while ((j = start + step * ++i) < stop) {
+            range.push(j);
+        }
+    }
+    return range;
+}
+exports.range = range;
+;
+/**
+ * The opposite of _.pick; this method creates an object composed of the own
+ * and inherited enumerable string keyed properties of object that are not omitted.
+ */
+function omit(obj, props) {
+    var copy = util_2.duplicate(obj);
+    props.forEach(function (prop) {
+        delete copy[prop];
+    });
+    return copy;
+}
+exports.omit = omit;
+function hash(a) {
+    if (util_3.isString(a) || util_3.isNumber(a) || util_3.isBoolean(a)) {
+        return String(a);
+    }
+    return stringify(a);
+}
+exports.hash = hash;
+function contains(array, item) {
+    return array.indexOf(item) > -1;
+}
+exports.contains = contains;
+/** Returns the array without the elements in item */
+function without(array, excludedItems) {
+    return array.filter(function (item) {
+        return !contains(excludedItems, item);
+    });
+}
+exports.without = without;
+function union(array, other) {
+    return array.concat(without(other, array));
+}
+exports.union = union;
+function forEach(obj, f, thisArg) {
+    if (obj.forEach) {
+        obj.forEach.call(thisArg, f);
+    }
+    else {
+        for (var k in obj) {
+            if (obj.hasOwnProperty(k)) {
+                f.call(thisArg, obj[k], k, obj);
+            }
+        }
+    }
+}
+exports.forEach = forEach;
+function reduce(obj, f, init, thisArg) {
+    if (obj.reduce) {
+        return obj.reduce.call(thisArg, f, init);
+    }
+    else {
+        for (var k in obj) {
+            if (obj.hasOwnProperty(k)) {
+                init = f.call(thisArg, init, obj[k], k, obj);
+            }
+        }
+        return init;
+    }
+}
+exports.reduce = reduce;
+function map(obj, f, thisArg) {
+    if (obj.map) {
+        return obj.map.call(thisArg, f);
+    }
+    else {
+        var output = [];
+        for (var k in obj) {
+            if (obj.hasOwnProperty(k)) {
+                output.push(f.call(thisArg, obj[k], k, obj));
+            }
+        }
+        return output;
+    }
+}
+exports.map = map;
+function some(arr, f) {
+    var i = 0;
+    for (var k = 0; k < arr.length; k++) {
+        if (f(arr[k], k, i++)) {
+            return true;
+        }
+    }
+    return false;
+}
+exports.some = some;
+function every(arr, f) {
+    var i = 0;
+    for (var k = 0; k < arr.length; k++) {
+        if (!f(arr[k], k, i++)) {
+            return false;
+        }
+    }
+    return true;
+}
+exports.every = every;
+function flatten(arrays) {
+    return [].concat.apply([], arrays);
+}
+exports.flatten = flatten;
+function mergeDeep(dest) {
+    var src = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        src[_i - 1] = arguments[_i];
+    }
+    for (var i = 0; i < src.length; i++) {
+        dest = deepMerge_(dest, src[i]);
+    }
+    return dest;
+}
+exports.mergeDeep = mergeDeep;
+;
+// recursively merges src into dest
+function deepMerge_(dest, src) {
+    if (typeof src !== 'object' || src === null) {
+        return dest;
+    }
+    for (var p in src) {
+        if (!src.hasOwnProperty(p)) {
+            continue;
+        }
+        if (src[p] === undefined) {
+            continue;
+        }
+        if (typeof src[p] !== 'object' || src[p] === null) {
+            dest[p] = src[p];
+        }
+        else if (typeof dest[p] !== 'object' || dest[p] === null) {
+            dest[p] = mergeDeep(src[p].constructor === Array ? [] : {}, src[p]);
+        }
+        else {
+            mergeDeep(dest[p], src[p]);
+        }
+    }
+    return dest;
+}
+function unique(values, f) {
+    var results = [];
+    var u = {}, v, i, n;
+    for (i = 0, n = values.length; i < n; ++i) {
+        v = f ? f(values[i]) : values[i];
+        if (v in u) {
+            continue;
+        }
+        u[v] = 1;
+        results.push(values[i]);
+    }
+    return results;
+}
+exports.unique = unique;
+;
+function warning(message) {
+    console.warn('[VL Warning]', message);
+}
+exports.warning = warning;
+function error(message) {
+    console.error('[VL Error]', message);
+}
+exports.error = error;
+/**
+ * Returns true if the two dictionaries disagree. Applies only to defined values.
+ */
+function differ(dict, other) {
+    for (var key in dict) {
+        if (dict.hasOwnProperty(key)) {
+            if (other[key] && dict[key] && other[key] !== dict[key]) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+exports.differ = differ;
+
+},{"datalib/src/util":8,"json-stable-stringify":9}],26:[function(require,module,exports){
 "use strict";
 var channel_1 = require('vega-lite/src/channel');
 var aggregate_1 = require('vega-lite/src/aggregate');
@@ -2044,8 +3871,7 @@ exports.DEFAULT_QUERY_CONFIG = {
         scale: { useRawDomain: true }
     },
     propertyPrecedence: property_1.DEFAULT_PROPERTY_PRECEDENCE,
-    marks: [mark_1.Mark.TICK, mark_1.Mark.BAR, mark_1.Mark.POINT, mark_1.Mark.AREA, mark_1.Mark.BOXPLOT, mark_1.Mark.SCATTER3D, mark_1.Mark.HEXAGON, mark_1.Mark.CONTOUR],
-    // marks: [mark_1.Mark.POINT, mark_1.Mark.BAR, mark_1.Mark.LINE, mark_1.Mark.AREA, mark_1.Mark.TICK, mark_1.Mark.AREA],
+    marks: [mark_1.Mark.POINT, mark_1.Mark.BAR, mark_1.Mark.LINE, mark_1.Mark.AREA, mark_1.Mark.TICK],
     channels: [channel_1.X, channel_1.Y, channel_1.ROW, channel_1.COLUMN, channel_1.SIZE, channel_1.COLOR],
     aggregates: [undefined, aggregate_1.AggregateOp.MEAN],
     timeUnits: [undefined, timeunit_1.TimeUnit.YEAR, timeunit_1.TimeUnit.MONTH, timeunit_1.TimeUnit.DATE, timeunit_1.TimeUnit.MINUTES, timeunit_1.TimeUnit.SECONDS],
@@ -2152,7 +3978,7 @@ exports.DEFAULT_QUERY_CONFIG = {
     maxGoodCardinalityForColor: 7,
 };
 
-},{"./property":21,"vega-lite/src/aggregate":43,"vega-lite/src/channel":46,"vega-lite/src/mark":49,"vega-lite/src/scale":50,"vega-lite/src/sort":51,"vega-lite/src/timeunit":53,"vega-lite/src/type":54}],10:[function(require,module,exports){
+},{"./property":38,"vega-lite/src/aggregate":13,"vega-lite/src/channel":16,"vega-lite/src/mark":19,"vega-lite/src/scale":20,"vega-lite/src/sort":21,"vega-lite/src/timeunit":23,"vega-lite/src/type":24}],27:[function(require,module,exports){
 "use strict";
 /**
  * Abstract model for a constraint.
@@ -2177,14 +4003,14 @@ var AbstractConstraintModel = (function () {
 }());
 exports.AbstractConstraintModel = AbstractConstraintModel;
 
-},{}],11:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 "use strict";
 var _encoding = require('./encoding');
 var _spec = require('./spec');
 exports.encoding = _encoding;
 exports.spec = _spec;
 
-},{"./encoding":12,"./spec":13}],12:[function(require,module,exports){
+},{"./encoding":29,"./spec":30}],29:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -2547,7 +4373,7 @@ function checkEncoding(prop, enumSpec, index, specM, schema, opt) {
 }
 exports.checkEncoding = checkEncoding;
 
-},{"../enumspec":16,"../property":21,"../query/encoding":22,"../schema":35,"../util":37,"./base":10,"vega-lite/src/aggregate":43,"vega-lite/src/channel":46,"vega-lite/src/scale":50,"vega-lite/src/type":54}],13:[function(require,module,exports){
+},{"../enumspec":33,"../property":38,"../query/encoding":39,"../schema":52,"../util":54,"./base":27,"vega-lite/src/aggregate":13,"vega-lite/src/channel":16,"vega-lite/src/scale":20,"vega-lite/src/type":24}],30:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -2747,15 +4573,11 @@ exports.SPEC_CONSTRAINTS = [
             var mark = specM.getMark();
             switch (mark) {
                 case mark_1.Mark.AREA:
-                case mark_1.Mark.CONTOUR:
                 case mark_1.Mark.LINE:
-                case mark_1.Mark.HEXAGON:
-                case mark_1.Mark.LEADER:
                     return specM.channelUsed(channel_1.Channel.X) && specM.channelUsed(channel_1.Channel.Y);
                 case mark_1.Mark.TEXT:
                     return specM.channelUsed(channel_1.Channel.TEXT);
                 case mark_1.Mark.BAR:
-                case mark_1.Mark.BOXPLOT:
                 case mark_1.Mark.CIRCLE:
                 case mark_1.Mark.SQUARE:
                 case mark_1.Mark.TICK:
@@ -2765,10 +4587,6 @@ exports.SPEC_CONSTRAINTS = [
                     // This allows generating a point plot if channel was not an enum spec.
                     return !specM.enumSpecIndex.hasProperty(property_1.Property.CHANNEL) ||
                         specM.channelUsed(channel_1.Channel.X) || specM.channelUsed(channel_1.Channel.Y);
-                case mark_1.Mark.SCATTER3D:
-                case mark_1.Mark.RADAR:
-                    // This allows generating a point plot if channel was not an enum spec.
-                    return specM.channelUsed(channel_1.Channel.X) && specM.channelUsed(channel_1.Channel.Y)&& specM.channelUsed(channel_1.Channel.COLUMN);
             }
             /* istanbul ignore next */
             throw new Error('hasAllRequiredChannelsForMark not implemented for mark' + mark);
@@ -3142,7 +4960,6 @@ exports.SPEC_CONSTRAINTS = [
                     return true;
                 case mark_1.Mark.BAR:
                 case mark_1.Mark.TICK:
-                case mark_1.Mark.BOXPLOT:
                     // Bar and tick should not use size.
                     if (specM.channelUsed(channel_1.Channel.SIZE)) {
                         return false;
@@ -3157,11 +4974,6 @@ exports.SPEC_CONSTRAINTS = [
                 case mark_1.Mark.POINT:
                 case mark_1.Mark.SQUARE:
                 case mark_1.Mark.RULE:
-                case mark_1.Mark.HEXAGON:
-                case mark_1.Mark.LEADER:
-                case mark_1.Mark.CONTOUR:
-                case mark_1.Mark.SCATTER3D:
-                case mark_1.Mark.RADAR:
                     return true;
             }
             /* istanbul ignore next */
@@ -3266,7 +5078,7 @@ function checkSpec(prop, enumSpec, specM, schema, opt) {
 }
 exports.checkSpec = checkSpec;
 
-},{"../enumspec":16,"../property":21,"../query/encoding":22,"../util":37,"./base":10,"vega-lite/src/aggregate":43,"vega-lite/src/channel":46,"vega-lite/src/mark":49,"vega-lite/src/scale":50,"vega-lite/src/type":54}],14:[function(require,module,exports){
+},{"../enumspec":33,"../property":38,"../query/encoding":39,"../util":54,"./base":27,"vega-lite/src/aggregate":13,"vega-lite/src/channel":16,"vega-lite/src/mark":19,"vega-lite/src/scale":20,"vega-lite/src/type":24}],31:[function(require,module,exports){
 "use strict";
 exports.version = '0.6.7';
 var util_1 = require('./util');
@@ -3287,7 +5099,7 @@ exports.ranking = require('./ranking/ranking');
 exports.schema = require('./schema');
 exports.util = require('./util');
 
-},{"./config":9,"./constraint/constraint":11,"./enumerator":15,"./enumspec":16,"./generate":18,"./model":19,"./nest":20,"./property":21,"./query/query":24,"./ranking/ranking":34,"./schema":35,"./util":37}],15:[function(require,module,exports){
+},{"./config":26,"./constraint/constraint":28,"./enumerator":32,"./enumspec":33,"./generate":35,"./model":36,"./nest":37,"./property":38,"./query/query":41,"./ranking/ranking":51,"./schema":52,"./util":54}],32:[function(require,module,exports){
 "use strict";
 var encoding_1 = require('./constraint/encoding');
 var spec_1 = require('./constraint/spec');
@@ -3383,7 +5195,7 @@ function EncodingPropertyGeneratorFactory(prop) {
 }
 exports.EncodingPropertyGeneratorFactory = EncodingPropertyGeneratorFactory;
 
-},{"./constraint/encoding":12,"./constraint/spec":13,"./property":21}],16:[function(require,module,exports){
+},{"./constraint/encoding":29,"./constraint/spec":30,"./property":38}],33:[function(require,module,exports){
 "use strict";
 var util_1 = require('./util');
 /** Enum for a short form of the enumeration spec. */
@@ -3404,7 +5216,7 @@ function initEnumSpec(prop, defaultName, defaultEnumValues) {
 }
 exports.initEnumSpec = initEnumSpec;
 
-},{"./util":37}],17:[function(require,module,exports){
+},{"./util":54}],34:[function(require,module,exports){
 "use strict";
 var property_1 = require('./property');
 var util_1 = require('./util');
@@ -3469,7 +5281,7 @@ var EnumSpecIndex = (function () {
 }());
 exports.EnumSpecIndex = EnumSpecIndex;
 
-},{"./property":21,"./util":37}],18:[function(require,module,exports){
+},{"./property":38,"./util":54}],35:[function(require,module,exports){
 "use strict";
 var enumerator_1 = require('../src/enumerator');
 var config_1 = require('./config');
@@ -3501,7 +5313,7 @@ function generate(specQ, schema, opt) {
 }
 exports.generate = generate;
 
-},{"../src/enumerator":15,"./config":9,"./model":19,"./stylize":36}],19:[function(require,module,exports){
+},{"../src/enumerator":32,"./config":26,"./model":36,"./stylize":53}],36:[function(require,module,exports){
 "use strict";
 var aggregate_1 = require('vega-lite/src/aggregate');
 var type_1 = require('vega-lite/src/type');
@@ -4116,7 +5928,6 @@ var SpecQueryModel = (function () {
         if (this._spec.transform) {
             spec.transform = this._spec.transform;
         }
-        spec.type = this._spec.type;
         spec.mark = this._spec.mark;
         spec.encoding = this._encoding();
         if (spec.encoding === null) {
@@ -4195,7 +6006,7 @@ var SpecQueryModelGroup = (function () {
 }());
 exports.SpecQueryModelGroup = SpecQueryModelGroup;
 
-},{"./enumspec":16,"./enumspecindex":17,"./property":21,"./query/encoding":22,"./query/groupby":23,"./query/shorthand":25,"./query/spec":26,"./util":37,"vega-lite/src/aggregate":43,"vega-lite/src/type":54}],20:[function(require,module,exports){
+},{"./enumspec":33,"./enumspecindex":34,"./property":38,"./query/encoding":39,"./query/groupby":40,"./query/shorthand":42,"./query/spec":43,"./util":54,"vega-lite/src/aggregate":13,"vega-lite/src/type":24}],37:[function(require,module,exports){
 "use strict";
 var channel_1 = require('vega-lite/src/channel');
 var util_1 = require('datalib/src/util');
@@ -4339,7 +6150,7 @@ registerKeyFn(exports.TRANSPOSE, function (specM) {
 });
 registerKeyFn(exports.SPEC, function (specM) { return JSON.stringify(specM.specQuery); });
 
-},{"./enumspec":16,"./model":19,"./query/groupby":23,"./query/shorthand":25,"./query/spec":26,"./util":37,"datalib/src/util":8,"vega-lite/src/channel":46}],21:[function(require,module,exports){
+},{"./enumspec":33,"./model":36,"./query/groupby":40,"./query/shorthand":42,"./query/spec":43,"./util":54,"datalib/src/util":8,"vega-lite/src/channel":16}],38:[function(require,module,exports){
 "use strict";
 var scale_1 = require('vega-lite/src/scale');
 (function (Property) {
@@ -5198,7 +7009,7 @@ exports.SUPPORTED_SCALE_PROPERTY_INDEX = SUPPORTED_SCALE_PROPERTY.reduce(functio
     return m;
 }, {});
 
-},{"vega-lite/src/scale":50}],22:[function(require,module,exports){
+},{"vega-lite/src/scale":20}],39:[function(require,module,exports){
 "use strict";
 var scale_1 = require('vega-lite/src/scale');
 var timeunit_1 = require('vega-lite/src/timeunit');
@@ -5255,7 +7066,7 @@ function scaleType(encQ) {
 }
 exports.scaleType = scaleType;
 
-},{"../enumspec":16,"../util":37,"vega-lite/src/scale":50,"vega-lite/src/timeunit":53,"vega-lite/src/type":54}],23:[function(require,module,exports){
+},{"../enumspec":33,"../util":54,"vega-lite/src/scale":20,"vega-lite/src/timeunit":23,"vega-lite/src/type":24}],40:[function(require,module,exports){
 "use strict";
 var util_1 = require('datalib/src/util');
 var util_2 = require('../util');
@@ -5305,7 +7116,7 @@ function toString(groupBy) {
 }
 exports.toString = toString;
 
-},{"../util":37,"datalib/src/util":8}],24:[function(require,module,exports){
+},{"../util":54,"datalib/src/util":8}],41:[function(require,module,exports){
 "use strict";
 var config_1 = require('../config');
 var generate_1 = require('../generate');
@@ -5361,7 +7172,7 @@ function normalize(q) {
 }
 exports.normalize = normalize;
 
-},{"../config":9,"../generate":18,"../nest":20,"../ranking/ranking":34,"../util":37,"./encoding":22,"./groupby":23,"./shorthand":25,"./spec":26,"./transform":27}],25:[function(require,module,exports){
+},{"../config":26,"../generate":35,"../nest":37,"../ranking/ranking":51,"../util":54,"./encoding":39,"./groupby":40,"./shorthand":42,"./spec":43,"./transform":44}],42:[function(require,module,exports){
 "use strict";
 var type_1 = require('vega-lite/src/type');
 var util_1 = require('datalib/src/util');
@@ -5637,7 +7448,7 @@ function fieldDef(encQ, include, replacer) {
 }
 exports.fieldDef = fieldDef;
 
-},{"../enumspec":16,"../property":21,"../util":37,"./spec":26,"datalib/src/util":8,"vega-lite/src/type":54}],26:[function(require,module,exports){
+},{"../enumspec":33,"../property":38,"../util":54,"./spec":43,"datalib/src/util":8,"vega-lite/src/type":24}],43:[function(require,module,exports){
 "use strict";
 var channel_1 = require('vega-lite/src/channel');
 var mark_1 = require('vega-lite/src/mark');
@@ -5728,10 +7539,10 @@ function stack(specQ) {
 }
 exports.stack = stack;
 
-},{"../enumspec":16,"../property":21,"../util":37,"vega-lite/src/channel":46,"vega-lite/src/mark":49,"vega-lite/src/stack":52}],27:[function(require,module,exports){
+},{"../enumspec":33,"../property":38,"../util":54,"vega-lite/src/channel":16,"vega-lite/src/mark":19,"vega-lite/src/stack":22}],44:[function(require,module,exports){
 "use strict";
 
-},{}],28:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 "use strict";
 var aggregate_1 = require('vega-lite/src/aggregate');
 var type_1 = require('vega-lite/src/type');
@@ -5819,7 +7630,7 @@ function aggregationQualityFeature(specM, schema, opt) {
     }
 }
 
-},{"../query/encoding":22,"../util":37,"vega-lite/src/aggregate":43,"vega-lite/src/type":54}],29:[function(require,module,exports){
+},{"../query/encoding":39,"../util":54,"vega-lite/src/aggregate":13,"vega-lite/src/type":24}],46:[function(require,module,exports){
 "use strict";
 var channel_1 = require('vega-lite/src/channel');
 var config_1 = require('../../config');
@@ -6048,7 +7859,7 @@ var DimensionScore;
     DimensionScore.getScore = getScore;
 })(DimensionScore = exports.DimensionScore || (exports.DimensionScore = {}));
 
-},{"../../config":9,"../../query/shorthand":25,"../../util":37,"./effectiveness":30,"./type":32,"vega-lite/src/channel":46}],30:[function(require,module,exports){
+},{"../../config":26,"../../query/shorthand":42,"../../util":54,"./effectiveness":47,"./type":49,"vega-lite/src/channel":16}],47:[function(require,module,exports){
 "use strict";
 var channel_1 = require('./channel');
 var mark_1 = require('./mark');
@@ -6115,7 +7926,7 @@ function default_1(specM, schema, opt) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = default_1;
 
-},{"./channel":29,"./mark":31}],31:[function(require,module,exports){
+},{"./channel":46,"./mark":48}],48:[function(require,module,exports){
 "use strict";
 var channel_1 = require('vega-lite/src/channel');
 var mark_1 = require('vega-lite/src/mark');
@@ -6146,13 +7957,7 @@ var MarkScore;
                     bar: -2,
                     line: -2,
                     area: -2,
-                    rule: -2.5,
-                    boxplot:-0.5,
-                    hexagon:-0.5,
-                    leader:-0.5,
-                    contour:-0.5,
-                    scatter3D:-0.5,
-                    radar:-0.5
+                    rule: -2.5
                 };
                 util_1.forEach(occludedQQMark, function (score, mark) {
                     var feature = featurize(xType, yType, true, mark);
@@ -6167,13 +7972,7 @@ var MarkScore;
                     bar: -2,
                     line: -2,
                     area: -2,
-                    rule: -2.5,
-                    boxplot:-0.5,
-                    hexagon:-0.5,
-                    leader:-0.5,
-                    contour:-0.5,
-                    scatter3D:-0.5,
-                    radar:-0.5
+                    rule: -2.5
                 };
                 util_1.forEach(noOccludedQQMark, function (score, mark) {
                     var feature = featurize(xType, yType, false, mark);
@@ -6192,13 +7991,7 @@ var MarkScore;
                     bar: -2,
                     line: -2,
                     area: -2,
-                    rule: -2.5,
-                    boxplot:-0.5,
-                    hexagon:-0.5,
-                    leader:-0.5,
-                    contour:-0.5,
-                    scatter3D:-0.5,
-                    radar:-0.5
+                    rule: -2.5
                 };
                 util_1.forEach(occludedDimensionMeasureMark, function (score, mark) {
                     var feature = featurize(xType, yType, true, mark);
@@ -6217,13 +8010,7 @@ var MarkScore;
                     bar: -2,
                     line: -2,
                     area: -2,
-                    rule: -2.5,
-                    boxplot:-0.5,
-                    hexagon:-0.5,
-                    leader:-0.5,
-                    contour:-0.5,
-                    scatter3D:-0.5,
-                    radar:-0.5
+                    rule: -2.5
                 };
                 util_1.forEach(occludedDimensionMeasureMark, function (score, mark) {
                     var feature = featurize(xType, yType, true, mark);
@@ -6244,13 +8031,7 @@ var MarkScore;
                     line: -2,
                     area: -2,
                     // Non-sense to use rule here
-                    rule: -2.5,
-                    boxplot:-0.5,
-                    hexagon:-0.5,
-                    leader:-0.5,
-                    contour:-0.5,
-                    scatter3D:-0.5,
-                    radar:-0.5
+                    rule: -2.5
                 };
                 util_1.forEach(noOccludedQxN, function (score, mark) {
                     var feature = featurize(xType, yType, false, mark);
@@ -6270,13 +8051,7 @@ var MarkScore;
                     line: -0.5,
                     area: -0.5,
                     // Non-sense to use rule here
-                    rule: -2.5,
-                    boxplot:-0.5,
-                    hexagon:-0.5,
-                    leader:-0.5,
-                    contour:-0.5,
-                    scatter3D:-0.5,
-                    radar:-0.5
+                    rule: -2.5
                 };
                 util_1.forEach(noOccludedQxBinQ, function (score, mark) {
                     var feature = featurize(xType, yType, false, mark);
@@ -6297,13 +8072,7 @@ var MarkScore;
                     tick: -0.35,
                     text: -0.4,
                     // Non-sense to use rule here
-                    rule: -2.5,
-                    boxplot:-0.5,
-                    hexagon:-0.5,
-                    leader:-0.5,
-                    contour:-0.5,
-                    scatter3D:-0.5,
-                    radar:-0.5
+                    rule: -2.5
                 };
                 util_1.forEach(noOccludedQxBinQ, function (score, mark) {
                     var feature = featurize(xType, yType, false, mark);
@@ -6325,13 +8094,7 @@ var MarkScore;
                     bar: -2,
                     line: -2,
                     area: -2,
-                    rule: -2.5,
-                    boxplot:-0.5,
-                    hexagon:-0.5,
-                    leader:-0.5,
-                    contour:-0.5,
-                    scatter3D:-0.5,
-                    radar:-0.5
+                    rule: -2.5
                 };
                 // No difference between has occlusion and no occlusion
                 // as most of the time, it will be the occluded case.
@@ -6354,13 +8117,7 @@ var MarkScore;
                     bar: -2,
                     line: -2,
                     area: -2,
-                    rule: -2.5,
-                    boxplot:-0.5,
-                    hexagon:-0.5,
-                    leader:-0.5,
-                    contour:-0.5,
-                    scatter3D:-0.5,
-                    radar:-0.5
+                    rule: -2.5
                 };
                 // No difference between has occlusion and no occlusion
                 // as most of the time, it will be the occluded case.
@@ -6394,13 +8151,7 @@ var MarkScore;
                     bar: -2,
                     line: -2,
                     area: -2,
-                    rule: -2.5,
-                    boxplot:-0.5,
-                    hexagon:-0.5,
-                    leader:-0.5,
-                    contour:-0.5,
-                    scatter3D:-0.5,
-                    radar:-0.5
+                    rule: -2.5
                 };
                 // No difference between has occlusion and no occlusion
                 util_1.forEach(ddMark, function (score, mark) {
@@ -6433,7 +8184,7 @@ var MarkScore;
     MarkScore.getScore = getScore;
 })(MarkScore = exports.MarkScore || (exports.MarkScore = {}));
 
-},{"../../util":37,"./effectiveness":30,"./type":32,"vega-lite/src/channel":46,"vega-lite/src/mark":49}],32:[function(require,module,exports){
+},{"../../util":54,"./effectiveness":47,"./type":49,"vega-lite/src/channel":16,"vega-lite/src/mark":19}],49:[function(require,module,exports){
 "use strict";
 var scale_1 = require('vega-lite/src/scale');
 var type_1 = require('vega-lite/src/type');
@@ -6477,7 +8228,7 @@ function getExtendedType(encQ) {
 }
 exports.getExtendedType = getExtendedType;
 
-},{"../../query/encoding":22,"vega-lite/src/scale":50,"vega-lite/src/type":54}],33:[function(require,module,exports){
+},{"../../query/encoding":39,"vega-lite/src/scale":20,"vega-lite/src/type":24}],50:[function(require,module,exports){
 "use strict";
 var property_1 = require('../property');
 exports.name = 'fieldOrder';
@@ -6515,7 +8266,7 @@ function score(specM, schema, opt) {
 }
 exports.score = score;
 
-},{"../property":21}],34:[function(require,module,exports){
+},{"../property":38}],51:[function(require,module,exports){
 "use strict";
 exports.effectiveness = require('./effectiveness/effectiveness');
 exports.aggregation = require('./aggregation');
@@ -6607,7 +8358,7 @@ register(exports.EFFECTIVENESS, exports.effectiveness.default);
 register(exports.aggregation.name, exports.aggregation.score);
 register(exports.fieldOrder.name, exports.fieldOrder.score);
 
-},{"./aggregation":28,"./effectiveness/effectiveness":30,"./fieldorder":33}],35:[function(require,module,exports){
+},{"./aggregation":45,"./effectiveness/effectiveness":47,"./fieldorder":50}],52:[function(require,module,exports){
 "use strict";
 var type_1 = require('vega-lite/src/type');
 var bin_1 = require('vega-lite/src/bin');
@@ -6966,7 +8717,7 @@ function invalidCount(unique, list) {
 })(exports.PrimitiveType || (exports.PrimitiveType = {}));
 var PrimitiveType = exports.PrimitiveType;
 
-},{"./config":9,"./util":37,"datalib/src/bins/bins":3,"datalib/src/import/type":5,"datalib/src/stats":6,"vega-lite/src/bin":45,"vega-lite/src/timeunit":53,"vega-lite/src/type":54}],36:[function(require,module,exports){
+},{"./config":26,"./util":54,"datalib/src/bins/bins":3,"datalib/src/import/type":5,"datalib/src/stats":6,"vega-lite/src/bin":15,"vega-lite/src/timeunit":23,"vega-lite/src/type":24}],53:[function(require,module,exports){
 "use strict";
 var axis_1 = require('vega-lite/src/axis');
 var channel_1 = require('vega-lite/src/channel');
@@ -7077,7 +8828,7 @@ function xAxisOnTopForHighYCardinalityWithoutColumn(specM, schema, encQIndex, op
 }
 exports.xAxisOnTopForHighYCardinalityWithoutColumn = xAxisOnTopForHighYCardinalityWithoutColumn;
 
-},{"./query/encoding":22,"./util":37,"vega-lite/src/axis":44,"vega-lite/src/channel":46,"vega-lite/src/scale":50,"vega-lite/src/type":54}],37:[function(require,module,exports){
+},{"./query/encoding":39,"./util":54,"vega-lite/src/axis":14,"vega-lite/src/channel":16,"vega-lite/src/scale":20,"vega-lite/src/type":24}],54:[function(require,module,exports){
 "use strict";
 var util_1 = require('datalib/src/util');
 var util_2 = require('datalib/src/util');
@@ -7143,2067 +8894,6 @@ function without(array, excludedItems) {
 }
 exports.without = without;
 
-},{"datalib/src/util":8}],38:[function(require,module,exports){
-(function (Buffer){
-var u = module.exports;
-
-// utility functions
-
-var FNAME = '__name__';
-
-u.namedfunc = function(name, f) { return (f[FNAME] = name, f); };
-
-u.name = function(f) { return f==null ? null : f[FNAME]; };
-
-u.identity = function(x) { return x; };
-
-u.true = u.namedfunc('true', function() { return true; });
-
-u.false = u.namedfunc('false', function() { return false; });
-
-u.duplicate = function(obj) {
-  return JSON.parse(JSON.stringify(obj));
-};
-
-u.equal = function(a, b) {
-  return JSON.stringify(a) === JSON.stringify(b);
-};
-
-u.extend = function(obj) {
-  for (var x, name, i=1, len=arguments.length; i<len; ++i) {
-    x = arguments[i];
-    for (name in x) { obj[name] = x[name]; }
-  }
-  return obj;
-};
-
-u.length = function(x) {
-  return x != null && x.length != null ? x.length : null;
-};
-
-u.keys = function(x) {
-  var keys = [], k;
-  for (k in x) keys.push(k);
-  return keys;
-};
-
-u.vals = function(x) {
-  var vals = [], k;
-  for (k in x) vals.push(x[k]);
-  return vals;
-};
-
-u.toMap = function(list, f) {
-  return (f = u.$(f)) ?
-    list.reduce(function(obj, x) { return (obj[f(x)] = 1, obj); }, {}) :
-    list.reduce(function(obj, x) { return (obj[x] = 1, obj); }, {});
-};
-
-u.keystr = function(values) {
-  // use to ensure consistent key generation across modules
-  var n = values.length;
-  if (!n) return '';
-  for (var s=String(values[0]), i=1; i<n; ++i) {
-    s += '|' + String(values[i]);
-  }
-  return s;
-};
-
-// type checking functions
-
-var toString = Object.prototype.toString;
-
-u.isObject = function(obj) {
-  return obj === Object(obj);
-};
-
-u.isFunction = function(obj) {
-  return toString.call(obj) === '[object Function]';
-};
-
-u.isString = function(obj) {
-  return typeof value === 'string' || toString.call(obj) === '[object String]';
-};
-
-u.isArray = Array.isArray || function(obj) {
-  return toString.call(obj) === '[object Array]';
-};
-
-u.isNumber = function(obj) {
-  return typeof obj === 'number' || toString.call(obj) === '[object Number]';
-};
-
-u.isBoolean = function(obj) {
-  return obj === true || obj === false || toString.call(obj) == '[object Boolean]';
-};
-
-u.isDate = function(obj) {
-  return toString.call(obj) === '[object Date]';
-};
-
-u.isValid = function(obj) {
-  return obj != null && obj === obj;
-};
-
-u.isBuffer = (typeof Buffer === 'function' && Buffer.isBuffer) || u.false;
-
-// type coercion functions
-
-u.number = function(s) {
-  return s == null || s === '' ? null : +s;
-};
-
-u.boolean = function(s) {
-  return s == null || s === '' ? null : s==='false' ? false : !!s;
-};
-
-// parse a date with optional d3.time-format format
-u.date = function(s, format) {
-  var d = format ? format : Date;
-  return s == null || s === '' ? null : d.parse(s);
-};
-
-u.array = function(x) {
-  return x != null ? (u.isArray(x) ? x : [x]) : [];
-};
-
-u.str = function(x) {
-  return u.isArray(x) ? '[' + x.map(u.str) + ']'
-    : u.isObject(x) || u.isString(x) ?
-      // Output valid JSON and JS source strings.
-      // See http://timelessrepo.com/json-isnt-a-javascript-subset
-      JSON.stringify(x).replace('\u2028','\\u2028').replace('\u2029', '\\u2029')
-    : x;
-};
-
-// data access functions
-
-var field_re = /\[(.*?)\]|[^.\[]+/g;
-
-u.field = function(f) {
-  return String(f).match(field_re).map(function(d) {
-    return d[0] !== '[' ? d :
-      d[1] !== "'" && d[1] !== '"' ? d.slice(1, -1) :
-      d.slice(2, -2).replace(/\\(["'])/g, '$1');
-  });
-};
-
-u.accessor = function(f) {
-  /* jshint evil: true */
-  return f==null || u.isFunction(f) ? f :
-    u.namedfunc(f, Function('x', 'return x[' + u.field(f).map(u.str).join('][') + '];'));
-};
-
-// short-cut for accessor
-u.$ = u.accessor;
-
-u.mutator = function(f) {
-  var s;
-  return u.isString(f) && (s=u.field(f)).length > 1 ?
-    function(x, v) {
-      for (var i=0; i<s.length-1; ++i) x = x[s[i]];
-      x[s[i]] = v;
-    } :
-    function(x, v) { x[f] = v; };
-};
-
-
-u.$func = function(name, op) {
-  return function(f) {
-    f = u.$(f) || u.identity;
-    var n = name + (u.name(f) ? '_'+u.name(f) : '');
-    return u.namedfunc(n, function(d) { return op(f(d)); });
-  };
-};
-
-u.$valid  = u.$func('valid', u.isValid);
-u.$length = u.$func('length', u.length);
-
-u.$in = function(f, values) {
-  f = u.$(f);
-  var map = u.isArray(values) ? u.toMap(values) : values;
-  return function(d) { return !!map[f(d)]; };
-};
-
-// comparison / sorting functions
-
-u.comparator = function(sort) {
-  var sign = [];
-  if (sort === undefined) sort = [];
-  sort = u.array(sort).map(function(f) {
-    var s = 1;
-    if      (f[0] === '-') { s = -1; f = f.slice(1); }
-    else if (f[0] === '+') { s = +1; f = f.slice(1); }
-    sign.push(s);
-    return u.accessor(f);
-  });
-  return function(a, b) {
-    var i, n, f, c;
-    for (i=0, n=sort.length; i<n; ++i) {
-      f = sort[i];
-      c = u.cmp(f(a), f(b));
-      if (c) return c * sign[i];
-    }
-    return 0;
-  };
-};
-
-u.cmp = function(a, b) {
-  return (a < b || a == null) && b != null ? -1 :
-    (a > b || b == null) && a != null ? 1 :
-    ((b = b instanceof Date ? +b : b),
-     (a = a instanceof Date ? +a : a)) !== a && b === b ? -1 :
-    b !== b && a === a ? 1 : 0;
-};
-
-u.numcmp = function(a, b) { return a - b; };
-
-u.stablesort = function(array, sortBy, keyFn) {
-  var indices = array.reduce(function(idx, v, i) {
-    return (idx[keyFn(v)] = i, idx);
-  }, {});
-
-  array.sort(function(a, b) {
-    var sa = sortBy(a),
-        sb = sortBy(b);
-    return sa < sb ? -1 : sa > sb ? 1
-         : (indices[keyFn(a)] - indices[keyFn(b)]);
-  });
-
-  return array;
-};
-
-// permutes an array using a Knuth shuffle
-u.permute = function(a) {
-  var m = a.length,
-      swap,
-      i;
-
-  while (m) {
-    i = Math.floor(Math.random() * m--);
-    swap = a[m];
-    a[m] = a[i];
-    a[i] = swap;
-  }
-};
-
-// string functions
-
-u.pad = function(s, length, pos, padchar) {
-  padchar = padchar || " ";
-  var d = length - s.length;
-  if (d <= 0) return s;
-  switch (pos) {
-    case 'left':
-      return strrep(d, padchar) + s;
-    case 'middle':
-    case 'center':
-      return strrep(Math.floor(d/2), padchar) +
-         s + strrep(Math.ceil(d/2), padchar);
-    default:
-      return s + strrep(d, padchar);
-  }
-};
-
-function strrep(n, str) {
-  var s = "", i;
-  for (i=0; i<n; ++i) s += str;
-  return s;
-}
-
-u.truncate = function(s, length, pos, word, ellipsis) {
-  var len = s.length;
-  if (len <= length) return s;
-  ellipsis = ellipsis !== undefined ? String(ellipsis) : '\u2026';
-  var l = Math.max(0, length - ellipsis.length);
-
-  switch (pos) {
-    case 'left':
-      return ellipsis + (word ? truncateOnWord(s,l,1) : s.slice(len-l));
-    case 'middle':
-    case 'center':
-      var l1 = Math.ceil(l/2), l2 = Math.floor(l/2);
-      return (word ? truncateOnWord(s,l1) : s.slice(0,l1)) +
-        ellipsis + (word ? truncateOnWord(s,l2,1) : s.slice(len-l2));
-    default:
-      return (word ? truncateOnWord(s,l) : s.slice(0,l)) + ellipsis;
-  }
-};
-
-function truncateOnWord(s, len, rev) {
-  var cnt = 0, tok = s.split(truncate_word_re);
-  if (rev) {
-    s = (tok = tok.reverse())
-      .filter(function(w) { cnt += w.length; return cnt <= len; })
-      .reverse();
-  } else {
-    s = tok.filter(function(w) { cnt += w.length; return cnt <= len; });
-  }
-  return s.length ? s.join('').trim() : tok[0].slice(0, len);
-}
-
-var truncate_word_re = /([\u0009\u000A\u000B\u000C\u000D\u0020\u00A0\u1680\u180E\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u2028\u2029\u3000\uFEFF])/;
-
-}).call(this,require("buffer").Buffer)
-
-},{"buffer":1}],39:[function(require,module,exports){
-var json = typeof JSON !== 'undefined' ? JSON : require('jsonify');
-
-module.exports = function (obj, opts) {
-    if (!opts) opts = {};
-    if (typeof opts === 'function') opts = { cmp: opts };
-    var space = opts.space || '';
-    if (typeof space === 'number') space = Array(space+1).join(' ');
-    var cycles = (typeof opts.cycles === 'boolean') ? opts.cycles : false;
-    var replacer = opts.replacer || function(key, value) { return value; };
-
-    var cmp = opts.cmp && (function (f) {
-        return function (node) {
-            return function (a, b) {
-                var aobj = { key: a, value: node[a] };
-                var bobj = { key: b, value: node[b] };
-                return f(aobj, bobj);
-            };
-        };
-    })(opts.cmp);
-
-    var seen = [];
-    return (function stringify (parent, key, node, level) {
-        var indent = space ? ('\n' + new Array(level + 1).join(space)) : '';
-        var colonSeparator = space ? ': ' : ':';
-
-        if (node && node.toJSON && typeof node.toJSON === 'function') {
-            node = node.toJSON();
-        }
-
-        node = replacer.call(parent, key, node);
-
-        if (node === undefined) {
-            return;
-        }
-        if (typeof node !== 'object' || node === null) {
-            return json.stringify(node);
-        }
-        if (isArray(node)) {
-            var out = [];
-            for (var i = 0; i < node.length; i++) {
-                var item = stringify(node, i, node[i], level+1) || json.stringify(null);
-                out.push(indent + space + item);
-            }
-            return '[' + out.join(',') + indent + ']';
-        }
-        else {
-            if (seen.indexOf(node) !== -1) {
-                if (cycles) return json.stringify('__cycle__');
-                throw new TypeError('Converting circular structure to JSON');
-            }
-            else seen.push(node);
-
-            var keys = objectKeys(node).sort(cmp && cmp(node));
-            var out = [];
-            for (var i = 0; i < keys.length; i++) {
-                var key = keys[i];
-                var value = stringify(node, key, node[key], level+1);
-
-                if(!value) continue;
-
-                var keyValue = json.stringify(key)
-                    + colonSeparator
-                    + value;
-                ;
-                out.push(indent + space + keyValue);
-            }
-            seen.splice(seen.indexOf(node), 1);
-            return '{' + out.join(',') + indent + '}';
-        }
-    })({ '': obj }, '', obj, 0);
-};
-
-var isArray = Array.isArray || function (x) {
-    return {}.toString.call(x) === '[object Array]';
-};
-
-var objectKeys = Object.keys || function (obj) {
-    var has = Object.prototype.hasOwnProperty || function () { return true };
-    var keys = [];
-    for (var key in obj) {
-        if (has.call(obj, key)) keys.push(key);
-    }
-    return keys;
-};
-
-},{"jsonify":40}],40:[function(require,module,exports){
-exports.parse = require('./lib/parse');
-exports.stringify = require('./lib/stringify');
-
-},{"./lib/parse":41,"./lib/stringify":42}],41:[function(require,module,exports){
-var at, // The index of the current character
-    ch, // The current character
-    escapee = {
-        '"':  '"',
-        '\\': '\\',
-        '/':  '/',
-        b:    '\b',
-        f:    '\f',
-        n:    '\n',
-        r:    '\r',
-        t:    '\t'
-    },
-    text,
-
-    error = function (m) {
-        // Call error when something is wrong.
-        throw {
-            name:    'SyntaxError',
-            message: m,
-            at:      at,
-            text:    text
-        };
-    },
-    
-    next = function (c) {
-        // If a c parameter is provided, verify that it matches the current character.
-        if (c && c !== ch) {
-            error("Expected '" + c + "' instead of '" + ch + "'");
-        }
-        
-        // Get the next character. When there are no more characters,
-        // return the empty string.
-        
-        ch = text.charAt(at);
-        at += 1;
-        return ch;
-    },
-    
-    number = function () {
-        // Parse a number value.
-        var number,
-            string = '';
-        
-        if (ch === '-') {
-            string = '-';
-            next('-');
-        }
-        while (ch >= '0' && ch <= '9') {
-            string += ch;
-            next();
-        }
-        if (ch === '.') {
-            string += '.';
-            while (next() && ch >= '0' && ch <= '9') {
-                string += ch;
-            }
-        }
-        if (ch === 'e' || ch === 'E') {
-            string += ch;
-            next();
-            if (ch === '-' || ch === '+') {
-                string += ch;
-                next();
-            }
-            while (ch >= '0' && ch <= '9') {
-                string += ch;
-                next();
-            }
-        }
-        number = +string;
-        if (!isFinite(number)) {
-            error("Bad number");
-        } else {
-            return number;
-        }
-    },
-    
-    string = function () {
-        // Parse a string value.
-        var hex,
-            i,
-            string = '',
-            uffff;
-        
-        // When parsing for string values, we must look for " and \ characters.
-        if (ch === '"') {
-            while (next()) {
-                if (ch === '"') {
-                    next();
-                    return string;
-                } else if (ch === '\\') {
-                    next();
-                    if (ch === 'u') {
-                        uffff = 0;
-                        for (i = 0; i < 4; i += 1) {
-                            hex = parseInt(next(), 16);
-                            if (!isFinite(hex)) {
-                                break;
-                            }
-                            uffff = uffff * 16 + hex;
-                        }
-                        string += String.fromCharCode(uffff);
-                    } else if (typeof escapee[ch] === 'string') {
-                        string += escapee[ch];
-                    } else {
-                        break;
-                    }
-                } else {
-                    string += ch;
-                }
-            }
-        }
-        error("Bad string");
-    },
-
-    white = function () {
-
-// Skip whitespace.
-
-        while (ch && ch <= ' ') {
-            next();
-        }
-    },
-
-    word = function () {
-
-// true, false, or null.
-
-        switch (ch) {
-        case 't':
-            next('t');
-            next('r');
-            next('u');
-            next('e');
-            return true;
-        case 'f':
-            next('f');
-            next('a');
-            next('l');
-            next('s');
-            next('e');
-            return false;
-        case 'n':
-            next('n');
-            next('u');
-            next('l');
-            next('l');
-            return null;
-        }
-        error("Unexpected '" + ch + "'");
-    },
-
-    value,  // Place holder for the value function.
-
-    array = function () {
-
-// Parse an array value.
-
-        var array = [];
-
-        if (ch === '[') {
-            next('[');
-            white();
-            if (ch === ']') {
-                next(']');
-                return array;   // empty array
-            }
-            while (ch) {
-                array.push(value());
-                white();
-                if (ch === ']') {
-                    next(']');
-                    return array;
-                }
-                next(',');
-                white();
-            }
-        }
-        error("Bad array");
-    },
-
-    object = function () {
-
-// Parse an object value.
-
-        var key,
-            object = {};
-
-        if (ch === '{') {
-            next('{');
-            white();
-            if (ch === '}') {
-                next('}');
-                return object;   // empty object
-            }
-            while (ch) {
-                key = string();
-                white();
-                next(':');
-                if (Object.hasOwnProperty.call(object, key)) {
-                    error('Duplicate key "' + key + '"');
-                }
-                object[key] = value();
-                white();
-                if (ch === '}') {
-                    next('}');
-                    return object;
-                }
-                next(',');
-                white();
-            }
-        }
-        error("Bad object");
-    };
-
-value = function () {
-
-// Parse a JSON value. It could be an object, an array, a string, a number,
-// or a word.
-
-    white();
-    switch (ch) {
-    case '{':
-        return object();
-    case '[':
-        return array();
-    case '"':
-        return string();
-    case '-':
-        return number();
-    default:
-        return ch >= '0' && ch <= '9' ? number() : word();
-    }
-};
-
-// Return the json_parse function. It will have access to all of the above
-// functions and variables.
-
-module.exports = function (source, reviver) {
-    var result;
-    
-    text = source;
-    at = 0;
-    ch = ' ';
-    result = value();
-    white();
-    if (ch) {
-        error("Syntax error");
-    }
-
-    // If there is a reviver function, we recursively walk the new structure,
-    // passing each name/value pair to the reviver function for possible
-    // transformation, starting with a temporary root object that holds the result
-    // in an empty key. If there is not a reviver function, we simply return the
-    // result.
-
-    return typeof reviver === 'function' ? (function walk(holder, key) {
-        var k, v, value = holder[key];
-        if (value && typeof value === 'object') {
-            for (k in value) {
-                if (Object.prototype.hasOwnProperty.call(value, k)) {
-                    v = walk(value, k);
-                    if (v !== undefined) {
-                        value[k] = v;
-                    } else {
-                        delete value[k];
-                    }
-                }
-            }
-        }
-        return reviver.call(holder, key, value);
-    }({'': result}, '')) : result;
-};
-
-},{}],42:[function(require,module,exports){
-var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
-    escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
-    gap,
-    indent,
-    meta = {    // table of character substitutions
-        '\b': '\\b',
-        '\t': '\\t',
-        '\n': '\\n',
-        '\f': '\\f',
-        '\r': '\\r',
-        '"' : '\\"',
-        '\\': '\\\\'
-    },
-    rep;
-
-function quote(string) {
-    // If the string contains no control characters, no quote characters, and no
-    // backslash characters, then we can safely slap some quotes around it.
-    // Otherwise we must also replace the offending characters with safe escape
-    // sequences.
-    
-    escapable.lastIndex = 0;
-    return escapable.test(string) ? '"' + string.replace(escapable, function (a) {
-        var c = meta[a];
-        return typeof c === 'string' ? c :
-            '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
-    }) + '"' : '"' + string + '"';
-}
-
-function str(key, holder) {
-    // Produce a string from holder[key].
-    var i,          // The loop counter.
-        k,          // The member key.
-        v,          // The member value.
-        length,
-        mind = gap,
-        partial,
-        value = holder[key];
-    
-    // If the value has a toJSON method, call it to obtain a replacement value.
-    if (value && typeof value === 'object' &&
-            typeof value.toJSON === 'function') {
-        value = value.toJSON(key);
-    }
-    
-    // If we were called with a replacer function, then call the replacer to
-    // obtain a replacement value.
-    if (typeof rep === 'function') {
-        value = rep.call(holder, key, value);
-    }
-    
-    // What happens next depends on the value's type.
-    switch (typeof value) {
-        case 'string':
-            return quote(value);
-        
-        case 'number':
-            // JSON numbers must be finite. Encode non-finite numbers as null.
-            return isFinite(value) ? String(value) : 'null';
-        
-        case 'boolean':
-        case 'null':
-            // If the value is a boolean or null, convert it to a string. Note:
-            // typeof null does not produce 'null'. The case is included here in
-            // the remote chance that this gets fixed someday.
-            return String(value);
-            
-        case 'object':
-            if (!value) return 'null';
-            gap += indent;
-            partial = [];
-            
-            // Array.isArray
-            if (Object.prototype.toString.apply(value) === '[object Array]') {
-                length = value.length;
-                for (i = 0; i < length; i += 1) {
-                    partial[i] = str(i, value) || 'null';
-                }
-                
-                // Join all of the elements together, separated with commas, and
-                // wrap them in brackets.
-                v = partial.length === 0 ? '[]' : gap ?
-                    '[\n' + gap + partial.join(',\n' + gap) + '\n' + mind + ']' :
-                    '[' + partial.join(',') + ']';
-                gap = mind;
-                return v;
-            }
-            
-            // If the replacer is an array, use it to select the members to be
-            // stringified.
-            if (rep && typeof rep === 'object') {
-                length = rep.length;
-                for (i = 0; i < length; i += 1) {
-                    k = rep[i];
-                    if (typeof k === 'string') {
-                        v = str(k, value);
-                        if (v) {
-                            partial.push(quote(k) + (gap ? ': ' : ':') + v);
-                        }
-                    }
-                }
-            }
-            else {
-                // Otherwise, iterate through all of the keys in the object.
-                for (k in value) {
-                    if (Object.prototype.hasOwnProperty.call(value, k)) {
-                        v = str(k, value);
-                        if (v) {
-                            partial.push(quote(k) + (gap ? ': ' : ':') + v);
-                        }
-                    }
-                }
-            }
-            
-        // Join all of the member texts together, separated with commas,
-        // and wrap them in braces.
-
-        v = partial.length === 0 ? '{}' : gap ?
-            '{\n' + gap + partial.join(',\n' + gap) + '\n' + mind + '}' :
-            '{' + partial.join(',') + '}';
-        gap = mind;
-        return v;
-    }
-}
-
-module.exports = function (value, replacer, space) {
-    var i;
-    gap = '';
-    indent = '';
-    
-    // If the space parameter is a number, make an indent string containing that
-    // many spaces.
-    if (typeof space === 'number') {
-        for (i = 0; i < space; i += 1) {
-            indent += ' ';
-        }
-    }
-    // If the space parameter is a string, it will be used as the indent string.
-    else if (typeof space === 'string') {
-        indent = space;
-    }
-
-    // If there is a replacer, it must be a function or an array.
-    // Otherwise, throw an error.
-    rep = replacer;
-    if (replacer && typeof replacer !== 'function'
-    && (typeof replacer !== 'object' || typeof replacer.length !== 'number')) {
-        throw new Error('JSON.stringify');
-    }
-    
-    // Make a fake root object containing our value under the key of ''.
-    // Return the result of stringifying the value.
-    return str('', {'': value});
-};
-
-},{}],43:[function(require,module,exports){
-"use strict";
-(function (AggregateOp) {
-    AggregateOp[AggregateOp["VALUES"] = 'values'] = "VALUES";
-    AggregateOp[AggregateOp["COUNT"] = 'count'] = "COUNT";
-    AggregateOp[AggregateOp["VALID"] = 'valid'] = "VALID";
-    AggregateOp[AggregateOp["MISSING"] = 'missing'] = "MISSING";
-    AggregateOp[AggregateOp["DISTINCT"] = 'distinct'] = "DISTINCT";
-    AggregateOp[AggregateOp["SUM"] = 'sum'] = "SUM";
-    AggregateOp[AggregateOp["MEAN"] = 'mean'] = "MEAN";
-    AggregateOp[AggregateOp["AVERAGE"] = 'average'] = "AVERAGE";
-    AggregateOp[AggregateOp["VARIANCE"] = 'variance'] = "VARIANCE";
-    AggregateOp[AggregateOp["VARIANCEP"] = 'variancep'] = "VARIANCEP";
-    AggregateOp[AggregateOp["STDEV"] = 'stdev'] = "STDEV";
-    AggregateOp[AggregateOp["STDEVP"] = 'stdevp'] = "STDEVP";
-    AggregateOp[AggregateOp["MEDIAN"] = 'median'] = "MEDIAN";
-    AggregateOp[AggregateOp["Q1"] = 'q1'] = "Q1";
-    AggregateOp[AggregateOp["Q3"] = 'q3'] = "Q3";
-    AggregateOp[AggregateOp["MODESKEW"] = 'modeskew'] = "MODESKEW";
-    AggregateOp[AggregateOp["MIN"] = 'min'] = "MIN";
-    AggregateOp[AggregateOp["MAX"] = 'max'] = "MAX";
-    AggregateOp[AggregateOp["ARGMIN"] = 'argmin'] = "ARGMIN";
-    AggregateOp[AggregateOp["ARGMAX"] = 'argmax'] = "ARGMAX";
-})(exports.AggregateOp || (exports.AggregateOp = {}));
-var AggregateOp = exports.AggregateOp;
-exports.AGGREGATE_OPS = [
-    AggregateOp.VALUES,
-    AggregateOp.COUNT,
-    AggregateOp.VALID,
-    AggregateOp.MISSING,
-    AggregateOp.DISTINCT,
-    AggregateOp.SUM,
-    AggregateOp.MEAN,
-    AggregateOp.AVERAGE,
-    AggregateOp.VARIANCE,
-    AggregateOp.VARIANCEP,
-    AggregateOp.STDEV,
-    AggregateOp.STDEVP,
-    AggregateOp.MEDIAN,
-    AggregateOp.Q1,
-    AggregateOp.Q3,
-    AggregateOp.MODESKEW,
-    AggregateOp.MIN,
-    AggregateOp.MAX,
-    AggregateOp.ARGMIN,
-    AggregateOp.ARGMAX,
-];
-/** Additive-based aggregation operations.  These can be applied to stack. */
-exports.SUM_OPS = [
-    AggregateOp.COUNT,
-    AggregateOp.SUM,
-    AggregateOp.DISTINCT
-];
-exports.SHARED_DOMAIN_OPS = [
-    AggregateOp.MEAN,
-    AggregateOp.AVERAGE,
-    AggregateOp.STDEV,
-    AggregateOp.STDEVP,
-    AggregateOp.MEDIAN,
-    AggregateOp.Q1,
-    AggregateOp.Q3,
-    AggregateOp.MIN,
-    AggregateOp.MAX,
-];
-
-},{}],44:[function(require,module,exports){
-"use strict";
-(function (AxisOrient) {
-    AxisOrient[AxisOrient["TOP"] = 'top'] = "TOP";
-    AxisOrient[AxisOrient["RIGHT"] = 'right'] = "RIGHT";
-    AxisOrient[AxisOrient["LEFT"] = 'left'] = "LEFT";
-    AxisOrient[AxisOrient["BOTTOM"] = 'bottom'] = "BOTTOM";
-})(exports.AxisOrient || (exports.AxisOrient = {}));
-var AxisOrient = exports.AxisOrient;
-// TODO: add comment for properties that we rely on Vega's default to produce
-// more concise Vega output.
-exports.defaultAxisConfig = {
-    offset: undefined,
-    grid: undefined,
-    labels: true,
-    labelMaxLength: 25,
-    tickSize: undefined,
-    characterWidth: 6
-};
-exports.defaultFacetAxisConfig = {
-    axisWidth: 0,
-    labels: true,
-    grid: false,
-    tickSize: 0
-};
-
-},{}],45:[function(require,module,exports){
-"use strict";
-var channel_1 = require('./channel');
-function autoMaxBins(channel) {
-    switch (channel) {
-        case channel_1.ROW:
-        case channel_1.COLUMN:
-        case channel_1.SIZE:
-        // Facets and Size shouldn't have too many bins
-        // We choose 6 like shape to simplify the rule
-        case channel_1.SHAPE:
-            return 6; // Vega's "shape" has 6 distinct values
-        default:
-            return 10;
-    }
-}
-exports.autoMaxBins = autoMaxBins;
-
-},{"./channel":46}],46:[function(require,module,exports){
-/*
- * Constants and utilities for encoding channels (Visual variables)
- * such as 'x', 'y', 'color'.
- */
-"use strict";
-var util_1 = require('./util');
-(function (Channel) {
-    Channel[Channel["X"] = 'x'] = "X";
-    Channel[Channel["Y"] = 'y'] = "Y";
-    Channel[Channel["X2"] = 'x2'] = "X2";
-    Channel[Channel["Y2"] = 'y2'] = "Y2";
-    Channel[Channel["ROW"] = 'row'] = "ROW";
-    Channel[Channel["COLUMN"] = 'column'] = "COLUMN";
-    Channel[Channel["SHAPE"] = 'shape'] = "SHAPE";
-    Channel[Channel["SIZE"] = 'size'] = "SIZE";
-    Channel[Channel["COLOR"] = 'color'] = "COLOR";
-    Channel[Channel["TEXT"] = 'text'] = "TEXT";
-    Channel[Channel["DETAIL"] = 'detail'] = "DETAIL";
-    Channel[Channel["LABEL"] = 'label'] = "LABEL";
-    Channel[Channel["PATH"] = 'path'] = "PATH";
-    Channel[Channel["ORDER"] = 'order'] = "ORDER";
-    Channel[Channel["OPACITY"] = 'opacity'] = "OPACITY";
-})(exports.Channel || (exports.Channel = {}));
-var Channel = exports.Channel;
-exports.X = Channel.X;
-exports.Y = Channel.Y;
-exports.X2 = Channel.X2;
-exports.Y2 = Channel.Y2;
-exports.ROW = Channel.ROW;
-exports.COLUMN = Channel.COLUMN;
-exports.SHAPE = Channel.SHAPE;
-exports.SIZE = Channel.SIZE;
-exports.COLOR = Channel.COLOR;
-exports.TEXT = Channel.TEXT;
-exports.DETAIL = Channel.DETAIL;
-exports.LABEL = Channel.LABEL;
-exports.PATH = Channel.PATH;
-exports.ORDER = Channel.ORDER;
-exports.OPACITY = Channel.OPACITY;
-exports.CHANNELS = [exports.X, exports.Y, exports.X2, exports.Y2, exports.ROW, exports.COLUMN, exports.SIZE, exports.SHAPE, exports.COLOR, exports.PATH, exports.ORDER, exports.OPACITY, exports.TEXT, exports.DETAIL, exports.LABEL];
-exports.UNIT_CHANNELS = util_1.without(exports.CHANNELS, [exports.ROW, exports.COLUMN]);
-exports.UNIT_SCALE_CHANNELS = util_1.without(exports.UNIT_CHANNELS, [exports.PATH, exports.ORDER, exports.DETAIL, exports.TEXT, exports.LABEL, exports.X2, exports.Y2]);
-exports.NONSPATIAL_CHANNELS = util_1.without(exports.UNIT_CHANNELS, [exports.X, exports.Y, exports.X2, exports.Y2]);
-exports.NONSPATIAL_SCALE_CHANNELS = util_1.without(exports.UNIT_SCALE_CHANNELS, [exports.X, exports.Y, exports.X2, exports.Y2]);
-/** Channels that can serve as groupings for stacked charts. */
-exports.STACK_GROUP_CHANNELS = [exports.COLOR, exports.DETAIL, exports.ORDER, exports.OPACITY, exports.SIZE];
-;
-/**
- * Return whether a channel supports a particular mark type.
- * @param channel  channel name
- * @param mark the mark type
- * @return whether the mark supports the channel
- */
-function supportMark(channel, mark) {
-    return !!getSupportedMark(channel)[mark];
-}
-exports.supportMark = supportMark;
-/**
- * Return a dictionary showing whether a channel supports mark type.
- * @param channel
- * @return A dictionary mapping mark types to boolean values.
- */
-function getSupportedMark(channel) {
-    switch (channel) {
-        case exports.X:
-        case exports.Y:
-        case exports.COLOR:
-        case exports.DETAIL:
-        case exports.ORDER:
-        case exports.OPACITY:
-        case exports.ROW:
-        case exports.COLUMN:
-            return {
-                point: true, tick: true, rule: true, circle: true, square: true,
-                bar: true, line: true, area: true, text: true, boxplot: true,
-                hexagon: true, leader: true, scatter3D: true, contour: true,
-                radar: true
-            };
-        case exports.X2:
-        case exports.Y2:
-            return {
-                rule: true, bar: true, area: true
-            };
-        case exports.SIZE:
-            return {
-                point: true, tick: true, rule: true, circle: true, square: true,
-                bar: true, text: true
-            };
-        case exports.SHAPE:
-            return { point: true };
-        case exports.TEXT:
-            return { text: true };
-        case exports.PATH:
-            return { line: true };
-    }
-    return {};
-}
-exports.getSupportedMark = getSupportedMark;
-;
-/**
- * Return whether a channel supports dimension / measure role
- * @param  channel
- * @return A dictionary mapping role to boolean values.
- */
-function getSupportedRole(channel) {
-    switch (channel) {
-        case exports.X:
-        case exports.Y:
-        case exports.COLOR:
-        case exports.OPACITY:
-        case exports.LABEL:
-        case exports.DETAIL:
-            return {
-                measure: true,
-                dimension: true
-            };
-        case exports.ROW:
-        case exports.COLUMN:
-        case exports.SHAPE:
-            return {
-                measure: false,
-                dimension: true
-            };
-        case exports.X2:
-        case exports.Y2:
-        case exports.SIZE:
-        case exports.TEXT:
-            return {
-                measure: true,
-                dimension: false
-            };
-        case exports.PATH:
-            return {
-                measure: false,
-                dimension: true
-            };
-    }
-    throw new Error('Invalid encoding channel' + channel);
-}
-exports.getSupportedRole = getSupportedRole;
-function hasScale(channel) {
-    return !util_1.contains([exports.DETAIL, exports.PATH, exports.TEXT, exports.LABEL, exports.ORDER], channel);
-}
-exports.hasScale = hasScale;
-
-},{"./util":55}],47:[function(require,module,exports){
-// DateTime definition object
-"use strict";
-var util_1 = require('./util');
-function isDateTime(o) {
-    return !!o && (!!o.year || !!o.quarter || !!o.month || !!o.date || !!o.day ||
-        !!o.hours || !!o.minutes || !!o.seconds || !!o.milliseconds);
-}
-exports.isDateTime = isDateTime;
-exports.MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
-exports.SHORT_MONTHS = exports.MONTHS.map(function (m) { return m.substr(0, 3); });
-exports.DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-exports.SHORT_DAYS = exports.DAYS.map(function (d) { return d.substr(0, 3); });
-function normalizeQuarter(q) {
-    if (util_1.isNumber(q)) {
-        // We accept 1-based quarter, so need to readjust to 0-based quarter
-        return (q - 1) + '';
-    }
-    else {
-        // Simply an expression string, but normalize should not be called in this case.
-        console.warn('Potentially invalid quarter', q);
-        return q;
-    }
-}
-function normalizeMonth(m) {
-    if (util_1.isNumber(m)) {
-        // We accept 1-based month, so need to readjust to 0-based month
-        return (m - 1) + '';
-    }
-    else {
-        var lowerM = m.toLowerCase();
-        var monthIndex = exports.MONTHS.indexOf(lowerM);
-        if (monthIndex !== -1) {
-            return monthIndex + ''; // 0 for january, ...
-        }
-        var shortM = lowerM.substr(0, 3);
-        var shortMonthIndex = exports.SHORT_MONTHS.indexOf(shortM);
-        if (shortMonthIndex !== -1) {
-            return shortMonthIndex + '';
-        }
-        // Simply an expression string, but normalize should not be called in this case.
-        console.warn('Potentially invalid month', m);
-        return m;
-    }
-}
-function normalizeDay(d) {
-    if (util_1.isNumber(d)) {
-        // mod so that this can be both 0-based where 0 = sunday
-        // and 1-based where 7=sunday
-        return (d % 7) + '';
-    }
-    else {
-        var lowerD = d.toLowerCase();
-        var dayIndex = exports.DAYS.indexOf(lowerD);
-        if (dayIndex !== -1) {
-            return dayIndex + ''; // 0 for january, ...
-        }
-        var shortD = lowerD.substr(0, 3);
-        var shortDayIndex = exports.SHORT_DAYS.indexOf(shortD);
-        if (shortDayIndex !== -1) {
-            return shortDayIndex + '';
-        }
-        // Simply an expression string, but normalize should not be called in this case.
-        console.warn('Potentially invalid day', d);
-        return d;
-    }
-}
-/**
- * Return Vega Expression for a particular date time.
- * @param d
- * @param normalize whether to normalize quarter, month, day.
- */
-function dateTimeExpr(d, normalize) {
-    if (normalize === void 0) { normalize = false; }
-    var units = [];
-    if (normalize && d.day !== undefined) {
-        for (var _i = 0, _a = ['year', 'quarter', 'month', 'date']; _i < _a.length; _i++) {
-            var unit = _a[_i];
-            if (d[unit] !== undefined) {
-                console.warn('Dropping day from datetime', JSON.stringify(d), 'as day cannot be combined with', unit);
-                d = util_1.duplicate(d);
-                delete d.day;
-                break;
-            }
-        }
-    }
-    if (d.year !== undefined) {
-        units.push(d.year);
-    }
-    else if (d.day !== undefined) {
-        // Set year to 2006 for working with day since January 1 2006 is a Sunday
-        units.push(2006);
-    }
-    else {
-        units.push(0);
-    }
-    if (d.month !== undefined) {
-        var month = normalize ? normalizeMonth(d.month) : d.month;
-        units.push(month);
-    }
-    else if (d.quarter !== undefined) {
-        var quarter = normalize ? normalizeQuarter(d.quarter) : d.quarter;
-        units.push(quarter + '*3');
-    }
-    else {
-        units.push(0); // months start at zero in JS
-    }
-    if (d.date !== undefined) {
-        units.push(d.date);
-    }
-    else if (d.day !== undefined) {
-        // HACK: Day only works as a standalone unit
-        // This is only correct because we always set year to 2006 for day
-        var day = normalize ? normalizeDay(d.day) : d.day;
-        units.push(day + '+1');
-    }
-    else {
-        units.push(1); // Date starts at 1 in JS
-    }
-    // Note: can't use TimeUnit enum here as importing it will create
-    // circular dependency problem!
-    for (var _b = 0, _c = ['hours', 'minutes', 'seconds', 'milliseconds']; _b < _c.length; _b++) {
-        var timeUnit = _c[_b];
-        if (d[timeUnit] !== undefined) {
-            units.push(d[timeUnit]);
-        }
-        else {
-            units.push(0);
-        }
-    }
-    return 'datetime(' + units.join(', ') + ')';
-}
-exports.dateTimeExpr = dateTimeExpr;
-
-},{"./util":55}],48:[function(require,module,exports){
-"use strict";
-var channel_1 = require('./channel');
-var util_1 = require('./util');
-function countRetinal(encoding) {
-    var count = 0;
-    if (encoding.color) {
-        count++;
-    }
-    if (encoding.opacity) {
-        count++;
-    }
-    if (encoding.size) {
-        count++;
-    }
-    if (encoding.shape) {
-        count++;
-    }
-    return count;
-}
-exports.countRetinal = countRetinal;
-function channels(encoding) {
-    return channel_1.CHANNELS.filter(function (channel) {
-        return has(encoding, channel);
-    });
-}
-exports.channels = channels;
-// TOD: rename this to hasChannelField and only use we really want it.
-function has(encoding, channel) {
-    var channelEncoding = encoding && encoding[channel];
-    return channelEncoding && (channelEncoding.field !== undefined ||
-        // TODO: check that we have field in the array
-        (util_1.isArray(channelEncoding) && channelEncoding.length > 0));
-}
-exports.has = has;
-function isAggregate(encoding) {
-    return util_1.some(channel_1.CHANNELS, function (channel) {
-        if (has(encoding, channel) && encoding[channel].aggregate) {
-            return true;
-        }
-        return false;
-    });
-}
-exports.isAggregate = isAggregate;
-function isRanged(encoding) {
-    return encoding && ((!!encoding.x && !!encoding.x2) || (!!encoding.y && !!encoding.y2));
-}
-exports.isRanged = isRanged;
-function fieldDefs(encoding) {
-    var arr = [];
-    channel_1.CHANNELS.forEach(function (channel) {
-        if (has(encoding, channel)) {
-            if (util_1.isArray(encoding[channel])) {
-                encoding[channel].forEach(function (fieldDef) {
-                    arr.push(fieldDef);
-                });
-            }
-            else {
-                arr.push(encoding[channel]);
-            }
-        }
-    });
-    return arr;
-}
-exports.fieldDefs = fieldDefs;
-;
-function forEach(encoding, f, thisArg) {
-    channelMappingForEach(channel_1.CHANNELS, encoding, f, thisArg);
-}
-exports.forEach = forEach;
-function channelMappingForEach(channels, mapping, f, thisArg) {
-    var i = 0;
-    channels.forEach(function (channel) {
-        if (has(mapping, channel)) {
-            if (util_1.isArray(mapping[channel])) {
-                mapping[channel].forEach(function (fieldDef) {
-                    f.call(thisArg, fieldDef, channel, i++);
-                });
-            }
-            else {
-                f.call(thisArg, mapping[channel], channel, i++);
-            }
-        }
-    });
-}
-exports.channelMappingForEach = channelMappingForEach;
-function map(encoding, f, thisArg) {
-    return channelMappingMap(channel_1.CHANNELS, encoding, f, thisArg);
-}
-exports.map = map;
-function channelMappingMap(channels, mapping, f, thisArg) {
-    var arr = [];
-    channels.forEach(function (channel) {
-        if (has(mapping, channel)) {
-            if (util_1.isArray(mapping[channel])) {
-                mapping[channel].forEach(function (fieldDef) {
-                    arr.push(f.call(thisArg, fieldDef, channel));
-                });
-            }
-            else {
-                arr.push(f.call(thisArg, mapping[channel], channel));
-            }
-        }
-    });
-    return arr;
-}
-exports.channelMappingMap = channelMappingMap;
-function reduce(encoding, f, init, thisArg) {
-    return channelMappingReduce(channel_1.CHANNELS, encoding, f, init, thisArg);
-}
-exports.reduce = reduce;
-function channelMappingReduce(channels, mapping, f, init, thisArg) {
-    var r = init;
-    channel_1.CHANNELS.forEach(function (channel) {
-        if (has(mapping, channel)) {
-            if (util_1.isArray(mapping[channel])) {
-                mapping[channel].forEach(function (fieldDef) {
-                    r = f.call(thisArg, r, fieldDef, channel);
-                });
-            }
-            else {
-                r = f.call(thisArg, r, mapping[channel], channel);
-            }
-        }
-    });
-    return r;
-}
-exports.channelMappingReduce = channelMappingReduce;
-
-},{"./channel":46,"./util":55}],49:[function(require,module,exports){
-"use strict";
-(function (Mark) {
-    Mark[Mark["AREA"] = 'area'] = "AREA";
-    Mark[Mark["BAR"] = 'bar'] = "BAR";
-    Mark[Mark["LINE"] = 'line'] = "LINE";
-    Mark[Mark["POINT"] = 'point'] = "POINT";
-    Mark[Mark["TEXT"] = 'text'] = "TEXT";
-    Mark[Mark["TICK"] = 'tick'] = "TICK";
-    Mark[Mark["RULE"] = 'rule'] = "RULE";
-    Mark[Mark["CIRCLE"] = 'circle'] = "CIRCLE";
-    Mark[Mark["SQUARE"] = 'square'] = "SQUARE";
-    Mark[Mark["ERRORBAR"] = 'errorBar'] = "ERRORBAR";
-    Mark[Mark["BOXPLOT"] = 'boxplot'] = "BOXPLOT";
-    Mark[Mark["HEXAGON"] = 'hexagon'] = "HEXAGON";
-    Mark[Mark["LEADER"] = 'leader'] = "LEADER";
-    Mark[Mark["CONTOUR"] = 'contour'] = "CONTOUR";
-    Mark[Mark["SCATTER3D"] = 'scatter3D'] = "SCATTER3D";
-    Mark[Mark["RADAR"] = 'radar'] = "RADAR";
-})(exports.Mark || (exports.Mark = {}));
-var Mark = exports.Mark;
-exports.AREA = Mark.AREA;
-exports.BAR = Mark.BAR;
-exports.LINE = Mark.LINE;
-exports.POINT = Mark.POINT;
-exports.TEXT = Mark.TEXT;
-exports.TICK = Mark.TICK;
-exports.RULE = Mark.RULE;
-exports.CIRCLE = Mark.CIRCLE;
-exports.SQUARE = Mark.SQUARE;
-exports.ERRORBAR = Mark.ERRORBAR;
-exports.BOXPLOT = Mark.BOXPLOT;
-exports.HEXAGON = Mark.HEXAGON;
-exports.LEADER = Mark.LEADER;
-exports.CONTOUR = Mark.CONTOUR;
-exports.SCATTER3D = Mark.SCATTER3D;
-exports.RADAR = Mark.RADAR;
-exports.PRIMITIVE_MARKS = [exports.AREA, exports.BAR, exports.LINE, exports.POINT, exports.TEXT, exports.TICK, exports.RULE, exports.CIRCLE, exports.SQUARE];
-
-},{}],50:[function(require,module,exports){
-"use strict";
-(function (ScaleType) {
-    ScaleType[ScaleType["LINEAR"] = 'linear'] = "LINEAR";
-    ScaleType[ScaleType["LOG"] = 'log'] = "LOG";
-    ScaleType[ScaleType["POW"] = 'pow'] = "POW";
-    ScaleType[ScaleType["SQRT"] = 'sqrt'] = "SQRT";
-    ScaleType[ScaleType["QUANTILE"] = 'quantile'] = "QUANTILE";
-    ScaleType[ScaleType["QUANTIZE"] = 'quantize'] = "QUANTIZE";
-    ScaleType[ScaleType["ORDINAL"] = 'ordinal'] = "ORDINAL";
-    ScaleType[ScaleType["TIME"] = 'time'] = "TIME";
-    ScaleType[ScaleType["UTC"] = 'utc'] = "UTC";
-})(exports.ScaleType || (exports.ScaleType = {}));
-var ScaleType = exports.ScaleType;
-(function (NiceTime) {
-    NiceTime[NiceTime["SECOND"] = 'second'] = "SECOND";
-    NiceTime[NiceTime["MINUTE"] = 'minute'] = "MINUTE";
-    NiceTime[NiceTime["HOUR"] = 'hour'] = "HOUR";
-    NiceTime[NiceTime["DAY"] = 'day'] = "DAY";
-    NiceTime[NiceTime["WEEK"] = 'week'] = "WEEK";
-    NiceTime[NiceTime["MONTH"] = 'month'] = "MONTH";
-    NiceTime[NiceTime["YEAR"] = 'year'] = "YEAR";
-})(exports.NiceTime || (exports.NiceTime = {}));
-var NiceTime = exports.NiceTime;
-(function (BandSize) {
-    BandSize[BandSize["FIT"] = 'fit'] = "FIT";
-})(exports.BandSize || (exports.BandSize = {}));
-var BandSize = exports.BandSize;
-exports.BANDSIZE_FIT = BandSize.FIT;
-exports.defaultScaleConfig = {
-    round: true,
-    textBandWidth: 90,
-    bandSize: 21,
-    padding: 0.1,
-    useRawDomain: false,
-    opacity: [0.3, 0.8],
-    nominalColorRange: 'category10',
-    sequentialColorRange: ['#AFC6A3', '#09622A'],
-    shapeRange: 'shapes',
-    fontSizeRange: [8, 40],
-    ruleSizeRange: [1, 5],
-    tickSizeRange: [1, 20]
-};
-exports.defaultFacetScaleConfig = {
-    round: true,
-    padding: 16
-};
-
-},{}],51:[function(require,module,exports){
-"use strict";
-(function (SortOrder) {
-    SortOrder[SortOrder["ASCENDING"] = 'ascending'] = "ASCENDING";
-    SortOrder[SortOrder["DESCENDING"] = 'descending'] = "DESCENDING";
-    SortOrder[SortOrder["NONE"] = 'none'] = "NONE";
-})(exports.SortOrder || (exports.SortOrder = {}));
-var SortOrder = exports.SortOrder;
-function isSortField(sort) {
-    return !!sort && !!sort['field'] && !!sort['op'];
-}
-exports.isSortField = isSortField;
-
-},{}],52:[function(require,module,exports){
-"use strict";
-var channel_1 = require('./channel');
-var encoding_1 = require('./encoding');
-var mark_1 = require('./mark');
-var util_1 = require('./util');
-(function (StackOffset) {
-    StackOffset[StackOffset["ZERO"] = 'zero'] = "ZERO";
-    StackOffset[StackOffset["CENTER"] = 'center'] = "CENTER";
-    StackOffset[StackOffset["NORMALIZE"] = 'normalize'] = "NORMALIZE";
-    StackOffset[StackOffset["NONE"] = 'none'] = "NONE";
-})(exports.StackOffset || (exports.StackOffset = {}));
-var StackOffset = exports.StackOffset;
-function stack(mark, encoding, config) {
-    var stacked = (config && config.mark) ? config.mark.stacked : undefined;
-    // Should not have stack explicitly disabled
-    if (util_1.contains([StackOffset.NONE, null, false], stacked)) {
-        return null;
-    }
-    // Should have stackable mark
-    if (!util_1.contains([mark_1.BAR, mark_1.AREA], mark)) {
-        return null;
-    }
-    // Should be aggregate plot
-    if (!encoding_1.isAggregate(encoding)) {
-        return null;
-    }
-    // Should have grouping level of detail
-    var stackByChannels = channel_1.STACK_GROUP_CHANNELS.reduce(function (sc, channel) {
-        if (encoding_1.has(encoding, channel) && !encoding[channel].aggregate) {
-            sc.push(channel);
-        }
-        return sc;
-    }, []);
-    if (stackByChannels.length === 0) {
-        return null;
-    }
-    // Has only one aggregate axis
-    var hasXField = encoding_1.has(encoding, channel_1.X);
-    var hasYField = encoding_1.has(encoding, channel_1.Y);
-    var xIsAggregate = hasXField && !!encoding.x.aggregate;
-    var yIsAggregate = hasYField && !!encoding.y.aggregate;
-    if (xIsAggregate !== yIsAggregate) {
-        return {
-            groupbyChannel: xIsAggregate ? (hasYField ? channel_1.Y : null) : (hasXField ? channel_1.X : null),
-            fieldChannel: xIsAggregate ? channel_1.X : channel_1.Y,
-            stackByChannels: stackByChannels,
-            offset: stacked || StackOffset.ZERO
-        };
-    }
-    return null;
-}
-exports.stack = stack;
-
-},{"./channel":46,"./encoding":48,"./mark":49,"./util":55}],53:[function(require,module,exports){
-"use strict";
-var channel_1 = require('./channel');
-var datetime_1 = require('./datetime');
-var scale_1 = require('./scale');
-var util_1 = require('./util');
-(function (TimeUnit) {
-    TimeUnit[TimeUnit["YEAR"] = 'year'] = "YEAR";
-    TimeUnit[TimeUnit["MONTH"] = 'month'] = "MONTH";
-    TimeUnit[TimeUnit["DAY"] = 'day'] = "DAY";
-    TimeUnit[TimeUnit["DATE"] = 'date'] = "DATE";
-    TimeUnit[TimeUnit["HOURS"] = 'hours'] = "HOURS";
-    TimeUnit[TimeUnit["MINUTES"] = 'minutes'] = "MINUTES";
-    TimeUnit[TimeUnit["SECONDS"] = 'seconds'] = "SECONDS";
-    TimeUnit[TimeUnit["MILLISECONDS"] = 'milliseconds'] = "MILLISECONDS";
-    TimeUnit[TimeUnit["YEARMONTH"] = 'yearmonth'] = "YEARMONTH";
-    // Note: don't add MONTH DATE because it will be incorrect
-    // since days on a leap year will be shifted by one if
-    // we only add
-    TimeUnit[TimeUnit["YEARMONTHDATE"] = 'yearmonthdate'] = "YEARMONTHDATE";
-    TimeUnit[TimeUnit["YEARMONTHDATEHOURS"] = 'yearmonthdatehours'] = "YEARMONTHDATEHOURS";
-    TimeUnit[TimeUnit["YEARMONTHDATEHOURSMINUTES"] = 'yearmonthdatehoursminutes'] = "YEARMONTHDATEHOURSMINUTES";
-    TimeUnit[TimeUnit["YEARMONTHDATEHOURSMINUTESSECONDS"] = 'yearmonthdatehoursminutesseconds'] = "YEARMONTHDATEHOURSMINUTESSECONDS";
-    TimeUnit[TimeUnit["HOURSMINUTES"] = 'hoursminutes'] = "HOURSMINUTES";
-    TimeUnit[TimeUnit["HOURSMINUTESSECONDS"] = 'hoursminutesseconds'] = "HOURSMINUTESSECONDS";
-    TimeUnit[TimeUnit["MINUTESSECONDS"] = 'minutesseconds'] = "MINUTESSECONDS";
-    TimeUnit[TimeUnit["SECONDSMILLISECONDS"] = 'secondsmilliseconds'] = "SECONDSMILLISECONDS";
-    TimeUnit[TimeUnit["QUARTER"] = 'quarter'] = "QUARTER";
-    TimeUnit[TimeUnit["YEARQUARTER"] = 'yearquarter'] = "YEARQUARTER";
-    TimeUnit[TimeUnit["QUARTERMONTH"] = 'quartermonth'] = "QUARTERMONTH";
-    TimeUnit[TimeUnit["YEARQUARTERMONTH"] = 'yearquartermonth'] = "YEARQUARTERMONTH";
-})(exports.TimeUnit || (exports.TimeUnit = {}));
-var TimeUnit = exports.TimeUnit;
-/** Time Unit that only corresponds to only one part of Date objects. */
-exports.SINGLE_TIMEUNITS = [
-    TimeUnit.YEAR,
-    TimeUnit.QUARTER,
-    TimeUnit.MONTH,
-    TimeUnit.DAY,
-    TimeUnit.DATE,
-    TimeUnit.HOURS,
-    TimeUnit.MINUTES,
-    TimeUnit.SECONDS,
-    TimeUnit.MILLISECONDS,
-];
-var SINGLE_TIMEUNIT_INDEX = exports.SINGLE_TIMEUNITS.reduce(function (d, timeUnit) {
-    d[timeUnit] = true;
-    return d;
-}, {});
-function isSingleTimeUnit(timeUnit) {
-    return !!SINGLE_TIMEUNIT_INDEX[timeUnit];
-}
-exports.isSingleTimeUnit = isSingleTimeUnit;
-/**
- * Converts a date to only have the measurements relevant to the specified unit
- * i.e. ('yearmonth', '2000-12-04 07:58:14') -> '2000-12-01 00:00:00'
- * Note: the base date is Jan 01 1900 00:00:00
- */
-function convert(unit, date) {
-    var result = new Date(0, 0, 1, 0, 0, 0, 0); // start with uniform date
-    exports.SINGLE_TIMEUNITS.forEach(function (singleUnit) {
-        if (containsTimeUnit(unit, singleUnit)) {
-            switch (singleUnit) {
-                case TimeUnit.DAY:
-                    throw new Error('Cannot convert to TimeUnits containing \'day\'');
-                case TimeUnit.YEAR:
-                    result.setFullYear(date.getFullYear());
-                    break;
-                case TimeUnit.QUARTER:
-                    // indicate quarter by setting month to be the first of the quarter i.e. may (4) -> april (3)
-                    result.setMonth((Math.floor(date.getMonth() / 3)) * 3);
-                    break;
-                case TimeUnit.MONTH:
-                    result.setMonth(date.getMonth());
-                    break;
-                case TimeUnit.DATE:
-                    result.setDate(date.getDate());
-                    break;
-                case TimeUnit.HOURS:
-                    result.setHours(date.getHours());
-                    break;
-                case TimeUnit.MINUTES:
-                    result.setMinutes(date.getMinutes());
-                    break;
-                case TimeUnit.SECONDS:
-                    result.setSeconds(date.getSeconds());
-                    break;
-                case TimeUnit.MILLISECONDS:
-                    result.setMilliseconds(date.getMilliseconds());
-                    break;
-            }
-        }
-    });
-    return result;
-}
-exports.convert = convert;
-exports.MULTI_TIMEUNITS = [
-    TimeUnit.YEARQUARTER,
-    TimeUnit.YEARQUARTERMONTH,
-    TimeUnit.YEARMONTH,
-    TimeUnit.YEARMONTHDATE,
-    TimeUnit.YEARMONTHDATEHOURS,
-    TimeUnit.YEARMONTHDATEHOURSMINUTES,
-    TimeUnit.YEARMONTHDATEHOURSMINUTESSECONDS,
-    TimeUnit.QUARTERMONTH,
-    TimeUnit.HOURSMINUTES,
-    TimeUnit.HOURSMINUTESSECONDS,
-    TimeUnit.MINUTESSECONDS,
-    TimeUnit.SECONDSMILLISECONDS,
-];
-var MULTI_TIMEUNIT_INDEX = exports.MULTI_TIMEUNITS.reduce(function (d, timeUnit) {
-    d[timeUnit] = true;
-    return d;
-}, {});
-function isMultiTimeUnit(timeUnit) {
-    return !!MULTI_TIMEUNIT_INDEX[timeUnit];
-}
-exports.isMultiTimeUnit = isMultiTimeUnit;
-exports.TIMEUNITS = exports.SINGLE_TIMEUNITS.concat(exports.MULTI_TIMEUNITS);
-/** Returns true if fullTimeUnit contains the timeUnit, false otherwise. */
-function containsTimeUnit(fullTimeUnit, timeUnit) {
-    var fullTimeUnitStr = fullTimeUnit.toString();
-    var timeUnitStr = timeUnit.toString();
-    var index = fullTimeUnitStr.indexOf(timeUnitStr);
-    return index > -1 &&
-        (timeUnit !== TimeUnit.SECONDS ||
-            index === 0 ||
-            fullTimeUnitStr.charAt(index - 1) !== 'i' // exclude milliseconds
-        );
-}
-exports.containsTimeUnit = containsTimeUnit;
-function defaultScaleType(timeUnit) {
-    switch (timeUnit) {
-        case TimeUnit.HOURS:
-        case TimeUnit.DAY:
-        case TimeUnit.MONTH:
-        case TimeUnit.QUARTER:
-            return scale_1.ScaleType.ORDINAL;
-    }
-    // date, year, minute, second, yearmonth, monthday, ...
-    return scale_1.ScaleType.TIME;
-}
-exports.defaultScaleType = defaultScaleType;
-/**
- * Returns Vega expresssion for a given timeUnit and fieldRef
- */
-function fieldExpr(fullTimeUnit, field) {
-    var fieldRef = 'datum["' + field + '"]';
-    function func(timeUnit) {
-        if (timeUnit === TimeUnit.QUARTER) {
-            // Divide by 3 to get the corresponding quarter number, multiply by 3
-            // to scale to the first month of the corresponding quarter(0,3,6,9).
-            return 'floor(month(' + fieldRef + ')' + '/3)';
-        }
-        else {
-            return timeUnit + '(' + fieldRef + ')';
-        }
-    }
-    var d = exports.SINGLE_TIMEUNITS.reduce(function (_d, tu) {
-        if (containsTimeUnit(fullTimeUnit, tu)) {
-            _d[tu] = func(tu);
-        }
-        return _d;
-    }, {});
-    if (d.day && util_1.keys(d).length > 1) {
-        console.warn('Time unit "' + fullTimeUnit + '" is not supported. We are replacing it with ', (fullTimeUnit + '').replace('day', 'date') + '.');
-        delete d.day;
-        d.date = func(TimeUnit.DATE);
-    }
-    return datetime_1.dateTimeExpr(d);
-}
-exports.fieldExpr = fieldExpr;
-/** Generate the complete raw domain. */
-function rawDomain(timeUnit, channel) {
-    if (util_1.contains([channel_1.ROW, channel_1.COLUMN, channel_1.SHAPE, channel_1.COLOR], channel)) {
-        return null;
-    }
-    switch (timeUnit) {
-        case TimeUnit.SECONDS:
-            return util_1.range(0, 60);
-        case TimeUnit.MINUTES:
-            return util_1.range(0, 60);
-        case TimeUnit.HOURS:
-            return util_1.range(0, 24);
-        case TimeUnit.DAY:
-            return util_1.range(0, 7);
-        case TimeUnit.DATE:
-            return util_1.range(1, 32);
-        case TimeUnit.MONTH:
-            return util_1.range(0, 12);
-        case TimeUnit.QUARTER:
-            return [0, 3, 6, 9];
-    }
-    return null;
-}
-exports.rawDomain = rawDomain;
-/** returns the smallest nice unit for scale.nice */
-function smallestUnit(timeUnit) {
-    if (!timeUnit) {
-        return undefined;
-    }
-    if (containsTimeUnit(timeUnit, TimeUnit.SECONDS)) {
-        return 'second';
-    }
-    if (containsTimeUnit(timeUnit, TimeUnit.MINUTES)) {
-        return 'minute';
-    }
-    if (containsTimeUnit(timeUnit, TimeUnit.HOURS)) {
-        return 'hour';
-    }
-    if (containsTimeUnit(timeUnit, TimeUnit.DAY) ||
-        containsTimeUnit(timeUnit, TimeUnit.DATE)) {
-        return 'day';
-    }
-    if (containsTimeUnit(timeUnit, TimeUnit.MONTH)) {
-        return 'month';
-    }
-    if (containsTimeUnit(timeUnit, TimeUnit.YEAR)) {
-        return 'year';
-    }
-    return undefined;
-}
-exports.smallestUnit = smallestUnit;
-/** returns the template name used for axis labels for a time unit */
-function template(timeUnit, field, shortTimeLabels) {
-    if (!timeUnit) {
-        return undefined;
-    }
-    var dateComponents = [];
-    if (containsTimeUnit(timeUnit, TimeUnit.YEAR)) {
-        dateComponents.push(shortTimeLabels ? '%y' : '%Y');
-    }
-    if (containsTimeUnit(timeUnit, TimeUnit.QUARTER)) {
-        // special template for quarter
-        dateComponents.push('\'}}Q{{' + field + ' | quarter}}{{' + field + ' | time:\'');
-    }
-    if (containsTimeUnit(timeUnit, TimeUnit.MONTH)) {
-        dateComponents.push(shortTimeLabels ? '%b' : '%B');
-    }
-    if (containsTimeUnit(timeUnit, TimeUnit.DAY)) {
-        dateComponents.push(shortTimeLabels ? '%a' : '%A');
-    }
-    else if (containsTimeUnit(timeUnit, TimeUnit.DATE)) {
-        dateComponents.push('%d');
-    }
-    var timeComponents = [];
-    if (containsTimeUnit(timeUnit, TimeUnit.HOURS)) {
-        timeComponents.push('%H');
-    }
-    if (containsTimeUnit(timeUnit, TimeUnit.MINUTES)) {
-        timeComponents.push('%M');
-    }
-    if (containsTimeUnit(timeUnit, TimeUnit.SECONDS)) {
-        timeComponents.push('%S');
-    }
-    if (containsTimeUnit(timeUnit, TimeUnit.MILLISECONDS)) {
-        timeComponents.push('%L');
-    }
-    var out = [];
-    if (dateComponents.length > 0) {
-        out.push(dateComponents.join('-'));
-    }
-    if (timeComponents.length > 0) {
-        out.push(timeComponents.join(':'));
-    }
-    if (out.length > 0) {
-        // clean up empty formatting expressions that may have been generated by the quarter time unit
-        var template_1 = '{{' + field + ' | time:\'' + out.join(' ') + '\'}}';
-        // FIXME: Remove these RegExp Hacks!!!
-        var escapedField = field.replace(/(\[|\])/g, '\\$1'); // excape field for use in Regex
-        return template_1.replace(new RegExp('{{' + escapedField + ' \\| time:\'\'}}', 'g'), ''); // remove empty templates with Regex
-    }
-    else {
-        return undefined;
-    }
-}
-exports.template = template;
-
-},{"./channel":46,"./datetime":47,"./scale":50,"./util":55}],54:[function(require,module,exports){
-/** Constants and utilities for data type */
-"use strict";
-(function (Type) {
-    Type[Type["QUANTITATIVE"] = 'quantitative'] = "QUANTITATIVE";
-    Type[Type["ORDINAL"] = 'ordinal'] = "ORDINAL";
-    Type[Type["TEMPORAL"] = 'temporal'] = "TEMPORAL";
-    Type[Type["NOMINAL"] = 'nominal'] = "NOMINAL";
-})(exports.Type || (exports.Type = {}));
-var Type = exports.Type;
-exports.QUANTITATIVE = Type.QUANTITATIVE;
-exports.ORDINAL = Type.ORDINAL;
-exports.TEMPORAL = Type.TEMPORAL;
-exports.NOMINAL = Type.NOMINAL;
-/**
- * Mapping from full type names to short type names.
- * @type {Object}
- */
-exports.SHORT_TYPE = {
-    quantitative: 'Q',
-    temporal: 'T',
-    nominal: 'N',
-    ordinal: 'O'
-};
-/**
- * Mapping from short type names to full type names.
- * @type {Object}
- */
-exports.TYPE_FROM_SHORT_TYPE = {
-    Q: exports.QUANTITATIVE,
-    T: exports.TEMPORAL,
-    O: exports.ORDINAL,
-    N: exports.NOMINAL
-};
-/**
- * Get full, lowercase type name for a given type.
- * @param  type
- * @return Full type name.
- */
-function getFullName(type) {
-    var typeString = type; // force type as string so we can translate short types
-    return exports.TYPE_FROM_SHORT_TYPE[typeString.toUpperCase()] ||
-        typeString.toLowerCase();
-}
-exports.getFullName = getFullName;
-
-},{}],55:[function(require,module,exports){
-/// <reference path="../typings/datalib.d.ts"/>
-/// <reference path="../typings/json-stable-stringify.d.ts"/>
-"use strict";
-var stringify = require('json-stable-stringify');
-var util_1 = require('datalib/src/util');
-exports.keys = util_1.keys;
-exports.extend = util_1.extend;
-exports.duplicate = util_1.duplicate;
-exports.isArray = util_1.isArray;
-exports.vals = util_1.vals;
-exports.truncate = util_1.truncate;
-exports.toMap = util_1.toMap;
-exports.isObject = util_1.isObject;
-exports.isString = util_1.isString;
-exports.isNumber = util_1.isNumber;
-exports.isBoolean = util_1.isBoolean;
-var util_2 = require('datalib/src/util');
-var util_3 = require('datalib/src/util');
-/**
- * Creates an object composed of the picked object properties.
- *
- * Example:  (from lodash)
- *
- * var object = { 'a': 1, 'b': '2', 'c': 3 };
- * pick(object, ['a', 'c']);
- * // → { 'a': 1, 'c': 3 }
- *
- */
-function pick(obj, props) {
-    var copy = {};
-    props.forEach(function (prop) {
-        if (obj.hasOwnProperty(prop)) {
-            copy[prop] = obj[prop];
-        }
-    });
-    return copy;
-}
-exports.pick = pick;
-// Copied from datalib
-function range(start, stop, step) {
-    if (arguments.length < 3) {
-        step = 1;
-        if (arguments.length < 2) {
-            stop = start;
-            start = 0;
-        }
-    }
-    if ((stop - start) / step === Infinity) {
-        throw new Error('Infinite range');
-    }
-    var range = [], i = -1, j;
-    if (step < 0) {
-        /* tslint:disable */
-        while ((j = start + step * ++i) > stop) {
-            range.push(j);
-        }
-    }
-    else {
-        while ((j = start + step * ++i) < stop) {
-            range.push(j);
-        }
-    }
-    return range;
-}
-exports.range = range;
-;
-/**
- * The opposite of _.pick; this method creates an object composed of the own
- * and inherited enumerable string keyed properties of object that are not omitted.
- */
-function omit(obj, props) {
-    var copy = util_2.duplicate(obj);
-    props.forEach(function (prop) {
-        delete copy[prop];
-    });
-    return copy;
-}
-exports.omit = omit;
-function hash(a) {
-    if (util_3.isString(a) || util_3.isNumber(a) || util_3.isBoolean(a)) {
-        return String(a);
-    }
-    return stringify(a);
-}
-exports.hash = hash;
-function contains(array, item) {
-    return array.indexOf(item) > -1;
-}
-exports.contains = contains;
-/** Returns the array without the elements in item */
-function without(array, excludedItems) {
-    return array.filter(function (item) {
-        return !contains(excludedItems, item);
-    });
-}
-exports.without = without;
-function union(array, other) {
-    return array.concat(without(other, array));
-}
-exports.union = union;
-function forEach(obj, f, thisArg) {
-    if (obj.forEach) {
-        obj.forEach.call(thisArg, f);
-    }
-    else {
-        for (var k in obj) {
-            if (obj.hasOwnProperty(k)) {
-                f.call(thisArg, obj[k], k, obj);
-            }
-        }
-    }
-}
-exports.forEach = forEach;
-function reduce(obj, f, init, thisArg) {
-    if (obj.reduce) {
-        return obj.reduce.call(thisArg, f, init);
-    }
-    else {
-        for (var k in obj) {
-            if (obj.hasOwnProperty(k)) {
-                init = f.call(thisArg, init, obj[k], k, obj);
-            }
-        }
-        return init;
-    }
-}
-exports.reduce = reduce;
-function map(obj, f, thisArg) {
-    if (obj.map) {
-        return obj.map.call(thisArg, f);
-    }
-    else {
-        var output = [];
-        for (var k in obj) {
-            if (obj.hasOwnProperty(k)) {
-                output.push(f.call(thisArg, obj[k], k, obj));
-            }
-        }
-        return output;
-    }
-}
-exports.map = map;
-function some(arr, f) {
-    var i = 0;
-    for (var k = 0; k < arr.length; k++) {
-        if (f(arr[k], k, i++)) {
-            return true;
-        }
-    }
-    return false;
-}
-exports.some = some;
-function every(arr, f) {
-    var i = 0;
-    for (var k = 0; k < arr.length; k++) {
-        if (!f(arr[k], k, i++)) {
-            return false;
-        }
-    }
-    return true;
-}
-exports.every = every;
-function flatten(arrays) {
-    return [].concat.apply([], arrays);
-}
-exports.flatten = flatten;
-function mergeDeep(dest) {
-    var src = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        src[_i - 1] = arguments[_i];
-    }
-    for (var i = 0; i < src.length; i++) {
-        dest = deepMerge_(dest, src[i]);
-    }
-    return dest;
-}
-exports.mergeDeep = mergeDeep;
-;
-// recursively merges src into dest
-function deepMerge_(dest, src) {
-    if (typeof src !== 'object' || src === null) {
-        return dest;
-    }
-    for (var p in src) {
-        if (!src.hasOwnProperty(p)) {
-            continue;
-        }
-        if (src[p] === undefined) {
-            continue;
-        }
-        if (typeof src[p] !== 'object' || src[p] === null) {
-            dest[p] = src[p];
-        }
-        else if (typeof dest[p] !== 'object' || dest[p] === null) {
-            dest[p] = mergeDeep(src[p].constructor === Array ? [] : {}, src[p]);
-        }
-        else {
-            mergeDeep(dest[p], src[p]);
-        }
-    }
-    return dest;
-}
-function unique(values, f) {
-    var results = [];
-    var u = {}, v, i, n;
-    for (i = 0, n = values.length; i < n; ++i) {
-        v = f ? f(values[i]) : values[i];
-        if (v in u) {
-            continue;
-        }
-        u[v] = 1;
-        results.push(values[i]);
-    }
-    return results;
-}
-exports.unique = unique;
-;
-function warning(message) {
-    console.warn('[VL Warning]', message);
-}
-exports.warning = warning;
-function error(message) {
-    console.error('[VL Error]', message);
-}
-exports.error = error;
-/**
- * Returns true if the two dicitonaries disagree. Applies only to defioned values.
- */
-function differ(dict, other) {
-    for (var key in dict) {
-        if (dict.hasOwnProperty(key)) {
-            if (other[key] && dict[key] && other[key] !== dict[key]) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-exports.differ = differ;
-
-},{"datalib/src/util":38,"json-stable-stringify":39}]},{},[14])(14)
+},{"datalib/src/util":8}]},{},[31])(31)
 });
 //# sourceMappingURL=compassql.js.map

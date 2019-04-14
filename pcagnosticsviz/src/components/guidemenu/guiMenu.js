@@ -22,14 +22,15 @@ angular.module('pcagnosticsviz')
 
                 //general plot variable stored
                 let generalattr ={
+                    svg: d3.select('.thum').select('svg'),
                     g: d3.select('.thum').select('.oneDimentional'),
-                    margin: {left:20, top: 20, bottom:20, right:20},
+                    margin: {left:20, top: 100, bottom:20, right:20},
                     width: 1200,
                     height: 1200,
                     w: function() {return this.width-this.margin.left-this.margin.right},
                     h: function() {return this.height-this.margin.top-this.margin.bottom},
                     sw: 270,
-                    sh: 130,
+                    sh: 75,
                     force: undefined,
                     xScale: undefined,
                     yScale: undefined,
@@ -146,7 +147,7 @@ angular.module('pcagnosticsviz')
                                 return generalattr.yScale(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]);
                             })).force('forceX', d3v4.forceX().x(function (d) {
                                 return generalattr.xScale(d);
-                            })).force('collision', d3v4.forceCollide().strength(0.5).radius(function (d) {
+                            })).force('collision', d3v4.forceCollide().strength(1).radius(function (d) {
                                 if (d.order === $scope.prop.pos || d.order === generalattr.mouseoverIndex) {
                                     return generalattr.sh / 2;
                                 }
@@ -154,6 +155,8 @@ angular.module('pcagnosticsviz')
                             }))
                             .on('tick', ticked);
                     }
+                    generalattr.height = generalattr.sh*$scope.prop.previewcharts.length/2;
+                    generalattr.svg.attr('viewBox',[0,0,generalattr.width,generalattr.height].join(' '));
                     generalattr.g = d3.select('.thum').select('.oneDimentional');
                     generalattr.g.select('.twoDimentional').selectAll('*').remove();
 
@@ -203,6 +206,8 @@ angular.module('pcagnosticsviz')
                         generalattr.force.stop();
                     }
                     // init
+                    generalattr.height = generalattr.width;
+                    generalattr.svg.attr('viewBox',[0,0,generalattr.width,generalattr.height]);
                     generalattr.g = d3.select('.thum').select('.twoDimentional');
 
                     var colorArray = ["#77946F","#aec7b2","#c5d6c6","#e6e6e6","#e6e6d8","#e6d49c","#e6b061","#e6852f","#e6531a","#e61e1a"];
