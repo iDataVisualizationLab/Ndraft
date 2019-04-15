@@ -1,12 +1,19 @@
 .pane.guidemenu {
   overflow-y: hidden;
   max-width: 300px;
-  background-color: var(--panelColor);
+  background-image: var(--panelColor);
+  .contain {
+    height: calc(100% - 10px);
+  }
+}
+.alternatives-pane.navigation {
+  background-image: var(--panelColor);
+}
+.pane.guidemenu, .alternatives-pane.navigation  {
   .contain {
     display: flex;
     flex-direction: column;
     margin: 5px;
-    height: calc(100% - 10px);
   }
   .headermenu {
     height: 50px;
@@ -14,7 +21,7 @@
   }
 
   h2 {
-    color: white;
+    color: var(--fontColor) !important;
   }
   .vl-plot {
     min-width: 150px;
@@ -32,7 +39,7 @@
       overflow-x: auto;
     }
     .mlabeltext {
-      fill: white;
+      fill: var(--fontColor);
       .hightlight {
         stroke: var(--highlightColor);
       }
@@ -40,6 +47,41 @@
     .cell.active {
       stroke: #ffffff;
       stroke-width: 2px;
+    }
+    foreignObject {
+      width: 300px;
+      min-height: 85px;
+      margin: 5px;
+      transition: all .2s ease-in-out;
+      transform: scale(0.5);
+      .card {
+        border: black solid 2px
+      }
+    }
+
+
+    .active {
+      .card {
+        border: var(--fontColor) solid 5px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+      }
+      foreignObject {
+        transform: scale(1);
+      }
+    }
+
+    .hover {
+      foreignObject {
+        transform: scale(1);
+      }
+    }
+
+    .legend {
+      stroke: var(--fontColor);
+    }
+    .cell.active {
+      stroke: var(--fontColor);
+      stroke-width: 5px;
     }
     .active {
       margin: 5px;
@@ -56,7 +98,7 @@
     display: flex;
     margin: 10px 0px;
     #typeselectcontain {
-      flex-grow: 1;
+      flex-grow: 0;
       margin-right:10px;
     }
     div {
@@ -68,61 +110,10 @@
     }
     label {
       display: block;
-      color: white;
+      color: var(--fontColor);
     }
   }
 
 }
-.alternatives-pane {
-  .contain {
-    display: flex;
-    flex-direction: column;
-    margin: 5px;
-    height: calc(100% - 10px);
-  }
-  .headermenu {
-    height: 50px;
-    padding: 20px;
-  }
-
-  h2 {
-    color: white;
-  }
-}
-.thum {
-  .mlabeltext {
-    fill: white;
-    .hightlight {
-      stroke: var(--highlightColor);
-    }
-  }
-  .cell.active {
-    stroke: #ffffff;
-    stroke-width: 2px;
-  }
-  foreignObject {
-    transition: all .2s ease-in-out;
-    transform: scale(0.5);
-    .card {
-      border: black solid 2px
-    }
-  }
 
 
-  .active {
-    width: 270px;
-    height: 130px;
-    .card {
-      border: var(--highlightColor) solid 2px
-    }
-    foreignObject {
-      transform: scale(1);
-    }
-  }
-
-  .hover {
-    foreignObject {
-      transform: scale(1);
-    }
-  }
-}

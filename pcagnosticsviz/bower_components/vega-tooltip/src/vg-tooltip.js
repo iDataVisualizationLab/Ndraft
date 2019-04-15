@@ -77,6 +77,10 @@
     // initialize tooltip with item data and options on mouse over
     vgView.on("mouseover.tooltipInit", function(event, item) {
       if (shouldShowTooltip(item)) {
+        if (!isNaN(item.datum['bin_Program Size Quartile_end']))
+          item.datum['bin_Program Size Quartile_end'] = d3.format('.2f')(item.datum['bin_Program Size Quartile_end']);
+        if (!isNaN(item.datum['bin_Program Size Quartile_start']))
+        item.datum['bin_Program Size Quartile_start'] = d3.format('.2f')(item.datum['bin_Program Size Quartile_start'])
         // clear existing promise because mouse can only point at one thing at a time
         cancelPromise();
 

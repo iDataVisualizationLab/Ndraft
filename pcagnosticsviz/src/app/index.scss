@@ -91,7 +91,7 @@ null-filter-directive {
 
 .pane.encoding-pane, .pane.vis-pane {
   h2, h3 {
-    color: var(--fontContractColor);
+    color: black  ;
   }
 }
 
@@ -140,7 +140,7 @@ null-filter-directive {
 
 .alternatives-pane {
   margin-top: 20px;
-  background: var(--panelColor);
+  background: var(--panelColor2);
 
 
 
@@ -387,4 +387,8 @@ bi-plot {
 .mainareacustom {
   display: flex;
   flex-direction: row;
+}
+
+.shadow {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }

@@ -200,13 +200,13 @@ angular.module('pcagnosticsviz')
                 let generalattr ={
                     svg: d3.select('.thum').select('svg'),
                     g: d3.select('.thum').select('.oneDimentional'),
-                    margin: {left:20, top: 100, bottom:20, right:20},
+                    margin: {left:20, top: 75, bottom:20, right:20},
                     width: 1200,
                     height: 1200,
                     w: function() {return this.width-this.margin.left-this.margin.right},
                     h: function() {return this.height-this.margin.top-this.margin.bottom},
-                    sw: 270,
-                    sh: 75,
+                    sw: 300,
+                    sh: 100,
                     force: undefined,
                     xScale: undefined,
                     yScale: undefined,
@@ -263,7 +263,7 @@ angular.module('pcagnosticsviz')
                 // }, true);
 
                 var generalWatcher = $scope.$watch('[prop.dim,prop.type,prop.mark]', function(spec) {
-
+                    first = false;
                     updateInterface($scope.prop.dim,$scope.prop);
 
                 }, true); //, true /* watch equality rather than reference */);
@@ -276,6 +276,10 @@ angular.module('pcagnosticsviz')
 
                 $scope.increaseLimit = function () {
                     $scope.limit += 4;
+                };
+
+                $scope.generateID = function (chart) {
+                    return chart.fieldSet.map((d)=>d.field).join('_');
                 };
 
                 $scope.$on('$destroy', function() {
@@ -311,7 +315,9 @@ angular.module('pcagnosticsviz')
                             break;
                     }
                 }
+                function selectplot_nD(data){
 
+                }
                 function generalplot_1D (data) {
                     // inital value
                     if (generalattr.force) {
@@ -320,7 +326,7 @@ angular.module('pcagnosticsviz')
                     else {
                         generalattr.force = d3v4.forceSimulation()
                             .force('forceY', d3v4.forceY().strength(0.8).y(d => {
-                                return generalattr.yScale(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]);
+                                return generalattr.yScale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]));
                             })).force('forceX', d3v4.forceX().x(function (d) {
                                 return generalattr.xScale(d);
                             })).force('collision', d3v4.forceCollide().strength(1).radius(function (d) {
@@ -333,6 +339,40 @@ angular.module('pcagnosticsviz')
                     }
                     generalattr.height = generalattr.sh*$scope.prop.previewcharts.length/2;
                     generalattr.svg.attr('viewBox',[0,0,generalattr.width,generalattr.height].join(' '));
+
+                    var colorArray = ["#77946F","#aec7b2","#c5d6c6","#e6e6e6","#e6e6d8","#e6d49c","#e6b061","#e6852f","#e6531a","#e61e1a"];
+                    var level= colorArray.length;
+                    var domain = d3.range(level).map(function(d) {return d/(level-1)});
+
+                    generalattr.colorScale = d3v4.scaleLinear()
+                        .domain(domain)
+                        .range(colorArray);
+                    if (generalattr.g.select('defs')[0][0]==null) {
+                        const defs = generalattr.g.append('defs');
+                        let colorGradient = defs.append('linearGradient')
+                            .attr('id','linear-gradient')
+                            .attr('x1','0%')
+                            .attr('x2','0%')
+                            .attr('y1','100%')
+                            .attr('y2','0%');
+                        colorGradient.selectAll("stop").data(colorArray).enter()
+                            .append('stop')
+                            .attr('offset',(d,i)=> (i / (level - 1) * 100) + '%')
+                            .attr('stop-color',(d)=>d);
+                    }
+                    let legend = d3v4.select(generalattr.g.node()).select('.legend');
+                    let legednTicks = d3v4.axisLeft(d3v4.scaleLinear().domain([0,1]).range([150,0])).ticks(3).tickFormat(d3.format(".1f"));
+                    if (legend.empty()) {
+                        legend = d3v4.select(generalattr.g.node()).append('g')
+                            .attr('class','legend').attr('transform','translate('+(generalattr.w()-30)+','+0+')');
+                        legend.append('rect')
+                            .attr('x',0)
+                            .attr('width',30)
+                            .attr('height',150)
+                            .style('fill','url("#linear-gradient")');
+                    }
+                    legend.call(legednTicks);
+
                     generalattr.g = d3.select('.thum').select('.oneDimentional');
                     generalattr.g.select('.twoDimentional').selectAll('*').remove();
 
@@ -340,7 +380,7 @@ angular.module('pcagnosticsviz')
                     generalattr.xScale = function(d){return 0};
                     generalattr.xRescale = d3v4.scaleLinear().domain([0,generalattr.sh/2]).range([generalattr.w()/2,generalattr.w()/2+generalattr.sw/2]);
                     function ticked (d){
-                        d3v4.select(".thum").selectAll('.foreignObject').data($scope.prop.previewcharts)
+                        const foreign = d3v4.select(".thum").selectAll('.foreignObject').data($scope.prop.previewcharts)
                             .attr ('transform',function (d){
                                 return'translate('+ generalattr.xRescale(d.x) +','+ (d.y-generalattr.sh/2)+')'})
                             .on('mouseover',function (d){
@@ -353,21 +393,22 @@ angular.module('pcagnosticsviz')
                                     generalattr.force.nodes($scope.prop.previewcharts).alpha(0.3).restart();
                                 d3.select(this).classed('hover',false);
                             });
+                        foreign.select('div').style('background-color',d=>generalattr.colorScale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))
                             // .attr("x", function(d){ return generalattr.xRescale(d.x); })
                             // .attr("y", function(d){ return d.y-generalattr.sh/2; })
                     }
 
 
                     // update
-                    generalattr.yScale.domain(d3.extent($scope.prop.previewcharts,d=>d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]));
+                    generalattr.yScale.domain(d3.extent($scope.prop.previewcharts,d=>Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])));
                     generalattr.force.nodes($scope.prop.previewcharts).alpha(0.3).restart();
                     // fixedSizeForeignObjects(d3v4.select(".thum").selectAll('foreignObject').nodes());
 
                 }
 
                 function selectplot_1D (index) {
-                    generalattr.g.selectAll('.active').classed('active',false);
-                    generalattr.g.selectAll('.foreignObject').filter(d=>d.order==index).classed('active',true);
+                    // generalattr.g.selectAll('.active').classed('active',false);
+                    // generalattr.g.selectAll('.foreignObject').filter(d=>d.order==index).classed('active',true);
                     generalattr.force.nodes($scope.prop.previewcharts).alpha(0.3).restart();
                 }
 
@@ -386,35 +427,6 @@ angular.module('pcagnosticsviz')
                     generalattr.svg.attr('viewBox',[0,0,generalattr.width,generalattr.height]);
                     generalattr.g = d3.select('.thum').select('.twoDimentional');
 
-                    var colorArray = ["#77946F","#aec7b2","#c5d6c6","#e6e6e6","#e6e6d8","#e6d49c","#e6b061","#e6852f","#e6531a","#e61e1a"];
-                    var level= colorArray.length;
-                    var domain = d3.range(level).map(function(d) {return d/(level-1)});
-                    let rainbowcolor = d3v4.scaleLinear()
-                        .domain(domain)
-                        .range(colorArray);
-                    if (generalattr.g.select('defs')[0][0]==null) {
-                        const defs = generalattr.g.append('defs');
-                        let colorGradient = defs.append('linearGradient')
-                            .attr('id','linear-gradient')
-                            .attr('x1','0%')
-                            .attr('x2','0%')
-                            .attr('y1','100%')
-                            .attr('y2','0%');
-                        colorGradient.selectAll("stop").data(colorArray).enter()
-                            .append('stop')
-                            .attr('offset',(d,i)=> (i / (level - 1) * 100) + '%')
-                            .attr('stop-color',(d)=>d);
-                    }
-                    let legend = generalattr.g.select('.legend');
-                    if (legend[0][0] === null) {
-                        legend = generalattr.g.append('g')
-                            .attr('class','legend').attr('transform','translate('+(generalattr.w()-50)+','+0+')');
-                        legend.append('rect')
-                            .attr('x',20)
-                            .attr('width',30)
-                            .attr('height',150)
-                            .style('fill','url("#linear-gradient")')
-                    }
 
                     let sizescale = d3v4.scaleLinear()
                         .domain([0,1])
@@ -426,7 +438,7 @@ angular.module('pcagnosticsviz')
                         traits = Dataset.schema.fieldSchemas.map(d=>{return {text:d.field,value:0}});
 
                     traits.forEach(function(trait) {
-                        trait.value = d3.sum($scope.prop.previewcharts.filter(pc=> pc.fieldSet.find(f=>f.field==trait.text) !== undefined ).map(d=>d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]));
+                        trait.value = d3.sum($scope.prop.previewcharts.filter(pc=> pc.fieldSet.find(f=>f.field==trait.text) !== undefined ).map(d=>Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])));
                         domainByTrait[trait] = [Dataset.schema.fieldSchema(trait.text).stats.min,Dataset.schema.fieldSchema(trait.text).stats.max];
 
                     });
@@ -471,10 +483,10 @@ angular.module('pcagnosticsviz')
                                 $scope.previewSlider(d.order)})
                             .append("rect")
                             // .attr("transform", function(d) {
-                            //     const pos = (1-sizescale(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]))*generalattr.xScale.bandwidth()/2;
+                            //     const pos = (1-sizescale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))*generalattr.xScale.bandwidth()/2;
                             //     return "translate(" + pos + "," + pos + ")"; })
                             .attr("class", "frame")
-                            .style("fill",d=>rainbowcolor(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]))
+                            .style("fill",d=>generalattr.colorScale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))
                             .attr("width", d => generalattr.xScale.bandwidth())
                             .attr("height",d => generalattr.xScale.bandwidth());
                     }
@@ -486,9 +498,9 @@ angular.module('pcagnosticsviz')
                             return "translate(" + pos[0] + "," + pos[1] + ")"; })
                             .select(".frame")
                             // .attr("transform", function(d) {
-                            //     const pos = (1-sizescale(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]))*generalattr.xScale.bandwidth()/2;
+                            //     const pos = (1-sizescale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))*generalattr.xScale.bandwidth()/2;
                             //     return "translate(" + pos + "," + pos + ")"; })
-                            .style("fill",d=>rainbowcolor(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]))
+                            .style("fill",d=>generalattr.colorScale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))
                             .attr("width", d => generalattr.xScale.bandwidth())
                             .attr("height",d => generalattr.xScale.bandwidth());
                     }
@@ -514,10 +526,8 @@ angular.module('pcagnosticsviz')
                 }
 
                 function generalplot_nD (data) {
-
+                    generalattr.g.selectAll('*').remove();
                 }
-
-
 
 
             }]
@@ -1017,20 +1027,6 @@ angular.module('pcagnosticsviz')
     }
 
 })();
-'use strict';
-
-angular.module('pcagnosticsviz')
-  .directive('configurationEditor', function() {
-    return {
-      templateUrl: 'components/configurationeditor/configurationeditor.html',
-      restrict: 'E',
-      scope: {},
-      controller: ["$scope", "Config", function($scope, Config) {
-        $scope.Config = Config;
-      }]
-    };
-  });
-
 var PCA = function(){
     this.scale = scale;
     this.pca = pca;
@@ -1779,6 +1775,20 @@ angular.module('pcagnosticsviz')
       }
     };
   }]);
+
+'use strict';
+
+angular.module('pcagnosticsviz')
+  .directive('configurationEditor', function() {
+    return {
+      templateUrl: 'components/configurationeditor/configurationeditor.html',
+      restrict: 'E',
+      scope: {},
+      controller: ["$scope", "Config", function($scope, Config) {
+        $scope.Config = Config;
+      }]
+    };
+  });
 
 'use strict';
 
@@ -5353,13 +5363,13 @@ angular.module('pcagnosticsviz')
     return Alternatives;
   }]);
 
-angular.module("pcagnosticsviz").run(["$templateCache", function($templateCache) {$templateCache.put("app/main/main.html","<div ng-controller=\"MainCtrl\" ng-class=\"{light: themeDrak}\" class=\"flex-root vflex full-width full-height\" ng-mousedown=\"onMouseDownLog($event)\" ng-mouseenter=\"onMouseEnterLog($event)\" ng-mouseover=\"onMouseOverLog($event)\"><div class=\"full-width no-shrink\"><div class=\"card top-card no-right-margin no-top-margin\"><div class=\"hflex\" style=\"justify-content: space-between;\"><div id=\"logo\" ng-click=\"Logger.export()\"></div><div class=\"pane\"><div class=\"controls\"><a ng-show=\"Bookmarks.isSupported\" class=\"command\" ng-click=\"showModal(\'bookmark-list\')\"><i class=\"fa fa-bookmark\"></i> Bookmarks ({{Bookmarks.list.length}})</a> <a class=\"command\" ng-click=\"chron.undo()\" ng-class=\"{disabled: !canUndo}\"><i class=\"fa fa-undo\"></i> Undo</a> <a class=\"command\" ng-click=\"chron.redo()\" ng-class=\"{disabled: !canRedo}\"><i class=\"fa fa-repeat\"></i> Redo</a></div></div><div class=\"pane\"><div class=\"controls\"><a class=\"command\" ng-if=\"themeDrak\" ng-click=\"changetheme()\"><i class=\"fa fa-moon-o\"></i> Drak</a> <a class=\"command\" ng-if=\"!themeDrak\" ng-click=\"changetheme()\"><i class=\"fa fa-sun-o\"></i> Light</a></div></div></div></div><alert-messages></alert-messages></div><div class=\"hflex full-width main-panel grow-1\"><div class=\"pane data-pane noselect\"><div class=\"card no-top-margin data-card abs-100 modifedside\"><div class=\"sidebar-header\" ng-if=\"!embedded\"><h2>Data</h2><dataset-selector class=\"right\"></dataset-selector><div class=\"current-dataset\" title=\"{{Dataset.currentDataset.name}}\"><i class=\"fa fa-database\"></i> <span class=\"dataset-name\">{{Dataset.currentDataset.name}}</span></div></div><h3>Overview</h3><bi-plot></bi-plot><h3>Exemplar plots</h3><div class=\"scroll-y-nox scroll-y\"><vl-plot-group ng-if=\"PCAplot.chart\" class=\"main-vl-plot-group card no-shrink guideplot\" ng-repeat=\"chart in PCAplot.charts\" ng-class=\"{square: PCAplot.dim}\" ng-click=\"PCAplot.prop2spec(chart.prop)\" chart=\"chart\" show-bookmark=\"false\" show-debug=\"false\" show-select=\"true\" show-axis-prop=\"false\" show-sort=\"false\" show-transpose=\"false\" enable-pills-preview=\"true\" always-scrollable=\"false\" overflow=\"false\" show-label=\"false\" tooltip=\"true\" toggle-shelf=\"false\" style=\"margin-top: 0px; margin-bottom: 5px;\"></vl-plot-group><div class=\"hflex full-width\"><h3>Fields</h3><div class=\"header-drop active\"><i class=\"fa fa-caret-down droplist\" ng-click=\"fieldShow = !fieldShow\"></i></div></div><div ng-show=\"fieldShow\"><schema-list field-defs=\"Dataset.schema.fieldSchemas\" order-by=\"Dataset.fieldOrder\" show-count=\"true\" filter-manager=\"FilterManager\" show-add=\"true\"></schema-list></div><div ng-show=\"WildcardsShow\"><schema-list field-defs=\"Wildcards.list\" show-add=\"true\" show-drop=\"true\"></schema-list></div></div></div>Ma</div><div class=\"pane vis-pane\"><div class=\"vis-pane-container abs-100\" ng-class=\"{\'scroll-y\': !hideExplore || !Spec.isSpecific, \'no-scroll-y\': hideExplore && Spec.isSpecific}\"><div class=\"mainareacustom full-width\"><div class=\"pane encoding-pane\" style=\"min-height: 200px;\"><shelves spec=\"Spec.spec\" filter-manager=\"FilterManager\" preview=\"false\" support-any=\"true\" ng-class=\"shelvescustom\"></shelves><shelves class=\"preview\" ng-show=\"Spec.previewedSpec\" spec=\"Spec.previewedSpec || Spec.emptySpec\" preview=\"true\" support-any=\"true\"></shelves></div><slide-graph ng-if=\"PCAplot.prop.charts\" charts=\"PCAplot.prop.charts\" pos=\"PCAplot.prop.pos\" limitup=\"PCAplot.limitup\" limit=\"PCAplot.limit\"></slide-graph></div><div class=\"alternatives-pane card\" ng-class=\"{collapse: hideExplore}\" ng-if=\"Spec.isSpecific && !Spec.isEmptyPlot\"><guide-menu prop=\"PCAplot.prop\" priority=\"2\" marks=\"PCAplot.marks\" props=\"PCAplot.types\" limitup=\"PCAplot.limitup\" limit=\"PCAplot.limit\"></guide-menu></div></div></div><div class=\"pane guidemenu grow-1\" ng-if=\"showExtraGuide||PCAplot.prop\"><div class=\"alternatives-pane card\" ng-class=\"{collapse: hideExplore}\" ng-if=\"Spec.isSpecific && !Spec.isEmptyPlot\"><div class=\"alternatives-header\"><div class=\"right alternatives-jump\"><a class=\"toggle-hide-explore\" ng-click=\"toggleHideExplore()\"><span ng-show=\"hideExplore\">Show <i class=\"fa fa-toggle-up\"></i></span> <span ng-show=\"!hideExplore\">Hide <i class=\"fa fa-toggle-down\"></i></span></a></div><h2>Expanded views</h2></div><div class=\"alternatives-content scroll-y\" ng-if=\"!hideExplore\"><vl-plot-group-list ng-repeat=\"alternative in PCAplot.alternatives\" ng-if=\"alternative.charts.length > 0 && (!$parent.alternativeType || $parent.alternativeType === alternative.type)\" id=\"alternatives-{{alternative.type}}\" list-title=\"alternative.title\" charts=\"alternative.charts\" enable-pills-preview=\"true\" priority=\"$index * 1000\" initial-limit=\"alternative.limit || null\" post-select-action=\"$parent.scrollToTop()\" show-query-select=\"true\" query=\"alternative.query\"></vl-plot-group-list></div></div></div></div><div class=\"hflex full-width dev-panel\" ng-if=\"showDevPanel\"><div class=\"pane\" ng-show=\"consts.logToWebSql\"><div class=\"card\"><div>userid: {{Logger.userid}}</div><button ng-click=\"Logger.clear()\">Clear logs</button><br><button ng-click=\"Logger.export()\">Download logs</button></div></div><div class=\"pane config-pane\"><div class=\"card scroll-y abs-100\"><configuration-editor></configuration-editor></div></div><div class=\"pane vl-pane\"><cql-query-editor></cql-query-editor></div><div class=\"pane vg-pane\"><vg-spec-editor></vg-spec-editor></div></div><bookmark-list highlighted=\"Fields.highlighted\" post-select-action=\"scrollToTop\"></bookmark-list><dataset-modal></dataset-modal></div>");
+angular.module("pcagnosticsviz").run(["$templateCache", function($templateCache) {$templateCache.put("app/main/main.html","<div ng-controller=\"MainCtrl\" ng-class=\"{light: themeDrak}\" class=\"flex-root vflex full-width full-height\" ng-mousedown=\"onMouseDownLog($event)\" ng-mouseenter=\"onMouseEnterLog($event)\" ng-mouseover=\"onMouseOverLog($event)\"><div class=\"full-width no-shrink shadow\"><div class=\"card top-card no-right-margin no-top-margin\"><div class=\"hflex\" style=\"justify-content: space-between;\"><div id=\"logo\" ng-click=\"Logger.export()\"></div><div class=\"pane\"><div class=\"controls\"><a ng-show=\"Bookmarks.isSupported\" class=\"command\" ng-click=\"showModal(\'bookmark-list\')\"><i class=\"fa fa-bookmark\"></i> Bookmarks ({{Bookmarks.list.length}})</a> <a class=\"command\" ng-click=\"chron.undo()\" ng-class=\"{disabled: !canUndo}\"><i class=\"fa fa-undo\"></i> Undo</a> <a class=\"command\" ng-click=\"chron.redo()\" ng-class=\"{disabled: !canRedo}\"><i class=\"fa fa-repeat\"></i> Redo</a></div></div><div class=\"pane\"><div class=\"controls\"><a class=\"command\" ng-if=\"themeDrak\" ng-click=\"changetheme()\"><i class=\"fa fa-moon-o\"></i> Dark</a> <a class=\"command\" ng-if=\"!themeDrak\" ng-click=\"changetheme()\"><i class=\"fa fa-sun-o\"></i> Light</a></div></div></div></div><alert-messages></alert-messages></div><div class=\"hflex full-width main-panel grow-1\"><div class=\"pane data-pane noselect\"><div class=\"card no-top-margin data-card abs-100 modifedside\"><div class=\"sidebar-header\" ng-if=\"!embedded\"><h2>Data</h2><dataset-selector class=\"right\"></dataset-selector><div class=\"current-dataset\" title=\"{{Dataset.currentDataset.name}}\"><i class=\"fa fa-database\"></i> <span class=\"dataset-name\">{{Dataset.currentDataset.name}}</span></div></div><h3>Overview</h3><bi-plot></bi-plot><h3>Exemplar plots</h3><div class=\"scroll-y-nox scroll-y\"><vl-plot-group ng-if=\"PCAplot.chart\" class=\"main-vl-plot-group card no-shrink guideplot\" ng-repeat=\"chart in PCAplot.charts\" ng-class=\"{square: PCAplot.dim}\" ng-click=\"PCAplot.prop2spec(chart.prop)\" chart=\"chart\" show-bookmark=\"false\" show-debug=\"false\" show-select=\"true\" show-axis-prop=\"false\" show-sort=\"false\" show-transpose=\"false\" enable-pills-preview=\"true\" always-scrollable=\"false\" overflow=\"false\" show-label=\"false\" tooltip=\"true\" toggle-shelf=\"false\" style=\"margin-top: 0px; margin-bottom: 5px;\"></vl-plot-group><div class=\"hflex full-width\"><h3>Fields</h3><div class=\"header-drop active\"><i class=\"fa fa-caret-down droplist\" ng-click=\"fieldShow = !fieldShow\"></i></div></div><div ng-show=\"fieldShow\"><schema-list field-defs=\"Dataset.schema.fieldSchemas\" order-by=\"Dataset.fieldOrder\" show-count=\"true\" filter-manager=\"FilterManager\" show-add=\"true\"></schema-list></div><div ng-show=\"WildcardsShow\"><schema-list field-defs=\"Wildcards.list\" show-add=\"true\" show-drop=\"true\"></schema-list></div></div></div>Ma</div><div class=\"pane vis-pane\"><div class=\"vis-pane-container abs-100\" ng-class=\"{\'scroll-y\': !hideExplore || !Spec.isSpecific, \'no-scroll-y\': hideExplore && Spec.isSpecific}\"><div class=\"mainareacustom full-width\"><div class=\"pane encoding-pane\" style=\"min-height: 200px;\"><shelves spec=\"Spec.spec\" filter-manager=\"FilterManager\" preview=\"false\" support-any=\"true\" ng-class=\"shelvescustom\"></shelves><shelves class=\"preview\" ng-show=\"Spec.previewedSpec\" spec=\"Spec.previewedSpec || Spec.emptySpec\" preview=\"true\" support-any=\"true\"></shelves></div><slide-graph ng-if=\"PCAplot.prop.charts && Spec.isSpecific && !Spec.isEmptyPlot\" charts=\"PCAplot.prop.charts\" pos=\"PCAplot.prop.pos\" limitup=\"PCAplot.limitup\" limit=\"PCAplot.limit\"></slide-graph></div><div class=\"alternatives-pane card navigation\" ng-class=\"{collapse: hideExplore}\" ng-if=\"Spec.isSpecific && !Spec.isEmptyPlot\"><guide-menu prop=\"PCAplot.prop\" priority=\"2\" marks=\"PCAplot.marks\" props=\"PCAplot.types\" limitup=\"PCAplot.limitup\" limit=\"PCAplot.limit\"></guide-menu></div></div></div><div class=\"pane guidemenu grow-1\" ng-if=\"showExtraGuide||PCAplot.prop\"><div class=\"alternatives-pane card\" ng-class=\"{collapse: hideExplore}\" ng-if=\"Spec.isSpecific && !Spec.isEmptyPlot\"><div class=\"alternatives-header\"><div class=\"right alternatives-jump\"><a class=\"toggle-hide-explore\" ng-click=\"toggleHideExplore()\"><span ng-show=\"hideExplore\">Show <i class=\"fa fa-toggle-up\"></i></span> <span ng-show=\"!hideExplore\">Hide <i class=\"fa fa-toggle-down\"></i></span></a></div><h2>Expanded views</h2></div><div class=\"alternatives-content scroll-y\" ng-if=\"!hideExplore\"><vl-plot-group-list ng-repeat=\"alternative in PCAplot.alternatives\" ng-if=\"alternative.charts.length > 0 && (!$parent.alternativeType || $parent.alternativeType === alternative.type)\" id=\"alternatives-{{alternative.type}}\" list-title=\"alternative.title\" charts=\"alternative.charts\" enable-pills-preview=\"true\" priority=\"$index * 1000\" initial-limit=\"alternative.limit || null\" post-select-action=\"$parent.scrollToTop()\" show-query-select=\"true\" query=\"alternative.query\"></vl-plot-group-list></div></div></div></div><div class=\"hflex full-width dev-panel\" ng-if=\"showDevPanel\"><div class=\"pane\" ng-show=\"consts.logToWebSql\"><div class=\"card\"><div>userid: {{Logger.userid}}</div><button ng-click=\"Logger.clear()\">Clear logs</button><br><button ng-click=\"Logger.export()\">Download logs</button></div></div><div class=\"pane config-pane\"><div class=\"card scroll-y abs-100\"><configuration-editor></configuration-editor></div></div><div class=\"pane vl-pane\"><cql-query-editor></cql-query-editor></div><div class=\"pane vg-pane\"><vg-spec-editor></vg-spec-editor></div></div><bookmark-list highlighted=\"Fields.highlighted\" post-select-action=\"scrollToTop\"></bookmark-list><dataset-modal></dataset-modal></div>");
 $templateCache.put("components/configurationeditor/configurationeditor.html","<form><pre>{{ Config.config | compactJSON }}</pre></form>");
 $templateCache.put("components/cqlQueryEditor/cqlQueryEditor.html","<div class=\"card scroll-y abs-100 vflex\"><div><div class=\"right command\"><a ui-zeroclip=\"\" zeroclip-model=\"Spec.query | compactJSON\">Copy</a></div><h3>CompassQL Query</h3></div><textarea class=\"cqlquery flex-grow-1 full-height\" json-input=\"\" type=\"text\" ng-model=\"Spec.cleanQuery\"></textarea></div>");
 $templateCache.put("components/d3-biplot/bi-plot.html","<svg id=\"bi-plot\" width=\"100%\" class=\"biplot\"><g id=\"bi-plot2\"></g><rect class=\"overlay\"></rect><g id=\"bi-plot-g\"><g id=\"bi-plot-axis\"></g><g id=\"bi-plot-point\"></g></g></svg>");
 $templateCache.put("components/d3-guideplot/gplot.html","<div class=\"gplot\" ng-click=\"explore()\"><svg class=\"gplotSvg\" id=\"gplot{{pcaDef}}\"></svg></div>");
 $templateCache.put("components/d3-guideplot/guide-plot.html","<div id=\"guide-plot-group\" class=\"guideplot\"><g-plot ng-repeat=\"pcaDef in pcaDefs\" pca-def=\"pcaDef\" id=\"{{pcaDef}}\"></g-plot></div>");
-$templateCache.put("components/guidemenu/guideMenu.html","<div class=\"contain\"><div class=\"sidebar-header\"><h2>Guided navigation</h2><div class=\"features\"><div id=\"typeselectcontain\"><label for=\"typeselect\">Feature type</label><select class=\"typeselect\" id=\"typeselect\" ng-model=\"prop.type\" ng-options=\"type for type in props\" ng-change=\"typeChange()\"></select></div><div><label for=\"markselect\">Abstraction</label><select class=\"markselect\" id=\"markselect\" ng-model=\"prop.mark\" ng-options=\"item.mark as item.label for item in marks\" ng-change=\"markChange()\"></select></div></div></div><div class=\"thum\"><svg viewbox=\"0 0 1200 1200\" width=\"100%\" height=\"100%\" preserveaspectratio=\"xMidYMid meet\"><g class=\"oneDimentional\"><g class=\"twoDimentional\"></g><g class=\"foreignObject\" ng-if=\"prop.dim==0\" ng-repeat=\"chart in prop.previewcharts\" fo-repeat-directive=\"\"><foreignobject x=\"-135\" y=\"-65\" width=\"270\" height=\"130\"><vl-plot-group ng-if=\"prop.previewcharts\" class=\"main-vl-plot-group card thumplot no-shrink\" ng-class=\"{\'square\':prop.dim, \'active\': prop.pos== $index + limitup}\" ng-click=\"previewSlider($index)\" chart=\"chart\" show-bookmark=\"false\" show-debug=\"false\" show-select=\"false\" show-axis-prop=\"true\" show-sort=\"false\" show-transpose=\"false\" enable-pills-preview=\"true\" always-scrollable=\"false\" overflow=\"false\" show-label=\"false\" tooltip=\"true\" toggle-shelf=\"false\" priority=\"priority * $index\"></vl-plot-group></foreignobject></g></g></svg></div></div>");
 $templateCache.put("components/d3-slidegraph/slide-com.html","<li class=\"item wrap\"><vl-plot-group ng-if=\"chart!=undefined\" class=\"item\" chart=\"chart\" show-bookmark=\"true\" show-debug=\"false\" show-select=\"false\" show-axis-prop=\"false\" show-sort=\"false\" show-transpose=\"false\" enable-pills-preview=\"true\" always-scrollable=\"false\" overflow=\"false\" show-label=\"false\" tooltip=\"true\" toggle-shelf=\"true\"></vl-plot-group></li>");
 $templateCache.put("components/d3-slidegraph/slide-graph.html","<div class=\"slideGraph card no-top-margin\"><h2>Focus view</h2><div class=\"wrap\"><button class=\"butSlider\" ng-click=\"prev()\"><i class=\"fa fa-angle-double-up\"></i></button><div class=\"scroller\"><ul class=\"items-slider\"><slide-com ng-repeat=\"chart in buffer track by $index\" chart=\"chart\"></slide-com></ul></div><button class=\"butSlider\" ng-click=\"next()\"><i class=\"fa fa-angle-double-down\"></i></button></div></div>");
+$templateCache.put("components/guidemenu/guideMenu.html","<div class=\"contain\"><div class=\"sidebar-header\"><h2>Guided navigation</h2><div class=\"features\"><div id=\"typeselectcontain\"><label for=\"typeselect\">Feature type</label><select class=\"typeselect\" id=\"typeselect\" ng-model=\"prop.type\" ng-options=\"type for type in props\" ng-change=\"typeChange()\"></select></div><div><label for=\"markselect\">Abstraction</label><select class=\"markselect\" id=\"markselect\" ng-model=\"prop.mark\" ng-options=\"item.mark as item.label for item in marks\" ng-change=\"markChange()\"></select></div></div></div><div class=\"thum\"><svg viewbox=\"0 0 1200 1200\" width=\"100%\" height=\"100%\" preserveaspectratio=\"xMidYMid meet\"><g class=\"oneDimentional\"><g class=\"twoDimentional\"></g><g class=\"foreignObject\" ng-if=\"prop.dim==0\" ng-repeat=\"chart in prop.previewcharts track by generateID(chart)\" ng-class=\"{\'active\': prop.pos== $index}\" fo-repeat-directive=\"\"><foreignobject x=\"-135\" y=\"-65\" width=\"300\" height=\"110\"><vl-plot-group ng-if=\"prop.previewcharts\" class=\"main-vl-plot-group card thumplot no-shrink\" ng-class=\"{\'square\':prop.dim}\" ng-click=\"previewSlider($index)\" chart=\"chart\" show-bookmark=\"false\" show-debug=\"false\" show-select=\"false\" show-axis-prop=\"true\" show-sort=\"false\" show-transpose=\"false\" enable-pills-preview=\"true\" always-scrollable=\"false\" overflow=\"false\" show-label=\"false\" tooltip=\"true\" toggle-shelf=\"false\" priority=\"priority * $index\"></vl-plot-group></foreignobject></g></g></svg></div></div>");
 $templateCache.put("components/vgSpecEditor/vgSpecEditor.html","<div class=\"card scroll-y abs-100 vflex no-right-margin\"><div><div class=\"right\"><a class=\"command\" ui-zeroclip=\"\" zeroclip-model=\"Spec.chart.vgSpec | compactJSON\">Copy</a><lyra-export></lyra-export></div><h3>Vega Specification</h3></div><textarea class=\"vgspec flex-grow-1\" json-input=\"\" disabled=\"disabled\" type=\"text\" ng-model=\"Spec.chart.vgSpec\"></textarea></div>");}]);

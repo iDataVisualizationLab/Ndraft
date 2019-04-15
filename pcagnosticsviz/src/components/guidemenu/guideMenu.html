@@ -53,17 +53,18 @@
                 <g
                         class = "foreignObject"
                         ng-if = "prop.dim==0"
-                        ng-repeat="chart in prop.previewcharts"
+                        ng-repeat="chart in prop.previewcharts track by generateID(chart)"
+                        ng-class="{'active': prop.pos== $index}"
                         fo-repeat-directive
                 >
                     <foreignObject
                             x = -135 y = -65
-                            width = 270 height = 130
+                            width = 300 height = 110
                     >
                         <vl-plot-group
                                 ng-if="prop.previewcharts"
                                 class="main-vl-plot-group card thumplot no-shrink"
-                                ng-class="{'square':prop.dim, 'active': prop.pos== $index + limitup}"
+                                ng-class="{'square':prop.dim}"
                                 ng-click="previewSlider($index)"
                                 chart="chart"
                                 show-bookmark="false"

@@ -24,13 +24,13 @@ angular.module('pcagnosticsviz')
                 let generalattr ={
                     svg: d3.select('.thum').select('svg'),
                     g: d3.select('.thum').select('.oneDimentional'),
-                    margin: {left:20, top: 100, bottom:20, right:20},
+                    margin: {left:20, top: 75, bottom:20, right:20},
                     width: 1200,
                     height: 1200,
                     w: function() {return this.width-this.margin.left-this.margin.right},
                     h: function() {return this.height-this.margin.top-this.margin.bottom},
-                    sw: 270,
-                    sh: 75,
+                    sw: 300,
+                    sh: 100,
                     force: undefined,
                     xScale: undefined,
                     yScale: undefined,
@@ -87,7 +87,7 @@ angular.module('pcagnosticsviz')
                 // }, true);
 
                 var generalWatcher = $scope.$watch('[prop.dim,prop.type,prop.mark]', function(spec) {
-
+                    first = false;
                     updateInterface($scope.prop.dim,$scope.prop);
 
                 }, true); //, true /* watch equality rather than reference */);
@@ -100,6 +100,10 @@ angular.module('pcagnosticsviz')
 
                 $scope.increaseLimit = function () {
                     $scope.limit += 4;
+                };
+
+                $scope.generateID = function (chart) {
+                    return chart.fieldSet.map((d)=>d.field).join('_');
                 };
 
                 $scope.$on('$destroy', function() {
@@ -135,7 +139,9 @@ angular.module('pcagnosticsviz')
                             break;
                     }
                 }
+                function selectplot_nD(data){
 
+                }
                 function generalplot_1D (data) {
                     // inital value
                     if (generalattr.force) {
@@ -144,7 +150,7 @@ angular.module('pcagnosticsviz')
                     else {
                         generalattr.force = d3v4.forceSimulation()
                             .force('forceY', d3v4.forceY().strength(0.8).y(d => {
-                                return generalattr.yScale(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]);
+                                return generalattr.yScale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]));
                             })).force('forceX', d3v4.forceX().x(function (d) {
                                 return generalattr.xScale(d);
                             })).force('collision', d3v4.forceCollide().strength(1).radius(function (d) {
@@ -157,6 +163,40 @@ angular.module('pcagnosticsviz')
                     }
                     generalattr.height = generalattr.sh*$scope.prop.previewcharts.length/2;
                     generalattr.svg.attr('viewBox',[0,0,generalattr.width,generalattr.height].join(' '));
+
+                    var colorArray = ["#77946F","#aec7b2","#c5d6c6","#e6e6e6","#e6e6d8","#e6d49c","#e6b061","#e6852f","#e6531a","#e61e1a"];
+                    var level= colorArray.length;
+                    var domain = d3.range(level).map(function(d) {return d/(level-1)});
+
+                    generalattr.colorScale = d3v4.scaleLinear()
+                        .domain(domain)
+                        .range(colorArray);
+                    if (generalattr.g.select('defs')[0][0]==null) {
+                        const defs = generalattr.g.append('defs');
+                        let colorGradient = defs.append('linearGradient')
+                            .attr('id','linear-gradient')
+                            .attr('x1','0%')
+                            .attr('x2','0%')
+                            .attr('y1','100%')
+                            .attr('y2','0%');
+                        colorGradient.selectAll("stop").data(colorArray).enter()
+                            .append('stop')
+                            .attr('offset',(d,i)=> (i / (level - 1) * 100) + '%')
+                            .attr('stop-color',(d)=>d);
+                    }
+                    let legend = d3v4.select(generalattr.g.node()).select('.legend');
+                    let legednTicks = d3v4.axisLeft(d3v4.scaleLinear().domain([0,1]).range([150,0])).ticks(3).tickFormat(d3.format(".1f"));
+                    if (legend.empty()) {
+                        legend = d3v4.select(generalattr.g.node()).append('g')
+                            .attr('class','legend').attr('transform','translate('+(generalattr.w()-30)+','+0+')');
+                        legend.append('rect')
+                            .attr('x',0)
+                            .attr('width',30)
+                            .attr('height',150)
+                            .style('fill','url("#linear-gradient")');
+                    }
+                    legend.call(legednTicks);
+
                     generalattr.g = d3.select('.thum').select('.oneDimentional');
                     generalattr.g.select('.twoDimentional').selectAll('*').remove();
 
@@ -164,7 +204,7 @@ angular.module('pcagnosticsviz')
                     generalattr.xScale = function(d){return 0};
                     generalattr.xRescale = d3v4.scaleLinear().domain([0,generalattr.sh/2]).range([generalattr.w()/2,generalattr.w()/2+generalattr.sw/2]);
                     function ticked (d){
-                        d3v4.select(".thum").selectAll('.foreignObject').data($scope.prop.previewcharts)
+                        const foreign = d3v4.select(".thum").selectAll('.foreignObject').data($scope.prop.previewcharts)
                             .attr ('transform',function (d){
                                 return'translate('+ generalattr.xRescale(d.x) +','+ (d.y-generalattr.sh/2)+')'})
                             .on('mouseover',function (d){
@@ -177,21 +217,22 @@ angular.module('pcagnosticsviz')
                                     generalattr.force.nodes($scope.prop.previewcharts).alpha(0.3).restart();
                                 d3.select(this).classed('hover',false);
                             });
+                        foreign.select('div').style('background-color',d=>generalattr.colorScale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))
                             // .attr("x", function(d){ return generalattr.xRescale(d.x); })
                             // .attr("y", function(d){ return d.y-generalattr.sh/2; })
                     }
 
 
                     // update
-                    generalattr.yScale.domain(d3.extent($scope.prop.previewcharts,d=>d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]));
+                    generalattr.yScale.domain(d3.extent($scope.prop.previewcharts,d=>Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])));
                     generalattr.force.nodes($scope.prop.previewcharts).alpha(0.3).restart();
                     // fixedSizeForeignObjects(d3v4.select(".thum").selectAll('foreignObject').nodes());
 
                 }
 
                 function selectplot_1D (index) {
-                    generalattr.g.selectAll('.active').classed('active',false);
-                    generalattr.g.selectAll('.foreignObject').filter(d=>d.order==index).classed('active',true);
+                    // generalattr.g.selectAll('.active').classed('active',false);
+                    // generalattr.g.selectAll('.foreignObject').filter(d=>d.order==index).classed('active',true);
                     generalattr.force.nodes($scope.prop.previewcharts).alpha(0.3).restart();
                 }
 
@@ -210,35 +251,6 @@ angular.module('pcagnosticsviz')
                     generalattr.svg.attr('viewBox',[0,0,generalattr.width,generalattr.height]);
                     generalattr.g = d3.select('.thum').select('.twoDimentional');
 
-                    var colorArray = ["#77946F","#aec7b2","#c5d6c6","#e6e6e6","#e6e6d8","#e6d49c","#e6b061","#e6852f","#e6531a","#e61e1a"];
-                    var level= colorArray.length;
-                    var domain = d3.range(level).map(function(d) {return d/(level-1)});
-                    let rainbowcolor = d3v4.scaleLinear()
-                        .domain(domain)
-                        .range(colorArray);
-                    if (generalattr.g.select('defs')[0][0]==null) {
-                        const defs = generalattr.g.append('defs');
-                        let colorGradient = defs.append('linearGradient')
-                            .attr('id','linear-gradient')
-                            .attr('x1','0%')
-                            .attr('x2','0%')
-                            .attr('y1','100%')
-                            .attr('y2','0%');
-                        colorGradient.selectAll("stop").data(colorArray).enter()
-                            .append('stop')
-                            .attr('offset',(d,i)=> (i / (level - 1) * 100) + '%')
-                            .attr('stop-color',(d)=>d);
-                    }
-                    let legend = generalattr.g.select('.legend');
-                    if (legend[0][0] === null) {
-                        legend = generalattr.g.append('g')
-                            .attr('class','legend').attr('transform','translate('+(generalattr.w()-50)+','+0+')');
-                        legend.append('rect')
-                            .attr('x',20)
-                            .attr('width',30)
-                            .attr('height',150)
-                            .style('fill','url("#linear-gradient")')
-                    }
 
                     let sizescale = d3v4.scaleLinear()
                         .domain([0,1])
@@ -250,7 +262,7 @@ angular.module('pcagnosticsviz')
                         traits = Dataset.schema.fieldSchemas.map(d=>{return {text:d.field,value:0}});
 
                     traits.forEach(function(trait) {
-                        trait.value = d3.sum($scope.prop.previewcharts.filter(pc=> pc.fieldSet.find(f=>f.field==trait.text) !== undefined ).map(d=>d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]));
+                        trait.value = d3.sum($scope.prop.previewcharts.filter(pc=> pc.fieldSet.find(f=>f.field==trait.text) !== undefined ).map(d=>Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])));
                         domainByTrait[trait] = [Dataset.schema.fieldSchema(trait.text).stats.min,Dataset.schema.fieldSchema(trait.text).stats.max];
 
                     });
@@ -295,10 +307,10 @@ angular.module('pcagnosticsviz')
                                 $scope.previewSlider(d.order)})
                             .append("rect")
                             // .attr("transform", function(d) {
-                            //     const pos = (1-sizescale(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]))*generalattr.xScale.bandwidth()/2;
+                            //     const pos = (1-sizescale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))*generalattr.xScale.bandwidth()/2;
                             //     return "translate(" + pos + "," + pos + ")"; })
                             .attr("class", "frame")
-                            .style("fill",d=>rainbowcolor(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]))
+                            .style("fill",d=>generalattr.colorScale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))
                             .attr("width", d => generalattr.xScale.bandwidth())
                             .attr("height",d => generalattr.xScale.bandwidth());
                     }
@@ -310,9 +322,9 @@ angular.module('pcagnosticsviz')
                             return "translate(" + pos[0] + "," + pos[1] + ")"; })
                             .select(".frame")
                             // .attr("transform", function(d) {
-                            //     const pos = (1-sizescale(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]))*generalattr.xScale.bandwidth()/2;
+                            //     const pos = (1-sizescale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))*generalattr.xScale.bandwidth()/2;
                             //     return "translate(" + pos + "," + pos + ")"; })
-                            .style("fill",d=>rainbowcolor(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type]))
+                            .style("fill",d=>generalattr.colorScale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))
                             .attr("width", d => generalattr.xScale.bandwidth())
                             .attr("height",d => generalattr.xScale.bandwidth());
                     }
@@ -338,10 +350,8 @@ angular.module('pcagnosticsviz')
                 }
 
                 function generalplot_nD (data) {
-
+                    generalattr.g.selectAll('*').remove();
                 }
-
-
 
 
             }

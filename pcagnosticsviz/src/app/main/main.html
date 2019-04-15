@@ -4,7 +4,7 @@
      ng-mousedown="onMouseDownLog($event)"
      ng-mouseenter="onMouseEnterLog($event)"
      ng-mouseover="onMouseOverLog($event)">
-  <div class="full-width no-shrink">
+  <div class="full-width no-shrink shadow">
     <div class="card top-card no-right-margin no-top-margin">
       <div class="hflex" style="justify-content: space-between;">
         <div id="logo" ng-click="Logger.export()"></div>
@@ -21,7 +21,7 @@
         <div class="pane">
           <div class="controls">
             <a class="command" ng-if = "themeDrak"  ng-click="changetheme()" >
-              <i class="fa fa-moon-o"></i> Drak</a>
+              <i class="fa fa-moon-o"></i> Dark</a>
             <a class="command" ng-if = "!themeDrak" ng-click="changetheme()" >
               <i class="fa fa-sun-o"></i> Light</a>
           </div>
@@ -128,7 +128,7 @@
             ></shelves>
           </div>
           <slide-graph
-                  ng-if = "PCAplot.prop.charts"
+                  ng-if = "PCAplot.prop.charts && Spec.isSpecific && !Spec.isEmptyPlot"
                   charts = "PCAplot.prop.charts"
                   pos = "PCAplot.prop.pos"
                   limitup = "PCAplot.limitup"
@@ -136,7 +136,7 @@
           ></slide-graph>
         </div>
 
-        <div class="alternatives-pane card" ng-class="{collapse: hideExplore}" ng-if="Spec.isSpecific && !Spec.isEmptyPlot">
+        <div class="alternatives-pane card navigation" ng-class="{collapse: hideExplore}" ng-if="Spec.isSpecific && !Spec.isEmptyPlot">
           <guide-menu
                   prop="PCAplot.prop"
                   priority="2"

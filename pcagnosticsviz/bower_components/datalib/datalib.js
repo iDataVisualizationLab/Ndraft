@@ -3111,7 +3111,8 @@
 	  // Update number formatter to use provided locale configuration.
 	  // For more see https://github.com/d3/d3-format
 	  numberLocale: numberLocale,
-	  number:       function(f) { return numberF.format(f); },
+	  // number:       function(f) { return numberF.format(f); },
+	  number:       autoNumberFormat,
 	  numberPrefix: function(f, v) { return numberF.formatPrefix(f, v); },
 
 	  // Update time formatter to use provided locale configuration.
@@ -3204,7 +3205,9 @@
 	    while (--idx > n) {
 	      if (s[idx] !== '0') { ++idx; break; }
 	    }
-	    return s.slice(0, idx) + end;
+		  // custom
+	    // return s.slice(0, idx) + end;
+	    return d3.format('.2f')(f(x)) + end;
 	  };
 	}
 
@@ -3221,11 +3224,12 @@
 	  var decimal = numberF.format('.1f')(1)[1]; // get decimal char
 	  if (f == null) f = ',';
 	  f = d3Format.formatSpecifier(f);
-	  if (f.precision == null) f.precision = 12;
+	  if (f.precision == null) f.precision = 2;
 	  switch (f.type) {
 	    case '%': f.precision -= 2; break;
 	    case 'e': f.precision -= 1; break;
 	  }
+        f.precision = 2;
 	  return trimZero(numberF.format(f), decimal);
 	}
 
@@ -3237,7 +3241,10 @@
 	  switch (f = d3Format.formatSpecifier(f), f.type) {
 	    case 's': {
 	      var value = Math.max(Math.abs(range[0]), Math.abs(range[1]));
-	      if (f.precision == null) f.precision = d3Format.precisionPrefix(range[2], value);
+	      if (f.precision == null) {
+	      	f.precision = d3Format.precisionPrefix(range[2], value);
+	      }
+            f.precision = 2;
 	      return numberF.formatPrefix(f, value);
 	    }
 	    case '':
@@ -3245,15 +3252,21 @@
 	    case 'g':
 	    case 'p':
 	    case 'r': {
-	      if (f.precision == null) f.precision = d3Format.precisionRound(range[2], Math.max(Math.abs(range[0]), Math.abs(range[1]))) - (f.type === 'e');
+	      if (f.precision == null) {f.precision = d3Format.precisionRound(range[2], Math.max(Math.abs(range[0]), Math.abs(range[1]))) - (f.type === 'e');};
+              // f.precision = isNaN(f.precision)?2:f.precision;};
 	      break;
 	    }
 	    case 'f':
 	    case '%': {
-	      if (f.precision == null) f.precision = d3Format.precisionFixed(range[2]) - 2 * (f.type === '%');
+	      if (f.precision == null) {
+	      	f.precision = d3Format.precisionFixed(range[2]) - 2 * (f.type === '%');
+              // f.precision = isNaN(f.precision)?2:f.precision;
+	      }
+            f.precision = 2;
 	      break;
 	    }
 	  }
+        f.precision = 2;
 	  return numberF.format(f);
 	}
 

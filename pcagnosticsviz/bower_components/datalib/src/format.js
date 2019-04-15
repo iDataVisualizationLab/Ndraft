@@ -122,7 +122,7 @@ function autoNumberFormat(f) {
   var decimal = numberF.format('.1f')(1)[1]; // get decimal char
   if (f == null) f = ',';
   f = d3_numberF.formatSpecifier(f);
-  if (f.precision == null) f.precision = 12;
+  if (f.precision == null) f.precision = 2;
   switch (f.type) {
     case '%': f.precision -= 2; break;
     case 'e': f.precision -= 1; break;

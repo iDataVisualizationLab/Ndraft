@@ -5321,7 +5321,11 @@
 
                     function destroyView() {
                         if (view) {
-                            scope.tip.destroy();
+                            try {
+                                scope.tip.destroy();
+                            } catch(e) {
+                                scope.tip.remove();
+                            }
                             tooltip.destroy(); // destroy tooltip (promise and event listners)
                             view.off('mouseover');
                             view.off('mouseout');
@@ -5343,18 +5347,20 @@
                     scope.hoverFocus = false;
                     scope.destroyed = false;
                     scope.tip = d3.tip()
-                        .attr('class', 'd3-tip tips ')
+                        .attr('class', 'd3-tip tips custom')
                         .offset([10, 20])
                         .direction('e')
-                        .html(function(values,title) {
-                            var str ='';
-                            // str += '<h3>' + (title.length==1 ? 'ID ' : '' )+ title  + '</h3>'
-                            str += "<table style='text-align: right;'>";
-                            for (var i=0; i<values.length; i++) {
-                                if ( values[i].key != 'pc1' && values[i].key != 'pc2') {
-                                    str += "<tr >";
-                                    str += "<td >" + values[i].key + "</td>";
-                                    str += "<td class=pct>" + values[i].value + "</td>";
+                        .html(function (values, title) {
+                            var str = ''
+                            str += '<h3>' + (title.length == 1 ? 'Brand ' : '') + title + '</h3>'
+                            str += "<table>";
+                            for (var i = 0; i < values.length; i++) {
+                                if (values[i].key != 'pc1' && values[i].key != 'pc2') {
+                                    str += "<tr>";
+                                    str += "<td>" + values[i].key + "</td>";
+                                    var val = d3.format('.2f')(values[i].value);
+                                    val = isNaN(val)?values[i].value:val;
+                                    str += "<td class=pct>" + val + "</td>";
                                     str + "</tr>";
                                 }
                             }
@@ -5565,167 +5571,168 @@
                             switch (scope.chart.vlSpec.mark){
 
                                 case "boxplot":
-                                var plotor = d3.selectAll("#vis-" + scope.visId);
+                                    var plotor = d3.selectAll("#vis-" + scope.visId);
 
-                                var boxplotdiv = plotor.select('.vega');
-                                if (boxplotdiv[0][0]==null)
-                                    boxplotdiv = plotor.append('div')
-                                        .attr('class','vega')
-                                        .style('position','relative');
-                                boxplotdiv.selectAll('*').remove();
+                                    var boxplotdiv = plotor.select('.vega');
+                                    if (boxplotdiv[0][0]==null)
+                                        boxplotdiv = plotor.append('div')
+                                            .attr('class','vega')
+                                            .style('position','relative');
+                                    boxplotdiv.selectAll('*').remove();
 
-                                // draw boxplot inspirted by http://bl.ocks.org/jensgrubert/7789216
-                                var labels = true; // show the text labels beside individual boxplots?
-                                // my zone \(=o=)\
-                                    var config = scope.chart.vlSpec.config||{};
-                                    config.axis = config.axis||{};
-                                    config.axis.titleOffset = config.axis.titleOffset || 40;
-                                    config.axis.ticks = (config.axis.ticks === undefined)? 5 :  config.axis.ticks;
-                                var margin = {top: 10, right: 20, bottom: 40, left: 20};
-                                var titleOffset = spec.marks[0].axes[0].titleOffset||30;
-                                margin.bottom += (titleOffset===30?30:0);
-                                var  width = $(boxplotdiv[0]).width() - margin.left - margin.right;
-                                //var height = $(old_canvas[0]).height() - margin.top - margin.bottom;
-                                var height = (parseInt($(boxplotdiv[0]).parent().parent().css("max-height"),10)||parseInt($(boxplotdiv[0]).parent().parent().parent()[0].offsetHeight,10)) - margin.top - margin.bottom-$(boxplotdiv[0]).parent().parent().find('.vl-plot-group-header').outerHeight(true);//||width/3;
-                                    height = Math.min(height,100);
-                                    width = Math.min(width,400);
-                                // old_canvas.remove();
-                                var min = Infinity,
-                                    max = -Infinity;
-                                var svg = boxplotdiv.append('svg')
-                                    .attr("width",width + margin.left + margin.right)
-                                    .attr("height",height + margin.top + margin.bottom)
-                                    .attr("class", "boxplot")
-                                    .append("g")
-                                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-                                svg_d3 = boxplotdiv.selectAll('svg');
-                                    var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
-                                    var data =[];
-                                    fieldset.forEach(function(d){
-                                        var current = Dataset.schema.fieldSchema(d);
-                                        if (current!= undefined)
-                                            data.push(current);
+                                    // draw boxplot inspirted by http://bl.ocks.org/jensgrubert/7789216
+                                    var labels = true; // show the text labels beside individual boxplots?
+                                    // my zone \(=o=)\
+                                        var config = scope.chart.vlSpec.config||{};
+                                        config.axis = config.axis||{};
+                                        config.axis.titleOffset = config.axis.titleOffset || 40;
+                                        config.axis.ticks = (config.axis.ticks === undefined)? 5 :  config.axis.ticks;
+                                    var margin = {top: 10, right: 20, bottom: 40, left: 20};
+                                    var titleOffset = spec.marks[0].axes[0].titleOffset||30;
+                                    margin.bottom += (titleOffset===30?30:(config.axis.ticks?30:0));
+                                    var  width = $(boxplotdiv[0]).width() - margin.left - margin.right;
+                                    //var height = $(old_canvas[0]).height() - margin.top - margin.bottom;
+                                    var height = (parseInt($(boxplotdiv[0]).parent().parent().css("max-height"),10)||parseInt($(boxplotdiv[0]).parent().parent().parent()[0].offsetHeight,10) || parseInt($(boxplotdiv[0]).parent().parent().parent().css("min-height"))) - margin.top - margin.bottom-$(boxplotdiv[0]).parent().parent().find('.vl-plot-group-header').outerHeight(true);//||width/3;
+                                        height = Math.min(height,100);
+                                        width = Math.min(width,400);
+                                    // old_canvas.remove();
+                                    var min = Infinity,
+                                        max = -Infinity;
+                                    var svg = boxplotdiv.append('svg')
+                                        .attr("width",width + margin.left + margin.right)
+                                        .attr("height",height + margin.top + margin.bottom)
+                                        .attr("class", "boxplot")
+                                        .append("g")
+                                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                                    svg_d3 = boxplotdiv.selectAll('svg');
+                                        var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
+                                        var data =[];
+                                        fieldset.forEach(function(d){
+                                            var current = Dataset.schema.fieldSchema(d);
+                                            if (current!= undefined)
+                                                data.push(current);
+                                        });
+
+                                        var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});
+
+                                        var tiptext=[];
+                                        Dataset.data.forEach(function (d){
+                                            tiptext.push(d3.entries(d));
+                                            return fieldDefs.map(function(f){return {value: (f.stats.max-f.stats.min)? (d[f.field]-f.stats.min)/(f.stats.max-f.stats.min):0, or: d[f.field]}; });});
+
+                                            svg.call(scope.tip);
+
+                                    var formatNum = function(n){
+                                        return (!isNaN(parseFloat(n)) ? parseFloat(n):n.length);
+                                    };
+                                    //check min max
+                                    data.forEach(function(it){
+                                        min = it.stats.min<min?it.stats.min:min;
+                                        max = it.stats.max>max?it.stats.max:max;
                                     });
 
-                                    var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});
-
-                                    var tiptext=[];
-                                    Dataset.data.forEach(function (d){
-                                        tiptext.push(d3.entries(d));
-                                        return fieldDefs.map(function(f){return {value: (f.stats.max-f.stats.min)? (d[f.field]-f.stats.min)/(f.stats.max-f.stats.min):0, or: d[f.field]}; });});
-                                    svg.call(scope.tip);
-
-                                var formatNum = function(n){
-                                    return (!isNaN(parseFloat(n)) ? parseFloat(n):n.length);
-                                };
-                                //check min max
-                                data.forEach(function(it){
-                                    min = it.stats.min<min?it.stats.min:min;
-                                    max = it.stats.max>max?it.stats.max:max;
-                                });
-
-                                // the y-axis
-                                var y = d3.scale.ordinal()
-                                    .domain( data.map(function(d) { return d.field } ) )
-                                    .rangePoints([height,0]);
+                                    // the y-axis
+                                    var y = d3.scale.ordinal()
+                                        .domain( data.map(function(d) { return d.field } ) )
+                                        .rangePoints([height,0]);
 
 
-                                // the x-axis
-                                var x = d3.scale.linear()
-                                    .domain([min, max])
-                                    .range([0,width]);
+                                    // the x-axis
+                                    var x = d3.scale.linear()
+                                        .domain([min, max])
+                                        .range([0,width]);
 
-                                var xAxis = d3.svg.axis()
-                                    .scale(x.nice())
-                                    .orient("bottom")
-                                    .tickFormat(d3.format("s"));
-                                xAxis.ticks(config.axis.ticks);
+                                    var xAxis = d3.svg.axis()
+                                        .scale(x.nice())
+                                        .orient("bottom")
+                                        .tickFormat(d3.format("s"));
+                                    xAxis.ticks(config.axis.ticks);
 
-                                if (!spec.marks[0].axes[0].ticks)
-                                    xAxis.ticks(0);
-                                var yAxis = d3.svg.axis()
-                                    .scale(y)
-                                    .orient("left");
+                                    if (!spec.marks[0].axes[0].ticks)
+                                        xAxis.ticks(0);
+                                    var yAxis = d3.svg.axis()
+                                        .scale(y)
+                                        .orient("left");
 
-                                // calculate outliner base on 1.5 q3-q1
-                                //var outliner = d.stats.unique ;
-                                // draw box
-                                var boxs = svg.selectAll('.boxplot')
-                                    .data(data)
-                                    .enter().append('g')
-                                    .attr("transform", function(d) { return "translate(" +  0  + "," +  Math.min((Math.max(y(d.field),10)),30)+ ")"; } );
+                                    // calculate outliner base on 1.5 q3-q1
+                                    //var outliner = d.stats.unique ;
+                                    // draw box
+                                    var boxs = svg.selectAll('.boxplot')
+                                        .data(data)
+                                        .enter().append('g')
+                                        .attr("transform", function(d) { return "translate(" +  0  + "," +  Math.min((Math.max(y(d.field),10)),30)+ ")"; } );
 
-                                boxs.append('line')
-                                    .attr('class','center')
-                                    .attr('y1',function(d){return Math.min((Math.max(y(d.field),10)),30)/2})
-                                    .attr('x1',function(d){return x(d.stats.q1iqr)})
-                                    .attr('y2',function(d){return Math.min((Math.max(y(d.field),10)),30)/2})
-                                    .attr('x2',function(d){return x(d.stats.q3iqr)})
-                                    .style('opacity',1);
-                                boxs.append('rect')
-                                    .attr('class','box_quan')
-                                    .attr('y',function(d){return 0})
-                                    .attr('x',function(d){return x(d.stats.q1)})
-                                    .attr('height',function(d){return Math.min((Math.max(y(d.field),10)),30)})
-                                    .attr('width',function(d){return Math.abs(x(d.stats.q1)-x(d.stats.q3))});
-                                boxs.append('line')
-                                    .attr('class','median')
-                                    .attr('y1',function(d){return 0})
-                                    .attr('x1',function(d){return x(d.stats.median)})
-                                    .attr('y2',function(d){return Math.min((Math.max(y(d.field),10)),30)})
-                                    .attr('x2',function(d){return x(d.stats.median)})
-                                    .style('opacity',1);
-                                boxs.append('line')
-                                    .attr('class','whisker')
-                                    .attr('y1',function(d){return Math.min((Math.max(y(d.field),10)),30)/4})
-                                    .attr('x1',function(d){return x(d.stats.q1iqr)})
-                                    .attr('y2',function(d){return Math.min((Math.max(y(d.field),10)),30)*3/4})
-                                    .attr('x2',function(d){return x(d.stats.q1iqr)})
-                                    .style('opacity',1);
-                                boxs.append('line')
-                                    .attr('class','whisker')
-                                    .attr('y1',function(d){return Math.min((Math.max(y(d.field),10)),30)/4})
-                                    .attr('x1',function(d){return x(d.stats.q3iqr)})
-                                    .attr('y2',function(d){return Math.min((Math.max(y(d.field),10)),30)*3/4})
-                                    .attr('x2',function(d){return x(d.stats.q3iqr)})
-                                    .style('opacity',1);
-                                // outliers
+                                    boxs.append('line')
+                                        .attr('class','center')
+                                        .attr('y1',function(d){return Math.min((Math.max(y(d.field),10)),30)/2})
+                                        .attr('x1',function(d){return x(d.stats.q1iqr)})
+                                        .attr('y2',function(d){return Math.min((Math.max(y(d.field),10)),30)/2})
+                                        .attr('x2',function(d){return x(d.stats.q3iqr)})
+                                        .style('opacity',1);
+                                    boxs.append('rect')
+                                        .attr('class','box_quan')
+                                        .attr('y',function(d){return 0})
+                                        .attr('x',function(d){return x(d.stats.q1)})
+                                        .attr('height',function(d){return Math.min((Math.max(y(d.field),10)),30)})
+                                        .attr('width',function(d){return Math.abs(x(d.stats.q1)-x(d.stats.q3))});
+                                    boxs.append('line')
+                                        .attr('class','median')
+                                        .attr('y1',function(d){return 0})
+                                        .attr('x1',function(d){return x(d.stats.median)})
+                                        .attr('y2',function(d){return Math.min((Math.max(y(d.field),10)),30)})
+                                        .attr('x2',function(d){return x(d.stats.median)})
+                                        .style('opacity',1);
+                                    boxs.append('line')
+                                        .attr('class','whisker')
+                                        .attr('y1',function(d){return Math.min((Math.max(y(d.field),10)),30)/4})
+                                        .attr('x1',function(d){return x(d.stats.q1iqr)})
+                                        .attr('y2',function(d){return Math.min((Math.max(y(d.field),10)),30)*3/4})
+                                        .attr('x2',function(d){return x(d.stats.q1iqr)})
+                                        .style('opacity',1);
+                                    boxs.append('line')
+                                        .attr('class','whisker')
+                                        .attr('y1',function(d){return Math.min((Math.max(y(d.field),10)),30)/4})
+                                        .attr('x1',function(d){return x(d.stats.q3iqr)})
+                                        .attr('y2',function(d){return Math.min((Math.max(y(d.field),10)),30)*3/4})
+                                        .attr('x2',function(d){return x(d.stats.q3iqr)})
+                                        .style('opacity',1);
+                                    // outliers
 
-                                // boxs.append('g')
-                                //     .attr('class','outliers')
-                                //     .attr("transform", function(d) { return "translate(" +  0  + "," +  Math.min((Math.max(y(d.field),10)),30)/2+ ")"; })
-                                //     .selectAll(".circleo")
-                                //     .data(function(d) {return Object.keys(d.stats.unique)
-                                //         .filter(function(it){return it<(d.stats.q1iqr)||it>d.stats.q3iqr})})
-                                //     .enter()
-                                //     .append("circle")
-                                //     .attr('class','circleo')
-                                //     .attr("cx", function(d) {return x(d)})
-                                //     .attr("cy",0)
-                                //     .attr('r',2)
-                                //     .on('mouseover', function (d,i){
-                                //         //Dim all blobs
-                                //         var currentindex = d3.select(this).datum().index;
-                                //         d3.selectAll(".circleo")[0].forEach(function(d){
-                                //             if (d.__data__.index === currentindex)
-                                //                 d3.select(d).transition().duration(200)
-                                //                     .style("opacity", 1);
-                                //             else
-                                //                 d3.select(d).transition().duration(200)
-                                //                     .style("opacity", 0.1);
-                                //         });
-                                //         //Bring back the hovered over blob
-                                //
-                                //         scope.tip.show(tiptext.find(function(t){
-                                //             var data_or = t.find(function(e){return e.key==fieldset[0] && e.value ==d});// improve later
-                                //             return data_or != undefined}), '');
-                                //     })
-                                //     .on('mouseout', function (d,i){
-                                //         d3.selectAll(".circleo")
-                                //             .transition().duration(200)
-                                //             .style("opacity", 1);
-                                //         scope.tip.hide();
-                                //     });
+                                    // boxs.append('g')
+                                    //     .attr('class','outliers')
+                                    //     .attr("transform", function(d) { return "translate(" +  0  + "," +  Math.min((Math.max(y(d.field),10)),30)/2+ ")"; })
+                                    //     .selectAll(".circleo")
+                                    //     .data(function(d) {return Object.keys(d.stats.unique)
+                                    //         .filter(function(it){return it<(d.stats.q1iqr)||it>d.stats.q3iqr})})
+                                    //     .enter()
+                                    //     .append("circle")
+                                    //     .attr('class','circleo')
+                                    //     .attr("cx", function(d) {return x(d)})
+                                    //     .attr("cy",0)
+                                    //     .attr('r',2)
+                                    //     .on('mouseover', function (d,i){
+                                    //         //Dim all blobs
+                                    //         var currentindex = d3.select(this).datum().index;
+                                    //         d3.selectAll(".circleo")[0].forEach(function(d){
+                                    //             if (d.__data__.index === currentindex)
+                                    //                 d3.select(d).transition().duration(200)
+                                    //                     .style("opacity", 1);
+                                    //             else
+                                    //                 d3.select(d).transition().duration(200)
+                                    //                     .style("opacity", 0.1);
+                                    //         });
+                                    //         //Bring back the hovered over blob
+                                    //
+                                    //         scope.tip.show(tiptext.find(function(t){
+                                    //             var data_or = t.find(function(e){return e.key==fieldset[0] && e.value ==d});// improve later
+                                    //             return data_or != undefined}), '');
+                                    //     })
+                                    //     .on('mouseout', function (d,i){
+                                    //         d3.selectAll(".circleo")
+                                    //             .transition().duration(200)
+                                    //             .style("opacity", 1);
+                                    //         scope.tip.hide();
+                                    //     });
                                     boxs.append('g')
                                         .attr('class','outliersfar')
                                         .attr("transform", function(d) { return "translate(" +  0  + "," +  Math.min((Math.max(y(d.field),10)),30)/2+ ")"; })
@@ -5762,26 +5769,26 @@
                                                 .style("opacity", 1);
                                             scope.tip.hide();
                                         });
-                                // draw y axis
+                                    // draw y axis
 
-                                // draw x axis
-                                svg.append("g")
-                                    .attr("class", "x axis")
-                                    .attr("transform", "translate(0," + (height  + margin.top + 10) + ")")
-                                    .call(xAxis)
-                                    .append('text')
-                                    .attr("text-anchor", "middle")
-                                    .text(spec.marks[0].axes[0].title)
-                                    .style("font-weight",'bold' )
-                                    .attr("transform", "translate("+ (width/2) +","+titleOffset+")");
+                                    // draw x axis
+                                    svg.append("g")
+                                        .attr("class", "x axis")
+                                        .attr("transform", "translate(0," + (height  + margin.top + 10) + ")")
+                                        .call(xAxis)
+                                        .append('text')
+                                        .attr("text-anchor", "middle")
+                                        .text(spec.marks[0].axes[0].title)
+                                        .style("font-weight",'bold' )
+                                        .attr("transform", "translate("+ (width/2) +","+titleOffset+")");
 
-                                plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
-                                Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
-                                    list: scope.listTitle
-                                });
-                                rescaleIfEnable();
-                                renderQueueNextPromise = $timeout(renderQueueNext, 1);
-                                return;
+                                    plotTyper(boxplotdiv,scope.chart.vlSpec.config.typer);
+                                    Logger.logInteraction(Logger.actions.CHART_RENDER, scope.chart.shorthand, {
+                                        list: scope.listTitle
+                                    });
+                                    rescaleIfEnable();
+                                    renderQueueNextPromise = $timeout(renderQueueNext, 1);
+                                    return;
                                 case "point":
                                     var plotor = d3.selectAll("#vis-" + scope.visId);
 
@@ -7527,7 +7534,11 @@
 
                     scope.$on('$destroy', function() {
                         console.log('vlplot destroyed');
-                        scope.tip.destroy();
+                        try {
+                            scope.tip.destroy();
+                        } catch(e) {
+                            scope.tip.remove();
+                        }
                         if (view) {
                             destroyView();
                         }
