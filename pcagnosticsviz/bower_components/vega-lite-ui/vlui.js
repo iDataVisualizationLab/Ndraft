@@ -6635,18 +6635,7 @@
                                             });
                                         point.data = {'x': d[fieldset[0]], 'y': d[fieldset[1]], 'z': d[fieldset[2]]};
                                         if (!key_undefined)
-                                            points.push(_.cloneDeep(point));});
-                                    // var points =  Dataset.data.map(function(d,i){
-                                    //     var point = fieldset.map(
-                                    //         f =>{
-                                    //             const fieldValue = Dataset.schema._fieldSchemaIndex[f];
-                                    //             if (fieldValue.primitiveType === 'string') {
-                                    //                 return Object.keys(fieldValue.stats.unique).indexOf(d[f]);
-                                    //             }
-                                    //             return d[f];
-                                    //         });
-                                    //     point.data = {'x': d[fieldset[0]], 'y': d[fieldset[1]], 'z': d[fieldset[2]]};
-                                    // return point;});
+                                            points.push(point);});
                                     // to do
                                     try{
                                         var config = scope.chart.vlSpec.config;
@@ -6845,138 +6834,144 @@
                                                 scatterLayout.scene.zaxis.tickvals = textticks.map(t=>scaleZ.invert(t));
                                                 scatterLayout.scene.zaxis.ticktext  = textticks;
 
-                                        }else
-                                            if(config.extraconfig ==="contour"){
-                                            var datain =Dataset.data.map(function (d){
-                                                var dd = fieldDefs.map(function(f){return d[f.field] });
-                                                dd.data = dd;
-                                                return dd;});
-                                            var bin = binnerN()
-                                                .startBinGridSize(40)
-                                                .isNormalized(false)
-                                                .minNumOfBins(1)
-                                                .maxNumOfBins(datain.length)
-                                                .data([]).updateRadius(true).binType("evenbin");
-                                            bin.data(datain)
-                                                .calculate();
+                                        }else {
+                                                if (config.extraconfig === "contour") {
+                                                    var datain = Dataset.data.map(function (d) {
+                                                        var dd = fieldDefs.map(function (f) {
+                                                            return d[f.field]
+                                                        });
+                                                        dd.data = dd;
+                                                        return dd;
+                                                    });
+                                                    var bin = binnerN()
+                                                        .startBinGridSize(40)
+                                                        .isNormalized(false)
+                                                        .minNumOfBins(1)
+                                                        .maxNumOfBins(datain.length)
+                                                        .data([]).updateRadius(true).binType("evenbin");
+                                                    bin.data(datain)
+                                                        .calculate();
 
-                                            // color.domain(d3.extent(bin.bins.map(function(b) {return b.length})));
-                                            var opacitys = d3.scale.linear().domain(d3.extent(bin.bins.map(function(b) {return b.length}))).range([0.3,1]);
-                                            scatterData[0].marker.opacity=[];
-                                            //scatterData[0].type = "surface";
+                                                    // color.domain(d3.extent(bin.bins.map(function(b) {return b.length})));
+                                                    var opacitys = d3.scale.linear().domain(d3.extent(bin.bins.map(function (b) {
+                                                        return b.length
+                                                    }))).range([0.3, 1]);
+                                                    scatterData[0].marker.opacity = [];
+                                                    //scatterData[0].type = "surface";
 
-                                                //<editor-fold desc=“color part">
-                                                var colorchoice = d3v4.scaleSequential(d3v4.interpolateSpectral).domain([7,0]);
-                                                var level= 7;
-                                                var colorlevel = colorchoice.ticks(level).slice(-level-2);
-                                                var tempa = []
-                                                for (var i =level; i>-1;i--){
-                                                    tempa.push(colorchoice(colorlevel[i]));
+                                                    //<editor-fold desc=“color part">
+                                                    var colorchoice = d3v4.scaleSequential(d3v4.interpolateSpectral).domain([7, 0]);
+                                                    var level = 7;
+                                                    var colorlevel = colorchoice.ticks(level).slice(-level - 2);
+                                                    var tempa = []
+                                                    for (var i = level; i > -1; i--) {
+                                                        tempa.push(colorchoice(colorlevel[i]));
+                                                    }
+                                                    //</editor-fold>
+                                                    bin.bins.forEach(function (d) {
+                                                        var point = bin.normalizedFun.scaleBackPoint(d.val);
+                                                        //var matrizz = scatterData[0].x.map(function(e){return 0;});
+                                                        //scatterData[0].x.push(point[0]);
+                                                        //scatterData[0].y.push(point[1]);
+                                                        //scatterData[0].z.push(point[2]);
+                                                        // matrizz.push(point[2]);
+                                                        // scatterData[0].z.push(matrizz);
+
+                                                        scatterData[0].marker.size.push(scaleXs(bin.binRadius / 2));
+                                                        // scatterData[0].marker.color.push(color(d.length));
+                                                        scatterData[0].marker.opacity.push(d.length == 1 ? 1 : opacitys(d.length));
+                                                        var text = fieldset[0] + ": " + point[0] + "<br>";
+                                                        text += fieldset[1] + ": " + point[1] + "<br>";
+                                                        text += fieldset[2] + ": " + point[2];
+                                                        scatterData[0].text.push(text);
+                                                    });
+                                                    scatterData.push({
+                                                        alphahull: 2,
+                                                        // color:maincolor(0.3),
+                                                        color: tempa[2],
+                                                        opacity: 0.05,
+                                                        type: 'mesh3d',
+                                                        x: [],
+                                                        y: [],
+                                                        z: []
+                                                    });
+                                                    datain.forEach(function (d) {
+                                                        scatterData[1].x.push(d[0]);
+                                                        scatterData[1].y.push(d[1]);
+                                                        scatterData[1].z.push(d[2]);
+                                                    });
+                                                    scatterData.push({
+                                                        alphahull: 3,
+                                                        // color:maincolor(0.4),
+                                                        color: tempa[4],
+                                                        opacity: 0.1,
+                                                        type: 'mesh3d',
+                                                        x: scatterData[1].x,
+                                                        y: scatterData[1].y,
+                                                        z: scatterData[1].z
+                                                    });
+                                                    scatterData.push({
+                                                        alphahull: 4,
+                                                        // color:maincolor(0.2),
+                                                        color: tempa[2],
+                                                        opacity: 0.15,
+                                                        type: 'mesh3d',
+                                                        x: scatterData[1].x,
+                                                        y: scatterData[1].y,
+                                                        z: scatterData[1].z
+                                                    });
+                                                    scatterData.push({
+                                                        alphahull: 5,
+                                                        // color:maincolor(0.5),
+                                                        color: tempa[5],
+                                                        opacity: 0.2,
+                                                        type: 'mesh3d',
+                                                        x: scatterData[1].x,
+                                                        y: scatterData[1].y,
+                                                        z: scatterData[1].z
+                                                    });
+                                                    scatterData.push({
+                                                        alphahull: 6,
+                                                        // color:maincolor(0.6),
+                                                        color: tempa[6],
+                                                        opacity: 0.25,
+                                                        type: 'mesh3d',
+                                                        x: scatterData[1].x,
+                                                        y: scatterData[1].y,
+                                                        z: scatterData[1].z
+                                                    });
+                                                    scatterData.push({
+                                                        alphahull: 7,
+                                                        // color:maincolor(0.7),
+                                                        color: tempa[7],
+                                                        opacity: 0.3,
+                                                        type: 'mesh3d',
+                                                        x: scatterData[1].x,
+                                                        y: scatterData[1].y,
+                                                        z: scatterData[1].z
+                                                    });
+                                                    // bin.bins.forEach(function(d,i) {
+                                                    //     for (var j =i+1;j<scatterData[0].x.length;j++)
+                                                    //     scatterData[0].z[i].push(0);
+                                                    // })
+
+
                                                 }
-                                                //</editor-fold>
-                                            bin.bins.forEach(function(d) {
-                                                var point = bin.normalizedFun.scaleBackPoint(d.val);
-                                                //var matrizz = scatterData[0].x.map(function(e){return 0;});
-                                                //scatterData[0].x.push(point[0]);
-                                                //scatterData[0].y.push(point[1]);
-                                                //scatterData[0].z.push(point[2]);
-                                                // matrizz.push(point[2]);
-                                                // scatterData[0].z.push(matrizz);
-
-                                                scatterData[0].marker.size.push(scaleXs(bin.binRadius/2));
-                                               // scatterData[0].marker.color.push(color(d.length));
-                                                scatterData[0].marker.opacity.push(d.length==1?1:opacitys(d.length));
-                                                var text = fieldset[0] + ": " + point[0] + "<br>";
-                                                text += fieldset[1] + ": " + point[1] + "<br>";
-                                                text += fieldset[2] + ": " + point[2];
-                                                scatterData[0].text.push(text);
-                                            });
-                                            scatterData.push({
-                                                alphahull: 2,
-                                                // color:maincolor(0.3),
-                                                color:tempa[2],
-                                                opacity: 0.05,
-                                                type: 'mesh3d',
-                                                x: [],
-                                                y: [],
-                                                z: []
-                                            });
-                                            datain.forEach(function(d){
-                                                scatterData[1].x.push(d[0]);
-                                                scatterData[1].y.push(d[1]);
-                                                scatterData[1].z.push(d[2]);
-                                            });
-                                            scatterData.push({
-                                                alphahull: 3,
-                                                // color:maincolor(0.4),
-                                                color:tempa[4],
-                                                opacity: 0.1,
-                                                type: 'mesh3d',
-                                                x: scatterData[1].x,
-                                                y: scatterData[1].y,
-                                                z: scatterData[1].z
-                                            });
-                                            scatterData.push({
-                                                alphahull: 4,
-                                                // color:maincolor(0.2),
-                                                color:tempa[2],
-                                                opacity: 0.15,
-                                                type: 'mesh3d',
-                                                x: scatterData[1].x,
-                                                y: scatterData[1].y,
-                                                z: scatterData[1].z
-                                            });
-                                            scatterData.push({
-                                                alphahull: 5,
-                                                // color:maincolor(0.5),
-                                                color:tempa[5],
-                                                opacity: 0.2,
-                                                type: 'mesh3d',
-                                                x: scatterData[1].x,
-                                                y: scatterData[1].y,
-                                                z: scatterData[1].z
-                                            });
-                                            scatterData.push({
-                                                alphahull: 6,
-                                                // color:maincolor(0.6),
-                                                color:tempa[6],
-                                                opacity: 0.25,
-                                                type: 'mesh3d',
-                                                x: scatterData[1].x,
-                                                y: scatterData[1].y,
-                                                z: scatterData[1].z
-                                            });
-                                            scatterData.push({
-                                                alphahull: 7,
-                                                // color:maincolor(0.7),
-                                                color:tempa[7],
-                                                opacity: 0.3,
-                                                type: 'mesh3d',
-                                                x: scatterData[1].x,
-                                                y: scatterData[1].y,
-                                                z: scatterData[1].z
-                                            });
-                                            // bin.bins.forEach(function(d,i) {
-                                            //     for (var j =i+1;j<scatterData[0].x.length;j++)
-                                            //     scatterData[0].z[i].push(0);
-                                            // })
-
-
-                                        }
-                                        else{
-                                            // point
-                                            points.forEach(function(d) {
-                                                scatterData[0].x.push(d.data.x);
-                                                scatterData[0].y.push(d.data.y);
-                                                scatterData[0].z.push(d.data.z);
-                                                scatterData[0].marker.size.push(dataPointRadius);
-                                                scatterData[0].marker.color.push('#2f5597');
-                                                var text = fieldset[0] + ": " + d.data.x + "<br>";
-                                                text += fieldset[1] + ": " + d.data.y + "<br>";
-                                                text += fieldset[2] + ": " + d.data.z;
-                                                scatterData[0].text.push(text);
-                                            })
-                                        }
+                                                else {
+                                                    // point
+                                                    points.forEach(function (d) {
+                                                        scatterData[0].x.push(d.data.x);
+                                                        scatterData[0].y.push(d.data.y);
+                                                        scatterData[0].z.push(d.data.z);
+                                                        scatterData[0].marker.size.push(dataPointRadius);
+                                                        scatterData[0].marker.color.push('#2f5597');
+                                                        var text = fieldset[0] + ": " + d.data.x + "<br>";
+                                                        text += fieldset[1] + ": " + d.data.y + "<br>";
+                                                        text += fieldset[2] + ": " + d.data.z;
+                                                        scatterData[0].text.push(text);
+                                                    })
+                                                }
+                                            }
 
                                         var extraconfig = {
                                             displayModeBar: (config.displayModeBar === undefined),

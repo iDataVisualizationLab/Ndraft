@@ -6,7 +6,7 @@ angular.module('pcagnosticsviz')
             templateUrl: 'components/d3-slidegraph/slide-graph.html',
             replace: true,
             scope: {
-                charts: '=', // One
+                charts: '=', // two
                 pos: '=',
                 postSelectAction: '&',
                 limit: '=',
@@ -33,8 +33,8 @@ angular.module('pcagnosticsviz')
                 //     }
                 // },true);
 
-                const posWatcher = scope.$watch("pos",function(){
-                    console.log(scope.pos)
+                const posWatcher = scope.$watch("[pos,charts]",function(){
+                    console.log(scope.pos);
                     if (scope.pos!=-1) {
                         setTransform();
                         //PCAplot.alternativeupdate( scope.charts[scope.pos]);

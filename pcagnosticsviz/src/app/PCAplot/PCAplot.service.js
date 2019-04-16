@@ -1211,17 +1211,27 @@ angular.module('pcagnosticsviz')
         };
         function spec2typer(spec,fields){
             var typer ={};
-            if (spec.type){
-            var extra = spec.config.extraconfig;
-            typer.mark = extra? spec.mark+"-"+extra:spec.mark;
-            typer.dim = PCAplot.dim;
-            typer.type = spec.type;
-            typer.fieldDefs = fields.map(function(f) {return Dataset.schema.fieldSchema(f)});
+            if (PCAplot.prop) {
+                if (spec.type) {
+                    var extra = spec.config.extraconfig;
+                    typer.mark = extra ? spec.mark + "-" + extra : spec.mark;
+                    typer.dim = PCAplot.dim;
+                    typer.type = spec.type;
+                    typer.fieldDefs = fields.map(function (f) {
+                        return Dataset.schema.fieldSchema(f)
+                    });
+                } else {
+                    typer.mark = PCAplot.prop.mark;
+                    typer.dim = PCAplot.prop.dim;
+                    typer.type = PCAplot.prop.type;
+                    typer.fieldDefs = fields.map(function (f) {
+                        return Dataset.schema.fieldSchema(f)
+                    });
+                }
             }else {
-                typer.mark = PCAplot.prop.mark;
-                typer.dim = PCAplot.prop.dim;
-                typer.type = PCAplot.prop.type;
-                typer.fieldDefs = fields.map(function(f) {return Dataset.schema.fieldSchema(f)});
+                typer.fieldDefs = fields.map(function (f) {
+                    return Dataset.schema.fieldSchema(f)
+                });
             }
             return typer;
         }
@@ -1235,7 +1245,7 @@ angular.module('pcagnosticsviz')
             console.log(typer);
             console.log(type);
             if (PCAplot.prop!= null ) {
-                if ((spec.mark !== PCAplot.prop.mark) ||(PCAplot.dim !== PCAplot.prop.dim))
+                if ((typer.mark !== PCAplot.prop.mark) ||(PCAplot.dim !== PCAplot.prop.dim))
                 {
                     PCAplot.state = states.GENERATE_GUIDE;
                     if ((PCAplot.dim !== PCAplot.prop.dim)||(typer.mark==='__ANY__')){
@@ -1756,8 +1766,10 @@ angular.module('pcagnosticsviz')
                 column: { field: objects[2].field, type: objects[2].type},
                 row: { field: objects[3].field, type: objects[3].type},
             };
-            if (option)
+            if (option) {
+                spec.config = spec.config ||{};
                 spec.config.extraconfig = option;
+            }
             //spec.layer = objects.map(function(o){return {encoding:{x: { field: o.field, type: o.type}}}});
         }
 
