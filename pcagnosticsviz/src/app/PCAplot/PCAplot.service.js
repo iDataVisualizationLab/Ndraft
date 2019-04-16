@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('pcagnosticsviz')
-    .factory('PCAplot', function(ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,Chart,Config,Schema,util,GuidePill, Webworker) {
+    .factory('PCAplot', function(ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,Alerts,Chart,Config,Schema,util,GuidePill, Webworker) {
         var keys =  _.keys(Schema.schema.definitions.Encoding.properties).concat([ANY+0]);
         var colordot = '#4682b4';
         var states = {IDLE:0,GENERATE_GUIDE:1,GENERATE_ALTERNATIVE:2,FREE:3, UPDATEPOSITION:4};
@@ -123,10 +123,12 @@ angular.module('pcagnosticsviz')
                     outlier = [];
                 var dataref = null;
                 if (dimension === 0) {
-                    brand_names = Object.keys(data[0]);
-                    matrix = data2Num(data);
 
-                    outlier = brand_names.map(function (d, i) {
+                    brand_names = Dataset.schema._fieldSchemas.filter(d=>(d.type!=="temporal"&& d.primitiveType!=="string")).map(d=>d.field);
+                    matrix = data2Num(data,brand_names);
+
+                    outlier = Dataset.schema._fieldSchemas.map(function (b, i) {
+                       const  d= b.field
                         // var outliernum = 0,
                         //     row = matrix.map(function (r) {
                         //         return r[i]
@@ -148,7 +150,8 @@ angular.module('pcagnosticsviz')
                         //     else if ((e < q1 - iqr) || (e > q3 + iqr))
                         //         outliernum = outliernum + 1;
                         // });
-                        if (Dataset.schema.fieldSchema(d).type !== "quantitative") {
+
+                        if ((Dataset.schema.fieldSchema(d).type !== "quantitative") || (Dataset.schema.fieldSchema(d).primitiveType === "string")) {
                             Dataset.schema.fieldSchema(d).stats.outlier = 0;
                             Dataset.schema.fieldSchema(d).stats.variance = 0;
                             Dataset.schema.fieldSchema(d).stats.modeskew = 0;
@@ -212,7 +215,7 @@ angular.module('pcagnosticsviz')
                     d.pc1 = A[i][chosenPC[0]];
                     d.pc2 = A[i][chosenPC[1]];
                 });
-                if (dimension == 1) {
+                if (dimension === 1) {
                     data.forEach(function (d, i) {
                         d.label = idlabel[i]
                     });
@@ -226,7 +229,7 @@ angular.module('pcagnosticsviz')
                             return top;
                         }
                     }).filter(function (d) {
-                        return d != undefined;
+                        return d !== undefined;
                     });
                 }
                 var maxxy = [-Infinity, -Infinity];
@@ -866,18 +869,16 @@ angular.module('pcagnosticsviz')
                 y: r * Math.sin(theta + dtheta)
             }
         }
-        function data2Num (input){
+        function data2Num (input,keys){
             var clone = {};
-            for ( var key in  input[0]){
-                clone[key] = [];
-            }
+            keys.forEach(key => clone[key] = [])
             var output=  Array.from(input);
             input.forEach(function (d){
-                for ( var key in d){
+                keys.forEach(key =>{
                     if (clone[key].find(function(it){return it.key == [d[key]];}) == undefined){
                         clone[key].push({'key': d[key]});
                     }
-                }
+                })
             });
 
 
@@ -909,7 +910,7 @@ angular.module('pcagnosticsviz')
             });*/
 
             var matrix = input.map(function (d,i){
-                return Object.keys(d).map(function(k){
+                return keys.map(function(k){
                     return clone[k].find(function(it){return it.key == output[i][k]}).newindex;
                 });
             });
@@ -950,9 +951,9 @@ angular.module('pcagnosticsviz')
                         return (it['brand'] === d.field)
                     });
                     d.extrastat = {
-                        pc1: pca.pc1,
-                        pc2: pca.pc2,
-                        outlier: pca.outlier,
+                        pc1: (pca||{pc1:0}).pc1,
+                        pc2: (pca||{pc2:0}).pc2,
+                        outlier: (pca||{outlier:0}).outlier,
                     };
                 });
                 var recomen =[];
@@ -1353,6 +1354,7 @@ angular.module('pcagnosticsviz')
                             return (a.scag[d] < b.scag[d]) ? 1 : -1;
                         })[0];
                     });
+                    topitem.filter(d=>d.invalid != true);
                     var unique = [];
                     var uniquetype = [];
                     topitem.forEach(function (d, i) {
@@ -1942,7 +1944,7 @@ angular.module('pcagnosticsviz')
                 primfield.forEach(function (selectedfield) {
                     dataschema._fieldSchemas.forEach(function (d) {
                         if ((d.field !== selectedfield) && (dataschema._fieldSchemaIndex[selectedfield].scag == undefined || dataschema._fieldSchemaIndex[selectedfield].scag[d.field] === undefined) && (d.scag === undefined || (d.scag[selectedfield] === undefined))) {
-                            var scag = scagnoticscore([selectedfield, d.field]);
+                                var scag = scagnoticscore([selectedfield, d.field],checkValid(dataschema._fieldSchemaIndex[selectedfield]) && checkValid(dataschema._fieldSchemaIndex[d.field]));
                             if (dataschema._fieldSchemaIndex[selectedfield].scag === undefined)
                                 dataschema._fieldSchemaIndex[selectedfield].scag = {};
                             dataschema._fieldSchemaIndex[selectedfield] .scag[d.field] = scag;
@@ -1953,55 +1955,81 @@ angular.module('pcagnosticsviz')
                 return complete(dataschema);
                 // stackforScag(primfield,[], []);
             });
+
+            function checkValid(field) {
+                return (field.type !== 'temporal')&&(field.primitiveType!=="string");
+            }
             function combineName (fields){
                 return fields.map(d=>d.replace(/-/g,'')).naturalSort().join('-');
             }
-                function scagnoticscore (fields){
-                    var matrix = data.map(function(d){return fields.map(f => d[f])});
+            function scagnoticscore (fields,valid){
+                if (valid) {
+                    var matrix = [];
+                    data.forEach(function (d) {
+                        if (d[fields[0]] !== undefined && d[fields[1]] !== undefined)
+                        matrix.push( fields.map(f => d[f]))
+                    });
+
                     try {
-                        var scag = this.scagnostics(matrix,{
+                        var scag = this.scagnostics(matrix, {
                             // isBinned: false,
                             binType: 'leader',
-                            startBinGridSize: 40});
+                            startBinGridSize: 40
+                        });
                         if (!isNaN(scag.skinnyScore))
                             return {
                                 'outlying': scag.outlyingScore,
                                 'skewed': scag.skewedScore,
-                                'sparse':scag.sparseScore,
-                                'clumpy':scag.clumpyScore,
-                                'striated':scag.striatedScore,
-                                'convex':scag.convexScore,
-                                'skinny':scag.skinnyScore,
-                                'stringy':scag.stringyScore,
-                                'monotonic':scag.monotonicScore};
+                                'sparse': scag.sparseScore,
+                                'clumpy': scag.clumpyScore,
+                                'striated': scag.striatedScore,
+                                'convex': scag.convexScore,
+                                'skinny': scag.skinnyScore,
+                                'stringy': scag.stringyScore,
+                                'monotonic': scag.monotonicScore
+                            };
                         else return {
                             'outlying': 0,
                             'skewed': 0,
-                            'sparse':0,
-                            'clumpy':0,
-                            'striated':0,
-                            'convex':0,
-                            'skinny':0,
-                            'stringy':0,
-                            'monotonic':0,
-                            invalid:1
+                            'sparse': 0,
+                            'clumpy': 0,
+                            'striated': 0,
+                            'convex': 0,
+                            'skinny': 0,
+                            'stringy': 0,
+                            'monotonic': 0,
+                            invalid: 1
                         };
 
-                    }catch(e){
+                    } catch (e) {
                         return {
                             'outlying': 0,
                             'skewed': 0,
-                            'sparse':0,
-                            'clumpy':0,
-                            'striated':0,
-                            'convex':0,
-                            'skinny':0,
-                            'stringy':0,
-                            'monotonic':0,
-                            invalid:1,
+                            'sparse': 0,
+                            'clumpy': 0,
+                            'striated': 0,
+                            'convex': 0,
+                            'skinny': 0,
+                            'stringy': 0,
+                            'monotonic': 0,
+                            invalid: 1,
                         };
                     }
+                } else {
+                    return {
+                        'outlying': 0,
+                        'skewed': 0,
+                        'sparse': 0,
+                        'clumpy': 0,
+                        'striated': 0,
+                        'convex': 0,
+                        'skinny': 0,
+                        'stringy': 0,
+                        'monotonic': 0,
+                        invalid: 1,
+                    };
                 }
+            }
                 function scagnoticscore3D (field1,field2,field3){
                     var matrix = Dataset.data.map(function(d){return [d[field1],d[field2],d[field3]]});
                     try {
@@ -2070,20 +2098,17 @@ angular.module('pcagnosticsviz')
 
             //console.log (Dataset.schema.fieldSchema(primfield[0]));
         };
+        PCAplot.initialize = _.once(()=> Alerts.add('done with scagnostic calculation'));
         PCAplot.workerScagnotic = undefined;
         PCAplot.calscagnotic = function (primfield){
             if (!PCAplot.workerScagnotic) {
                 PCAplot.workerScagnotic = Webworker.create(calscagnotic, {async: true});
                 PCAplot.workerScagnotic.run(primfield, Dataset.schema, Dataset.data).then(function (result) {
                     console.log("----------done---------------");
-                    // PCAplot.firstrun = true;
-                    // if(PCAplot.dim==1)
-                    // PCAplot.plot(Dataset.schema.fieldSchemas.map(function(d){
-                    //     var tem = {field: d.field};
-                    //     tem[d.field] = d.scag;
-                    //     return tem;}),PCAplot.dim);
+                    PCAplot.initialize();
                     PCAplot.workerScagnotic = undefined;
                 }, null, function (progress) {
+                    // Alerts.add(progress);
                     if (Dataset.schema.fieldSchema(progress.source).scag === undefined)
                         Dataset.schema.fieldSchema(progress.source).scag = {};
                     // if (Dataset.schema.fieldSchema(progress.target).scag === undefined)
@@ -2092,7 +2117,6 @@ angular.module('pcagnosticsviz')
                     // Dataset.schema.fieldSchema(progress.target).scag[progress.source] = Dataset.schema.fieldSchema(progress.source).scag[progress.target];
                 }).catch(function (oError) {
                     PCAplot.workerScagnotic = undefined;
-                    alert("stopped");
                 });
             }
 
@@ -2117,6 +2141,7 @@ angular.module('pcagnosticsviz')
             PCAplot.dataref = [];
             PCAplot.mspec = null;
             PCAplot.state = states.IDLE;
+            PCAplot.initialize = _.once(()=> Alerts.add('done with scagnostic calculation'));
             //PCAplot.plot(Dataset.data);
         };
         PCAplot.reset();

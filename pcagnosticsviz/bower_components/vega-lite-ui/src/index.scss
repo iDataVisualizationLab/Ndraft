@@ -360,8 +360,8 @@ h4 {
   }
 
   &::-webkit-scrollbar-thumb {
-    border-radius: 8px;
-    border: 2px solid white; /* should match background, can't be transparent */
+    border-radius: 3px;
+    border: 2px solid var(--fontContractColor); /* should match background, can't be transparent */
     background-color: rgba(0, 76, 99, 0.5);
   }
 

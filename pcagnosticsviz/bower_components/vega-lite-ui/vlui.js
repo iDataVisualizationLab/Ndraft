@@ -3863,6 +3863,30 @@
         url: 'data/NRC.json',
         id: 'nrc',
         group: 'sample'
+    },{
+        name: 'HPCC Septemper 26 2018',
+        description:'',
+        url: 'data/HPCC_26_September_2018.json',
+        id: 'hpccSep2618',
+        group: 'sample'
+    },{
+        name: 'HPCC Septemper 26 2018 12am',
+        description:'',
+        url: 'data/HPCC_26_September_2018_12am.json',
+        id: 'hpccSep2618_12am',
+        group: 'sample'
+    },{
+        name: 'HPCC Septemper 26 2018 1pm',
+        description:'',
+        url: 'data/HPCC_26_September_2018_1pm.json',
+        id: 'hpccSep2618_1pm',
+        group: 'sample'
+    },{
+        name: 'HPCC Septemper 26 2018 3pm',
+        description:'',
+        url: 'data/HPCC_26_September_2018_3pm.json',
+        id: 'hpccSep2618_3pm',
+        group: 'sample'
     }]);
 }());
 
@@ -5835,13 +5859,21 @@
                                     //runtGraph
                                     svg_d3 = boxplotdiv.selectAll('svg');
                                     var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
-                                    var points =  Dataset.data.map(function(d,i){return {index: i,val: [d[fieldset[0]],d[fieldset[1]]]}});
+                                    var points =  [];
+                                    var tiptext=[];
+                                    Dataset.data.forEach(function(d,i){
+                                        if (d[fieldset[0]]!==undefined && d[fieldset[1]]!==undefined) {
+                                            tiptext.push(d3.entries(d));
+                                            points.push({index: i, val: [d[fieldset[0]], d[fieldset[1]]]});
+                                        }
+                                    });
+                                    points = points.filter(d=>d.val[0]!==undefined&&d.val[1]!==undefined);
 
                                     var fieldDefs =fieldset.map(function(d){return Dataset.schema.fieldSchema(d)});
-                                    var tiptext=[];
-                                    Dataset.data.forEach(function (d){
-                                        tiptext.push(d3.entries(d));
-                                        return fieldDefs.map(function(f){return {value: (f.stats.max-f.stats.min)? (d[f.field]-f.stats.min)/(f.stats.max-f.stats.min):0, or: d[f.field]}; });});
+
+                                    // Dataset.data.forEach(function (d,i){
+                                    //     tiptext.push(d3.entries(d));
+                                    //     return fieldDefs.map(function(f){return {value: (f.stats.max-f.stats.min)? (d[f.field]-f.stats.min)/(f.stats.max-f.stats.min):0, or: d[f.field]}; });});
 
                                     var scaleXv = d3.scale.linear()
                                         .domain([0,1])
@@ -5979,7 +6011,7 @@
                                     var h = scalem;
                                     svg_d3 = boxplotdiv.selectAll('svg');
                                     var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
-                                    var points =  Dataset.data.map(function(d){
+                                    var points =  Dataset.data.map(function(d,i){
                                         var point = fieldset.map(
                                             f =>{
                                                 const fieldValue = Dataset.schema._fieldSchemaIndex[f];
@@ -5990,6 +6022,7 @@
                                             });
                                         point.data={key: i, value: d};
                                         return point;});
+
                                     // var points =  Dataset.data.map(function(d,i){
                                     //     var point = [d[fieldset[0]],d[fieldset[1]]];
                                     //     point.data={key: i, value: d};
@@ -6172,17 +6205,21 @@
                                     //runtGraph
                                     svg_d3 = boxplotdiv.selectAll('svg');
                                     var fieldset = scope.chart.fieldSet.map(function(d){return d.field});
-                                    var points =  Dataset.data.map(function(d){
+                                    var points =  [];
+                                    Dataset.data.forEach(function(d,i){
+                                        var key_undefined = false;
                                         var point = fieldset.map(
                                             f =>{
                                                 const fieldValue = Dataset.schema._fieldSchemaIndex[f];
                                                 if (fieldValue.primitiveType === 'string') {
                                                     return Object.keys(fieldValue.stats.unique).indexOf(d[f]);
                                                 }
+                                                key_undefined = key_undefined || (d[f]===undefined||d[f]===null)
                                                 return d[f];
                                             });
                                         point.data={key: i, value: d};
-                                        return point;});
+                                        if (!key_undefined)
+                                            points.push(_.cloneDeep(point));});
                                     // var points =  Dataset.data.map(function(d,i){
                                     //     var point = [d[fieldset[0]],d[fieldset[1]]];
                                     //     point.data={key: i, value: d};
@@ -6365,7 +6402,7 @@
                                         var fieldset = scope.chart.fieldSet.map(function (d) {
                                             return d.field
                                         });
-                                        var points =  Dataset.data.map(function(d){
+                                        var points =  Dataset.data.map(function(d,i){
                                             var point = fieldset.map(
                                                 f =>{
                                                     const fieldValue = Dataset.schema._fieldSchemaIndex[f];
@@ -6584,18 +6621,32 @@
                                         .domain([0,1])
                                         .range([fieldDefs[2].stats.min,fieldDefs[2].stats.max]);
                                     // to do
-
-                                    var points =  Dataset.data.map(function(d){
+                                    var points =  [];
+                                    Dataset.data.forEach(function(d,i){
+                                        var key_undefined = false;
                                         var point = fieldset.map(
                                             f =>{
                                                 const fieldValue = Dataset.schema._fieldSchemaIndex[f];
                                                 if (fieldValue.primitiveType === 'string') {
                                                     return Object.keys(fieldValue.stats.unique).indexOf(d[f]);
                                                 }
+                                                key_undefined = key_undefined || (d[f]===undefined||d[f]===null)
                                                 return d[f];
                                             });
                                         point.data = {'x': d[fieldset[0]], 'y': d[fieldset[1]], 'z': d[fieldset[2]]};
-                                    return point;});
+                                        if (!key_undefined)
+                                            points.push(_.cloneDeep(point));});
+                                    // var points =  Dataset.data.map(function(d,i){
+                                    //     var point = fieldset.map(
+                                    //         f =>{
+                                    //             const fieldValue = Dataset.schema._fieldSchemaIndex[f];
+                                    //             if (fieldValue.primitiveType === 'string') {
+                                    //                 return Object.keys(fieldValue.stats.unique).indexOf(d[f]);
+                                    //             }
+                                    //             return d[f];
+                                    //         });
+                                    //     point.data = {'x': d[fieldset[0]], 'y': d[fieldset[1]], 'z': d[fieldset[2]]};
+                                    // return point;});
                                     // to do
                                     try{
                                         var config = scope.chart.vlSpec.config;
@@ -6675,9 +6726,14 @@
                                         };
                                         if (config.extraconfig === undefined) {
                                             var datain =Dataset.data.map(function (d){
-                                                var dd = fieldDefs.map(function(f){return d[f.field] });
+                                                var dd = fieldDefs.map(function(f){
+                                                    if (f.primitiveType!=='date' && f.primitiveType!=='string')
+                                                        return d[f.field];
+                                                    return f.stats.unique[d[f.field]];
+                                                });
                                                 dd.data = dd;
                                                 return dd;});
+                                            datain = datain.filter(dd=> dd.findIndex(d=>d===undefined || d===null)===-1)
                                             var bin = binnerN()
                                                 .startBinGridSize(5)
                                                 .isNormalized(false)
@@ -6996,13 +7052,15 @@
                                         var binType = scope.chart.vlSpec.config.extraconfig;
                                         if (binType){
                                             if (binType =="leader"||binType =="evenbin") {
-                                                var datain = Dataset.data.map(function (d) {
-                                                    var dd = fieldDefs.map(function (f) {
-                                                        return d[f.field]
+                                                var datain =Dataset.data.map(function (d){
+                                                    var dd = fieldDefs.map(function(f){
+                                                        if (f.primitiveType!=='date' && f.primitiveType!=='string')
+                                                            return d[f.field];
+                                                        return f.stats.unique[d[f.field]];
                                                     });
                                                     dd.data = dd;
-                                                    return dd;
-                                                });
+                                                    return dd;});
+                                                datain = datain.filter(dd=> dd.findIndex(d=>d===undefined || d===null)===-1)
                                                 var bin = binnerN()
                                                     // .startBinGridSize(binType === "leader" ? 2.5 : 10)
                                                     .startBinGridSize(binType === "leader" ? 1.5 : 7)

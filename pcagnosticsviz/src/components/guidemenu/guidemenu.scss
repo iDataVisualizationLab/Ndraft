@@ -1,3 +1,4 @@
+
 .pane.guidemenu {
   overflow-y: hidden;
   max-width: 300px;
@@ -39,13 +40,13 @@
       overflow-x: auto;
     }
     .mlabeltext {
-      fill: var(--fontColor);
+      fill: black;
       .hightlight {
-        stroke: var(--highlightColor);
+        stroke: black;
       }
     }
     .cell.active {
-      stroke: #ffffff;
+      stroke: black;
       stroke-width: 2px;
     }
     foreignObject {
@@ -53,7 +54,11 @@
       min-height: 85px;
       margin: 5px;
       transition: all .2s ease-in-out;
-      transform: scale(0.5);
+      -webkit-transform: scale3d(0.5,0.5,1);
+      -moz-transform: scale3d(0.5,0.5,1);
+      -ms-transform: scale3d(0.5,0.5,1);
+      -o-transform: scale3d(0.5,0.5,1);
+      transform: scale3d(0.5,0.5,1);
       .card {
         border: black solid 2px
       }
@@ -66,21 +71,21 @@
         box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
       }
       foreignObject {
-        transform: scale(1);
+        transform: scale3d(1,1,1);
       }
     }
 
     .hover {
       foreignObject {
-        transform: scale(1);
+        transform: scale3d(1,1,1);
       }
     }
 
     .legend {
-      stroke: var(--fontColor);
+      stroke: black;
     }
     .cell.active {
-      stroke: var(--fontColor);
+      stroke: black;
       stroke-width: 5px;
     }
     .active {

@@ -24,7 +24,7 @@ angular.module('pcagnosticsviz')
                 let generalattr ={
                     svg: d3.select('.thum').select('svg'),
                     g: d3.select('.thum').select('.oneDimentional'),
-                    margin: {left:20, top: 75, bottom:20, right:20},
+                    margin: {left:20, top: 75, bottom:20    , right:20},
                     width: 1200,
                     height: 1200,
                     w: function() {return this.width-this.margin.left-this.margin.right},
@@ -210,11 +210,13 @@ angular.module('pcagnosticsviz')
                             .on('mouseover',function (d){
                                 generalattr.mouseoverIndex = d.order;
                                 generalattr.force.nodes($scope.prop.previewcharts).alpha(0.01).restart();
+                                d3.select(this).select('foreignObject').attr('transform','scale(1)');
                                 d3.select(this).classed('hover',true);
                             })
                                 .on('mouseleave',function (d) {
                                 generalattr.mouseoverIndex = -1;
                                     generalattr.force.nodes($scope.prop.previewcharts).alpha(0.3).restart();
+                                    d3.select(this).select('foreignObject').attr('transform','scale(0.5)');
                                 d3.select(this).classed('hover',false);
                             });
                         foreign.select('div').style('background-color',d=>generalattr.colorScale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))
@@ -247,7 +249,7 @@ angular.module('pcagnosticsviz')
                         generalattr.force.stop();
                     }
                     // init
-                    generalattr.height = generalattr.width;
+                    generalattr.height = generalattr.w()+generalattr.margin.top+generalattr.margin.bottom;
                     generalattr.svg.attr('viewBox',[0,0,generalattr.width,generalattr.height]);
                     generalattr.g = d3.select('.thum').select('.twoDimentional');
 
@@ -262,14 +264,14 @@ angular.module('pcagnosticsviz')
                         traits = Dataset.schema.fieldSchemas.map(d=>{return {text:d.field,value:0}});
 
                     traits.forEach(function(trait) {
-                        trait.value = d3.sum($scope.prop.previewcharts.filter(pc=> pc.fieldSet.find(f=>f.field==trait.text) !== undefined ).map(d=>Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])));
+                        trait.value = d3.sum($scope.prop.previewcharts.filter(pc=> pc.fieldSet.find(f=> f.field === trait.text) !== undefined ).map(d=>Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])));
                         domainByTrait[trait] = [Dataset.schema.fieldSchema(trait.text).stats.min,Dataset.schema.fieldSchema(trait.text).stats.max];
 
                     });
                     traits.sort((a,b)=>b.value-a.value);
 
-                    generalattr.xScale = d3v4.scaleBand().range([0, generalattr.w()]).domain(traits.map(d=>d.text)).paddingInner(0.05);
-                    generalattr.yScale = d3v4.scaleBand().range([0, generalattr.h()]).domain(traits.map(d=>d.text));
+                    generalattr.xScale = d3v4.scaleBand().paddingInner(0.05).paddingOuter(0.5).range([0, generalattr.w()]).round(true).domain(traits.map(d=>d.text));
+                    generalattr.yScale = d3v4.scaleBand().paddingInner(0.05).paddingOuter(0.5).range([0, generalattr.h()]).round(true).domain(traits.map(d=>d.text));
 
                     let x = d3v4.scaleLinear()
                         .range([0, generalattr.xScale.bandwidth()]);
