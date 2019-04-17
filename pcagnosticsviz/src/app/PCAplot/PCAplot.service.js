@@ -219,7 +219,7 @@ angular.module('pcagnosticsviz')
                     data.forEach(function (d, i) {
                         d.label = idlabel[i]
                     });
-                    dataref = _.cloneDeep(data);
+                    dataref = data;
                     data = brand_names.map(function (d) {
                         var top = data.sort(function (a, b) {
                             return a[d] < b[d] ? 1 : -1;
@@ -421,6 +421,12 @@ angular.module('pcagnosticsviz')
                         return d;
                     });
                 };
+                var onClickInstance =function (d) {
+                        // TODO use query
+                        const channelID = Object.keys(vlSchema.definitions.UnitEncoding.properties).slice(0,d.label.length);
+                        channelID.forEach((c,i)=> Pills.set(c,Dataset.schema.fieldSchema(d.label[i]),true));
+                    NotifyingService.notify();
+                    };
                 if (dimension === 0) {
                     g_point.selectAll(".subgraph").remove();
                     var point = g_point.selectAll(".dot")
@@ -458,13 +464,13 @@ angular.module('pcagnosticsviz')
                 } else {
                     g_point.selectAll(".dot").remove();
                     var subplot = g_point.selectAll(".subgraph")
-                        .data(data)
+                        .data(data,d=>d.label)
                         .attr("class", "subgraph")
                         .attr('transform', function (d) {
                             return "translate(" + (x(d.pc1) - (subgSize.w + submarign.left + submarign.right) / 2) + "," + (y(d.pc2) - (subgSize.h + submarign.top + submarign.bottom) / 2) + ")"
-                        })
-                        .on('mouseover', onMouseOverAttribute)
-                        .on('mouseleave', onMouseLeave);
+                        });
+                        // .on('mouseover', onMouseOverAttribute)
+                        // .on('mouseleave', onMouseLeave);
                     subplot.exit().remove();
                     var subinside = subplot
                         .enter().append("g")
@@ -472,6 +478,7 @@ angular.module('pcagnosticsviz')
                         .attr('transform', function (d) {
                             return "translate(" + (x(d.pc1) - (subgSize.w + submarign.left + submarign.right) / 2) + "," + (y(d.pc2) - (subgSize.h + submarign.top + submarign.bottom) / 2) + ")"
                         })
+                        .on('click',onClickInstance)
                         .on('mouseover', onMouseOverAttribute)
                         .on('mouseleave', onMouseLeave);
                     subinside.append("rect")
@@ -553,17 +560,6 @@ angular.module('pcagnosticsviz')
                     });
 
 
-                /*g_axis.selectAll("text.brand")
-                    .data(brands)
-                    .enter().append("text")
-                    .attr("class", "label-brand")
-                    .attr("x", function(d) { return x(d.pc1) + 10; })
-                    .attr("y", function(d) { return y(d.pc2) + 0; })
-                    .attr("visibility","hidden")
-                    .text(function(d) { return d['brand']});*/
-                //var deltaX, deltaY;
-
-                //var bi = d3.selectAll(".biplot");
                 var temp_drag;
                 var current_field;
 
@@ -921,30 +917,6 @@ angular.module('pcagnosticsviz')
         PCAplot.estimate = function(PCAresult,dim,dataref) {
             // choose main axis
             if (dim===0) {
-                // PCAplot.charts.length=0;
-                // Dataset.schema.fieldSchemas.forEach(function (d) {
-                //     var pca = PCAresult.find(function (it) {
-                //         return (it['brand'] === d.field)
-                //     });
-                //     d.extrastat = {
-                //         pc1: pca.pc1,
-                //         pc2: pca.pc2,
-                //         outlier: pca.outlier,
-                //     };
-                // });
-                //
-                // var recomen = [];
-                // var pca1_max = PCAresult.sort(function (a, b) {
-                //     return Math.abs(a.pc1) < Math.abs(b.pc1) ? 1 : -1
-                // })[0]['brand'];
-                // PCAresult.sort(function (a, b) {
-                //     return Math.abs(a.pc2) < Math.abs(b.pc2) ? 1 : -1
-                // });
-                // var pca2_max = (PCAresult[0]['brand'] !== pca1_max) ? PCAresult[0]['brand'] : PCAresult[1]['brand'];
-                // recomen.push(pca1_max);
-                // recomen.push(pca2_max);
-                // var object1 = Dataset.schema.fieldSchema(pca1_max);
-                // var object2 = Dataset.schema.fieldSchema(pca2_max);
                 PCAplot.charts.length=0;
                 Dataset.schema.fieldSchemas.forEach(function (d) {
                     var pca = PCAresult.find(function (it) {
@@ -991,10 +963,8 @@ angular.module('pcagnosticsviz')
                 PCAplot.charts.length=0;
 
 
-                PCAplot.dataref = dataref.map(function(d){
-                    return {fieldDefs: [Dataset.schema.fieldSchema(d.label[0]),Dataset.schema.fieldSchema(d.label[1])],
-                        scag: d,};
-                    });
+                update_dataref (dataref);
+
                 var objects = {};
                 var tops = support[dim].types.filter((d,i)=>i<4).map(function(brand){
                     var type = brand;
@@ -1053,7 +1023,13 @@ angular.module('pcagnosticsviz')
                 case 'radar-contour': radarplot(spec,object,'contour'); break;
             }
         }
-
+        function update_dataref (dataref){
+            PCAplot.dataref = dataref.map(function(d){
+                return {fieldDefs: [Dataset.schema.fieldSchema(d.label[0]),Dataset.schema.fieldSchema(d.label[1])],
+                    scag: d,};
+            });
+            PCAplot.data[1] = PCAplot.dataref;
+        }
         var guideon = function(prop,mspec){
             if (this) {
                 var tolog = {level_explore: prop.dim, abtraction: prop.mark, visual_feature: prop.type};
@@ -2110,8 +2086,28 @@ angular.module('pcagnosticsviz')
 
             //console.log (Dataset.schema.fieldSchema(primfield[0]));
         };
-        PCAplot.initialize = _.once(()=> Alerts.add('done with scagnostic calculation'));
+        function handleScagnostic () {
+            Alerts.add('done with scagnostic calculation');
+            let dataref = []
+            Dataset.schema.fieldSchemas.map(function(d){
+                var tem = {field: d.field};
+                tem[d.field] = d.scag;
+                return tem;}).forEach(function (d) {
+                for (var e in d[d.field]) {
+                    if (d[d.field][e].invalid !== 1) {
+                        d[d.field][e].label = [d.field, e];
+                        dataref.push(d[d.field][e]);
+                    }
+                }
+            });
+
+            update_dataref (dataref);
+        }
+        PCAplot.initialize = _.once(handleScagnostic);
         PCAplot.workerScagnotic = undefined;
+        PCAplot.checkCalculateStatus = function (dim) {
+
+        }
         PCAplot.calscagnotic = function (primfield){
             if (!PCAplot.workerScagnotic) {
                 PCAplot.workerScagnotic = Webworker.create(calscagnotic, {async: true});
@@ -2153,7 +2149,7 @@ angular.module('pcagnosticsviz')
             PCAplot.dataref = [];
             PCAplot.mspec = null;
             PCAplot.state = states.IDLE;
-            PCAplot.initialize = _.once(()=> Alerts.add('done with scagnostic calculation'));
+            PCAplot.initialize = _.once(handleScagnostic);
             //PCAplot.plot(Dataset.data);
         };
         PCAplot.reset();

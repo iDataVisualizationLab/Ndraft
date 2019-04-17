@@ -226,7 +226,8 @@ angular.module('pcagnosticsviz')
 
 
                     // update
-                    generalattr.yScale.domain(d3.extent($scope.prop.previewcharts,d=>Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])));
+                    // generalattr.yScale.domain(d3.extent($scope.prop.previewcharts,d=>Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])));
+                    generalattr.yScale.domain([0,1]);
                     generalattr.force.nodes($scope.prop.previewcharts).alpha(0.3).restart();
                     // fixedSizeForeignObjects(d3v4.select(".thum").selectAll('foreignObject').nodes());
 
