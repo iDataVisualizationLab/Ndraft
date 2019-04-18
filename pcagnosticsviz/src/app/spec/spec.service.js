@@ -128,6 +128,7 @@ angular.module('pcagnosticsviz')
         catch(e){}
         var dim = 0;
         var fields = [];
+        // const keys = Object.keys(vlSchema.definitions.UnitEncoding.properties).slice(0,4);
         for (var key in spec.encoding) {
             if (spec.encoding[key].field!== undefined && spec.encoding[key].field !== "*") {
                 dim++;

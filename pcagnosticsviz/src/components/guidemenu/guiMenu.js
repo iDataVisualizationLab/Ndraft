@@ -22,8 +22,9 @@ angular.module('pcagnosticsviz')
 
                 //general plot variable stored
                 let generalattr ={
-                    svg: d3.select('.thum').select('svg'),
-                    g: d3.select('.thum').select('.oneDimentional'),
+                    svg: d3v4.select('.thum').select('svg'),
+                    canvas: d3v4.select('.thum').select('canvas'),
+                    g: d3v4.select('.thum').select('.oneDimentional'),
                     margin: {left:20, top: 75, bottom:20    , right:20},
                     width: 1200,
                     height: 1200,
@@ -86,7 +87,7 @@ angular.module('pcagnosticsviz')
                 //
                 // }, true);
 
-                var generalWatcher = $scope.$watch('[prop.dim,prop.type,prop.mark]', function(spec) {
+                var generalWatcher = $scope.$watch('[prop.dim,prop.type,prop.mark,prop.previewcharts.length]', function(spec) {
                     first = false;
                     updateInterface($scope.prop.dim,$scope.prop);
 
@@ -164,14 +165,14 @@ angular.module('pcagnosticsviz')
                     generalattr.height = generalattr.sh*$scope.prop.previewcharts.length/2;
                     generalattr.svg.attr('viewBox',[0,0,generalattr.width,generalattr.height].join(' '));
 
-                    var colorArray = ["#77946F","#aec7b2","#c5d6c6","#e6e6e6","#e6e6d8","#e6d49c","#e6b061","#e6852f","#e6531a","#e61e1a"];
+                    var colorArray = ["#324a2c","#aec7b2","#c5d6c6","#e6e6e6","#e6e6d8","#e6d49c","#e6b061","#e6852f","#e6531a","#e61e1a"];
                     var level= colorArray.length;
                     var domain = d3.range(level).map(function(d) {return d/(level-1)});
 
                     generalattr.colorScale = d3v4.scaleLinear()
                         .domain(domain)
                         .range(colorArray);
-                    if (generalattr.g.select('defs')[0][0]==null) {
+                    if (generalattr.g.select('defs').empty()) {
                         const defs = generalattr.g.append('defs');
                         let colorGradient = defs.append('linearGradient')
                             .attr('id','linear-gradient')
@@ -197,7 +198,7 @@ angular.module('pcagnosticsviz')
                     }
                     legend.call(legednTicks);
 
-                    generalattr.g = d3.select('.thum').select('.oneDimentional');
+                    generalattr.g = d3v4.select('.thum').select('.oneDimentional');
                     generalattr.g.select('.twoDimentional').selectAll('*').remove();
 
                     generalattr.yScale = d3v4.scaleLinear().range([generalattr.h()-generalattr.sh/2,generalattr.sh/2]);
@@ -210,14 +211,14 @@ angular.module('pcagnosticsviz')
                             .on('mouseover',function (d){
                                 generalattr.mouseoverIndex = d.order;
                                 generalattr.force.nodes($scope.prop.previewcharts).alpha(0.01).restart();
-                                d3.select(this).select('foreignObject').attr('transform','scale(1)');
-                                d3.select(this).classed('hover',true);
+                                d3v4.select(this).select('foreignObject').attr('transform','scale(1)');
+                                d3v4.select(this).classed('hover',true);
                             })
                                 .on('mouseleave',function (d) {
                                 generalattr.mouseoverIndex = -1;
                                     generalattr.force.nodes($scope.prop.previewcharts).alpha(0.3).restart();
-                                    d3.select(this).select('foreignObject').attr('transform','scale(0.5)');
-                                d3.select(this).classed('hover',false);
+                                    d3v4.select(this).select('foreignObject').attr('transform','scale(0.5)');
+                                d3v4.select(this).classed('hover',false);
                             });
                         foreign.select('div').style('background-color',d=>generalattr.colorScale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))
                             // .attr("x", function(d){ return generalattr.xRescale(d.x); })
@@ -252,7 +253,9 @@ angular.module('pcagnosticsviz')
                     // init
                     generalattr.height = generalattr.w()+generalattr.margin.top+generalattr.margin.bottom;
                     generalattr.svg.attr('viewBox',[0,0,generalattr.width,generalattr.height]);
-                    generalattr.g = d3.select('.thum').select('.twoDimentional');
+                    generalattr.canvas.attr('width',generalattr.width)
+                        .attr('height',generalattr.height);
+                    generalattr.g = d3v4.select('.thum').select('.twoDimentional');
 
 
                     let sizescale = d3v4.scaleLinear()
@@ -269,11 +272,13 @@ angular.module('pcagnosticsviz')
                         domainByTrait[trait] = [Dataset.schema.fieldSchema(trait.text).stats.min,Dataset.schema.fieldSchema(trait.text).stats.max];
 
                     });
+                    console.log(traits)
                     traits.sort((a,b)=>b.value-a.value);
 
                     generalattr.xScale = d3v4.scaleBand().paddingInner(0.05).paddingOuter(0.5).range([0, generalattr.w()]).round(true).domain(traits.map(d=>d.text));
                     generalattr.yScale = d3v4.scaleBand().paddingInner(0.05).paddingOuter(0.5).range([0, generalattr.h()]).round(true).domain(traits.map(d=>d.text));
-
+                    const xScales = d3v4.scaleLinear().range([generalattr.xScale.bandwidth()*0.1,generalattr.xScale.bandwidth()*0.9]).domain([0,1]);
+                    const yScales = d3v4.scaleLinear().range([generalattr.xScale.bandwidth()*0.9,generalattr.xScale.bandwidth()*0.1]).domain([0,1]);
                     let x = d3v4.scaleLinear()
                         .range([0, generalattr.xScale.bandwidth()]);
                     let y = d3v4.scaleLinear()
@@ -291,38 +296,100 @@ angular.module('pcagnosticsviz')
                     labels.exit().remove();
                     labels.enter().call(plotLabel);
 
+                    let ctx = generalattr.canvas.node().getContext("2d");
+                    initdrawScatterplot ();
                     let cells = generalattr.g.selectAll(".cell")
                         .data($scope.prop.previewcharts,d=>d.id);
-                    cells.transition().duration(generalattr.w()).delay(function(d, i) { return generalattr.xScale(d.fieldSet[0].field); }).call(updateplot);
+                    cells.transition().duration(generalattr.w()).delay(function(d, i) { return generalattr.xScale(d.fieldSet[0].field); })
+                        .call(updateplot);
                     cells.exit().remove();
                     cells.enter().call(plot);
 
+                    function initdrawScatterplot (){
+                        ctx.clearRect(0, 0, generalattr.width, generalattr.height);
+                        ctx.fillStyle = 'black';
+                    }
                     function plot(p) {
-                        return p.append("g")
+                        const subg =  p.append("g")
                             .attr("class", "cell")
                             .attr("transform", function(d) {
+                                //inject cavnas
+
                                 const pos = [generalattr.xScale(d.fieldSet[0].field),generalattr.xScale(d.fieldSet[1].field)];
                                 pos.sort((a,b)=>a-b);
+                                drawCanvas (d,pos)
                                 return "translate(" + pos[0] + "," + pos[1] + ")"; })
                             .on('click', function (d,i){
                                 generalattr.g.selectAll('.active').classed('active',false);
-                                d3.select(this).classed('active',true);
-                                $scope.previewSlider(d.order)})
+                                d3v4.select(this).classed('active',true);
+                                $scope.previewSlider(d.order)});
+                        subg
                             .append("rect")
-                            // .attr("transform", function(d) {
-                            //     const pos = (1-sizescale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))*generalattr.xScale.bandwidth()/2;
-                            //     return "translate(" + pos + "," + pos + ")"; })
                             .attr("class", "frame")
                             .style("fill",d=>generalattr.colorScale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))
                             .attr("width", d => generalattr.xScale.bandwidth())
                             .attr("height",d => generalattr.xScale.bandwidth());
-                    }
+                        // svg
+                        // draw scatterplot
+                        // let subg_c = subg.selectAll('.cpoint')
+                        //     .data(d=>getdata(d));
+                        // subg_c.exit().remove();
+                        // subg_c.enter().append('circle')
+                        //     .attr('r',2)
+                        //     .call(create_circle);
+                        // subg_c.transition().duration(100).call(create_circle);
 
+                        // canvas
+
+                        return  subg;
+
+
+                        function create_circle (p){
+                            return p.attr('cx',d=>xScales(d[0]))
+                                .attr('cy',d=>yScales(d[1]));
+                        }
+                    }
+                    function drawPoint(offset,point, r) {
+                        var cx = offset[0]+xScales(point[0])+generalattr.margin.left;
+                        var cy = offset[1]+yScales(point[1])+generalattr.margin.top;
+
+                        // NOTE; each point needs to be drawn as its own path
+                        // as every point needs its own stroke. you can get an insane
+                        // speed up if the path is closed after all the points have been drawn
+                        // and don't mind points not having a stroke
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                    function getdata (spec) {
+                        var fieldset = spec.fieldSet.map(function(d){return d.field});
+                        fieldset.sort((a,b)=>{-traits.indexOf(traits.find(d=>d.text ===a))+traits.indexOf(traits.find(d=>d.text ===b))});
+                        var points =  Dataset.data.map(function(d,i){
+                            var point = fieldset.map(
+                                f =>{
+                                    const fieldValue = Dataset.schema._fieldSchemaIndex[f];
+                                    if (fieldValue.primitiveType === 'string') {
+                                        const maxv = Object.keys(fieldValue.stats.unique).length-1;
+                                        return Object.keys(fieldValue.stats.unique).indexOf(d[f])/maxv;
+                                    }
+                                    return (d[f]-fieldValue.stats.min)/(fieldValue.stats.max-fieldValue.stats.min);
+                                });
+                            point.data={key: i, value: d};
+                            return point;});
+                        return points;
+                    }
                     function updateplot(p) {
-                        return p.attr("transform", function(d) {
+                        p.attr("transform", function(d) {
                             const pos = [generalattr.xScale(d.fieldSet[0].field),generalattr.xScale(d.fieldSet[1].field)];
                             pos.sort((a,b)=>a-b);
                             return "translate(" + pos[0] + "," + pos[1] + ")"; })
+                            .on('end',d=>{
+                                const pos = [generalattr.xScale(d.fieldSet[0].field),generalattr.xScale(d.fieldSet[1].field)];
+                                pos.sort((a,b)=>a-b);
+                                drawCanvas (d,pos);
+                            });
+                        return p
                             .select(".frame")
                             // .attr("transform", function(d) {
                             //     const pos = (1-sizescale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))*generalattr.xScale.bandwidth()/2;
@@ -331,7 +398,9 @@ angular.module('pcagnosticsviz')
                             .attr("width", d => generalattr.xScale.bandwidth())
                             .attr("height",d => generalattr.xScale.bandwidth());
                     }
-
+                    function drawCanvas (d,pos){
+                        return new Promise((resolve, reject)=>getdata(d).forEach(e=> drawPoint(pos,e,1)));
+                    }
                     function plotLabel(p) {
                         return p.append("g")
                             .attr("class", "mlabel")

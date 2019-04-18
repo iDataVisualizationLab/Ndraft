@@ -25,10 +25,11 @@
     color: var(--fontColor) !important;
   }
   .vl-plot {
-    min-width: 150px;
+    //min-width: 150px;
     align-items: center;
   }
   .thum {
+    position: relative;
     display: flex;
     flex: 1;
     min-height: 0px;
@@ -59,9 +60,24 @@
       -ms-transform: scale3d(0.5,0.5,1);
       -o-transform: scale3d(0.5,0.5,1);
       transform: scale3d(0.5,0.5,1);
-      .card {
-        border: black solid 2px
+      .thumplot {
+        max-height: 80px;
+        height: calc( 100% - 30px);width: calc( 100% - 30px);
+        margin:0;
+        padding:0;
+        border: black solid 2px;
+        .vl-plot {
+          min-width: 270px;
+        }
       }
+    }
+
+    canvas {
+      position: absolute;
+      top:0;
+      left:0;
+      width:100%;
+      pointer-events: none;
     }
 
 

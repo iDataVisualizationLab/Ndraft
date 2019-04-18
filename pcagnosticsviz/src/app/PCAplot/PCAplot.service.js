@@ -342,7 +342,8 @@ angular.module('pcagnosticsviz')
                 };
 
 // draw line from the brand axis a perpendicular to each attribute b
-                var legendtop = svg_main.selectAll('.legendtop').data([''])
+                var legendtop = svg_main.selectAll('.legendtop').data([''],d=>d);
+                    legendtop
                     .enter().append('text')
                     .text(function (d) {
                         return d
@@ -350,6 +351,7 @@ angular.module('pcagnosticsviz')
                     .attr('text-anchor', 'end')
                     .attr('y', height + margin.bottom / 2)
                     .attr('x', width);
+                    legendtop = svg_main.selectAll('.legendtop');
                 var onMouseOverBrand = function (b, j) {
 
                     data.forEach(function (a, idx) {
@@ -542,7 +544,8 @@ angular.module('pcagnosticsviz')
                     })
                     .style("fill", function (d) {
                         return color(d['brand']);
-                    });
+                    }).on('mouseover', onMouseOverBrand)
+                    .on('mouseleave', onMouseLeave);;
                 circlebrand.exit().remove();
                 circlebrand
                     .enter().append("rect")
@@ -557,7 +560,8 @@ angular.module('pcagnosticsviz')
                     })
                     .style("fill", function (d) {
                         return color(d['brand']);
-                    });
+                    }).on('mouseover', onMouseOverBrand)
+                    .on('mouseleave', onMouseLeave);
 
 
                 var temp_drag;
@@ -963,7 +967,7 @@ angular.module('pcagnosticsviz')
                 PCAplot.charts.length=0;
 
 
-                update_dataref (dataref);
+                // update_dataref (dataref);
 
                 var objects = {};
                 var tops = support[dim].types.filter((d,i)=>i<4).map(function(brand){
@@ -1029,6 +1033,7 @@ angular.module('pcagnosticsviz')
                     scag: d,};
             });
             PCAplot.data[1] = PCAplot.dataref;
+            PCAplot.madeprop(PCAplot.prop.mspec)
         }
         var guideon = function(prop,mspec){
             if (this) {
@@ -1152,11 +1157,22 @@ angular.module('pcagnosticsviz')
                 PCAplot.charts.push(PCAplot.chart);
         }
         PCAplot.prop2spec = function (prop) {
-            PCAplot.state = states.GENERATE_GUIDE;
-            PCAplot.prop = prop;
-            Pills.select(prop.mspec.vlSpec);
+            if (!checksimilar(PCAplot.prop,prop)) {
+                PCAplot.state = states.GENERATE_GUIDE;
+                PCAplot.prop = prop;
+                Pills.select(prop.mspec.vlSpec);
+            }
             // angular.element('.markselect').scope().spec = prop.mspec;
         };
+        function checksimilar(prop1,prop2){
+            if (!(prop1 && prop2))
+                return false;
+            const testFields = prop1.fieldDefs.map(d=>d.field).join(',')===prop2.fieldDefs.map(d=>d.field).join(',')
+            const testMark = prop1.mark===prop2.mark;
+            const testDim = prop1.dim===prop2.dim;
+            const testType = prop1.type===prop2.type;
+            return testFields &&testMark&&testDim&&testType;
+        }
         PCAplot.madeprop = function (spec){
             var type = PCAplot.prop.type;
             var dim = PCAplot.prop.dim;
@@ -1333,14 +1349,13 @@ angular.module('pcagnosticsviz')
                         ff = ff && f;
                     });
                     return ff;
-                });
+                }).filter(d=> !d.scag.invalid);
                 if (possible.length !== 0) {
                     var topitem = support[PCAplot.dim + 1].types.map(function (d) {
                         return possible.sort(function (a, b) {
                             return (a.scag[d] < b.scag[d]) ? 1 : -1;
                         })[0];
                     });
-                    topitem.filter(d=>d.invalid != true);
                     var unique = [];
                     var uniquetype = [];
                     topitem.forEach(function (d, i) {
@@ -2088,20 +2103,29 @@ angular.module('pcagnosticsviz')
         };
         function handleScagnostic () {
             Alerts.add('done with scagnostic calculation');
-            let dataref = []
-            Dataset.schema.fieldSchemas.map(function(d){
-                var tem = {field: d.field};
-                tem[d.field] = d.scag;
-                return tem;}).forEach(function (d) {
-                for (var e in d[d.field]) {
-                    if (d[d.field][e].invalid !== 1) {
+            try {
+                let dataref = []
+                Dataset.schema.fieldSchemas.map(function(d){
+                    var tem = {field: d.field};
+                    tem[d.field] = d.scag;
+                    return tem;}).forEach(function (d) {
+                    for (var e in d[d.field]) {
+
                         d[d.field][e].label = [d.field, e];
                         dataref.push(d[d.field][e]);
-                    }
-                }
-            });
 
-            update_dataref (dataref);
+                    }
+                });
+                update_dataref(dataref);
+            }catch(e){}
+            if (PCAplot.dim==1) {
+                PCAplot.firstrun =true;
+                PCAplot.plot(Dataset.schema.fieldSchemas.map(function (d) {
+                    var tem = {field: d.field};
+                    tem[d.field] = d.scag;
+                    return tem;
+                }), 1)
+            }
         }
         PCAplot.initialize = _.once(handleScagnostic);
         PCAplot.workerScagnotic = undefined;
@@ -2109,10 +2133,10 @@ angular.module('pcagnosticsviz')
 
         }
         PCAplot.calscagnotic = function (primfield){
+            let count =0;
             if (!PCAplot.workerScagnotic) {
                 PCAplot.workerScagnotic = Webworker.create(calscagnotic, {async: true});
                 PCAplot.workerScagnotic.run(primfield, Dataset.schema, Dataset.data).then(function (result) {
-                    console.log("----------done---------------");
                     PCAplot.initialize();
                     PCAplot.workerScagnotic = undefined;
                 }, null, function (progress) {

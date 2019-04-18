@@ -5370,6 +5370,8 @@
 
                     scope.hoverFocus = false;
                     scope.destroyed = false;
+                    if (scope.tip)
+                        scope.tip.destroy ();
                     scope.tip = d3.tip()
                         .attr('class', 'd3-tip tips custom')
                         .offset([10, 20])
@@ -5839,6 +5841,7 @@
                                     var  width = $(boxplotdiv[0]).width() - margin.left - margin.right;
                                     //var height = $(old_canvas[0]).height() - margin.top - margin.bottom;
                                     var height = (parseInt($(boxplotdiv[0]).parent().parent().css("max-height"),10)||parseInt($(boxplotdiv[0]).parent().parent().parent()[0].offsetHeight,10)) - margin.top - margin.bottom;//||width/3;
+                                    console.log('-----height=----'+ parseInt($(boxplotdiv[0]).parent().parent().css("max-height"),10));
                                     var scalem = Math.min(width,height);
 
                                     width = scalem+margin.left+margin.right;
@@ -7116,8 +7119,6 @@
                                                 }));
                                                 radarChartOptions.type = "contour";
                                                 radarChartOptions.gcolor = rainbowcolor;
-                                                console.log(data);
-                                                console.log(tiptext);
                                             }
                                         }else{
                                             data = Dataset.data.map(function (d){
@@ -7451,8 +7452,10 @@
                                         .style("opacity", cfg.opacityArea);
                                     tip.hide();
                                 });
-                            blobWrapper
-                                .append("path").classed('radarLine', true).call(drawMeanLine);
+                            if (cfg.type === "contour") {
+                                blobWrapper
+                                    .append("path").classed('radarLine', true).call(drawMeanLine);
+                            }
                         }else{
                             blobWrapper.append("path")
                                 .attr("class", "radarStroke")

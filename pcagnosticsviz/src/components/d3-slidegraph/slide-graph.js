@@ -35,6 +35,7 @@ angular.module('pcagnosticsviz')
 
                 const posWatcher = scope.$watch("[pos,charts]",function(){
                     console.log(scope.pos);
+                    itemCount = scope.charts.length;
                     if (scope.pos!=-1) {
                         setTransform();
                         //PCAplot.alternativeupdate( scope.charts[scope.pos]);
