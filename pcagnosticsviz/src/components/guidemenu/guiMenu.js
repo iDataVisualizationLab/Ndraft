@@ -165,7 +165,7 @@ angular.module('pcagnosticsviz')
                     generalattr.height = generalattr.sh*$scope.prop.previewcharts.length/2;
                     generalattr.svg.attr('viewBox',[0,0,generalattr.width,generalattr.height].join(' '));
 
-                    var colorArray = ["#324a2c","#aec7b2","#c5d6c6","#e6e6e6","#e6e6d8","#e6d49c","#e6b061","#e6852f","#e6531a","#e61e1a"];
+                    var colorArray = ["#6b9863","#aec7b2","#c5d6c6","#e6e6e6","#e6e6d8","#e6d49c","#e6b061","#e6852f","#e6531a","#e61e1a"];
                     var level= colorArray.length;
                     var domain = d3.range(level).map(function(d) {return d/(level-1)});
 
@@ -317,7 +317,7 @@ angular.module('pcagnosticsviz')
 
                                 const pos = [generalattr.xScale(d.fieldSet[0].field),generalattr.xScale(d.fieldSet[1].field)];
                                 pos.sort((a,b)=>a-b);
-                                drawCanvas (d,pos)
+                                drawCanvas (d,pos);
                                 return "translate(" + pos[0] + "," + pos[1] + ")"; })
                             .on('click', function (d,i){
                                 generalattr.g.selectAll('.active').classed('active',false);
@@ -364,7 +364,7 @@ angular.module('pcagnosticsviz')
                     }
                     function getdata (spec) {
                         var fieldset = spec.fieldSet.map(function(d){return d.field});
-                        fieldset.sort((a,b)=>{-traits.indexOf(traits.find(d=>d.text ===a))+traits.indexOf(traits.find(d=>d.text ===b))});
+                        fieldset.sort((a,b)=>traits.indexOf(traits.find(d=>d.text ===a))-traits.indexOf(traits.find(d=>d.text ===b)));
                         var points =  Dataset.data.map(function(d,i){
                             var point = fieldset.map(
                                 f =>{

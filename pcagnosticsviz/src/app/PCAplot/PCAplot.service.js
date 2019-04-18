@@ -1992,15 +1992,15 @@ angular.module('pcagnosticsviz')
                                 'monotonic': scag.monotonicScore
                             };
                         else return {
-                            'outlying': 0,
-                            'skewed': 0,
-                            'sparse': 0,
-                            'clumpy': 0,
-                            'striated': 0,
-                            'convex': 0,
+                            'outlying': scag.outlyingScore,
+                            'skewed': scag.skewedScore,
+                            'sparse': scag.sparseScore,
+                            'clumpy': scag.clumpyScore,
+                            'striated': scag.striatedScore,
+                            'convex': scag.convexScore,
                             'skinny': 0,
-                            'stringy': 0,
-                            'monotonic': 0,
+                            'stringy': scag.stringyScore,
+                            'monotonic': scag.monotonicScore,
                             invalid: 1
                         };
 
