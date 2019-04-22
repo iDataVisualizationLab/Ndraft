@@ -87,8 +87,9 @@ angular.module('pcagnosticsviz')
                 //
                 // }, true);
 
-                var generalWatcher = $scope.$watch('[prop.dim,prop.type,prop.mark,prop.previewcharts.length]', function(spec) {
+                var generalWatcher = $scope.$watch('[prop.dim,prop.type,prop.mark,prop.previewcharts]', function(spec) {
                     first = false;
+                    console.log($scope.prop.previewcharts);
                     updateInterface($scope.prop.dim,$scope.prop);
 
                 }, true); //, true /* watch equality rather than reference */);
@@ -111,6 +112,7 @@ angular.module('pcagnosticsviz')
                     // Clean up watcher
                     // specWatcher();
                     generalWatcher();
+                    posWatcher();
                 });
 
                 function updateInterface (dim,data){
@@ -162,7 +164,7 @@ angular.module('pcagnosticsviz')
                             }))
                             .on('tick', ticked);
                     }
-                    generalattr.height = generalattr.sh*$scope.prop.previewcharts.length/2;
+                    generalattr.height = Math.max(800,generalattr.sh*$scope.prop.previewcharts.length/4);
                     generalattr.svg.attr('viewBox',[0,0,generalattr.width,generalattr.height].join(' '));
 
                     var colorArray = ["#6b9863","#aec7b2","#c5d6c6","#e6e6e6","#e6e6d8","#e6d49c","#e6b061","#e6852f","#e6531a","#e61e1a"];
@@ -203,11 +205,15 @@ angular.module('pcagnosticsviz')
 
                     generalattr.yScale = d3v4.scaleLinear().range([generalattr.h()-generalattr.sh/2,generalattr.sh/2]);
                     generalattr.xScale = function(d){return 0};
-                    generalattr.xRescale = d3v4.scaleLinear().domain([0,generalattr.sh/2]).range([generalattr.w()/2,generalattr.w()/2+generalattr.sw/2]);
+                    generalattr.xRescale = d3v4.scaleLinear().domain([0,generalattr.sh/2]).range([generalattr.w()/2-generalattr.sw/2,generalattr.w()/2]);
                     function ticked (d){
                         const foreign = d3v4.select(".thum").selectAll('.foreignObject').data($scope.prop.previewcharts)
                             .attr ('transform',function (d){
                                 return'translate('+ generalattr.xRescale(d.x) +','+ (d.y-generalattr.sh/2)+')'})
+                        // .attr ('x',function (d){
+                        //         return generalattr.xRescale(d.x)})
+                        //     .attr ('y',function (d){
+                        //         return (d.y-generalattr.sh/2)})
                             .on('mouseover',function (d){
                                 generalattr.mouseoverIndex = d.order;
                                 generalattr.force.nodes($scope.prop.previewcharts).alpha(0.01).restart();
@@ -317,6 +323,7 @@ angular.module('pcagnosticsviz')
 
                                 const pos = [generalattr.xScale(d.fieldSet[0].field),generalattr.xScale(d.fieldSet[1].field)];
                                 pos.sort((a,b)=>a-b);
+                                if (Dataset.data.length<5000)
                                 drawCanvas (d,pos);
                                 return "translate(" + pos[0] + "," + pos[1] + ")"; })
                             .on('click', function (d,i){
@@ -387,6 +394,7 @@ angular.module('pcagnosticsviz')
                             .on('end',d=>{
                                 const pos = [generalattr.xScale(d.fieldSet[0].field),generalattr.xScale(d.fieldSet[1].field)];
                                 pos.sort((a,b)=>a-b);
+                                if (Dataset.data.length<5000)
                                 drawCanvas (d,pos);
                             });
                         return p

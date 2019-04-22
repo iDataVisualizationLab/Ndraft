@@ -238,14 +238,13 @@ d3.tip = function() {
     }
 
     function initNode() {
-        var node = d3.select(document.createElement('div'))
+        var node = d3.select('body').append('div')
         node
             .style('position', 'absolute')
             .style('top', 0)
             .style('opacity', 0)
             .style('pointer-events', 'none')
             .style('box-sizing', 'border-box')
-
         return node.node()
     }
 

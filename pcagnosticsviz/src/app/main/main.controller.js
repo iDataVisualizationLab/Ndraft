@@ -22,7 +22,7 @@ angular.module('pcagnosticsviz')
     $scope.embedded = !!consts.embeddedData;
     //  $scope.Biplot = Biplot;
     $scope.hideExplore = false;
-    $scope.fieldShow = false;
+    $scope.fieldShow = true;
     $scope.WildcardsShow = false;
     $scope.PCAplot= PCAplot;
     $scope.showEncoding = false;

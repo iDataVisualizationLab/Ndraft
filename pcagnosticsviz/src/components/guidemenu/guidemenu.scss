@@ -51,18 +51,18 @@
       stroke-width: 2px;
     }
     foreignObject {
-      width: 300px;
-      min-height: 85px;
+
+      min-height: 75px;
       margin: 5px;
       transition: all .2s ease-in-out;
-      -webkit-transform: scale3d(0.5,0.5,1);
-      -moz-transform: scale3d(0.5,0.5,1);
-      -ms-transform: scale3d(0.5,0.5,1);
-      -o-transform: scale3d(0.5,0.5,1);
-      transform: scale3d(0.5,0.5,1);
+      -webkit-transform: scale(0.5);
+      -moz-transform: scale(0.5);
+      -ms-transform: scale(0.5);
+      -o-transform: scale(0.5);
+      transform: scale(0.5);
       .thumplot {
-        max-height: 80px;
-        height: calc( 100% - 30px);width: calc( 100% - 30px);
+        max-height: calc( 100% - 30px);
+        max-width: calc( 100% - 30px);
         margin:0;
         padding:0;
         border: black solid 2px;
@@ -72,7 +72,7 @@
       }
     }
 
-    canvas {
+    canvas.scatterplot {
       position: absolute;
       top:0;
       left:0;
@@ -86,15 +86,13 @@
         border: var(--fontColor) solid 5px;
         box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
       }
-      foreignObject {
-        transform: scale3d(1,1,1);
-      }
+    }
+    .active foreignObject {
+      transform: scale(1);
     }
 
-    .hover {
-      foreignObject {
-        transform: scale3d(1,1,1);
-      }
+    .hover foreignObject {
+      transform: scale(1);
     }
 
     .legend {

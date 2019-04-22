@@ -56,10 +56,17 @@
                         ng-repeat="chart in prop.previewcharts track by generateID(chart)"
                         ng-class="{'active': prop.pos== $index}"
                 >
+                <!--<foreignObject-->
+                        <!--class = "foreignObject"-->
+                        <!--ng-if = "prop.dim==0"-->
+                        <!--ng-repeat="chart in prop.previewcharts track by generateID(chart)"-->
+                        <!--ng-class="{'active': prop.pos== $index}"-->
+                        <!--x = -135 y = -65-->
+                        <!--width = 300 height = 110-->
+                <!--&gt;-->
                     <foreignObject
                             x = -135 y = -65
                             width = 300 height = 110
-                            ng-attr-transform = "scale(0.5)"
                     >
                         <vl-plot-group
                                 ng-if="prop.previewcharts"
@@ -85,7 +92,7 @@
                 </g>
             </g>
         </svg>
-        <canvas width="1200" height="1200"  ng-hide = "prop.dim==0">
+        <canvas class="scatterplot" width="1200" height="1200"  ng-hide = "prop.dim!=1">
 
         </canvas>
         <!--<a ng-click="increaseLimit()">-->

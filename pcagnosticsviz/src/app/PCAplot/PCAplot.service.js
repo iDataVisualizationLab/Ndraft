@@ -1516,8 +1516,8 @@ angular.module('pcagnosticsviz')
                 typer[prop.type] = d.vlSpec.config.typer.val[prop.type];
                 thum.vlSpec.config = {
                     cell: {
-                        width: 100,
-                        height: nprop.dim?100:30
+                        width: prop.dim?100:200,
+                        height: prop.dim?100:30
                     },
                     axis: {
                         grid: false,

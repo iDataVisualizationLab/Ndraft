@@ -3887,6 +3887,18 @@
         url: 'data/HPCC_26_September_2018_3pm.json',
         id: 'hpccSep2618_3pm',
         group: 'sample'
+    },{
+        name: 'Alibaba',
+        description:'alibaba dataset in 60 seconds',
+        url: 'data/alibaba60s.json',
+        id: 'alibaba60s',
+        group: 'sample'
+    },{
+        name: 'Alibaba short',
+        description:'alibaba dataset in 1 time stamp',
+        url: 'data/alibabashort.json',
+        id: 'alibaba1s',
+        group: 'sample'
     }]);
 }());
 
@@ -5370,30 +5382,6 @@
 
                     scope.hoverFocus = false;
                     scope.destroyed = false;
-                    if (scope.tip)
-                        scope.tip.destroy ();
-                    scope.tip = d3.tip()
-                        .attr('class', 'd3-tip tips custom')
-                        .offset([10, 20])
-                        .direction('e')
-                        .html(function (values, title) {
-                            var str = ''
-                            str += '<h3>' + (title.length == 1 ? 'Brand ' : '') + title + '</h3>'
-                            str += "<table>";
-                            for (var i = 0; i < values.length; i++) {
-                                if (values[i].key != 'pc1' && values[i].key != 'pc2') {
-                                    str += "<tr>";
-                                    str += "<td>" + values[i].key + "</td>";
-                                    var val = d3.format('.2f')(values[i].value);
-                                    val = isNaN(val)?values[i].value:val;
-                                    str += "<td class=pct>" + val + "</td>";
-                                    str + "</tr>";
-                                }
-                            }
-                            str += "</table>";
-
-                            return str;
-                        });
                     scope.mouseenter = function() {
                         hoverPromise = $timeout(function(){
                             Logger.logInteraction(Logger.actions.CHART_MOUSEOVER, scope.chart.shorthand,{
@@ -5537,7 +5525,6 @@
 
 
                     function render(spec) {
-
                         if (!spec) {
                             if (view) {
                                 destroyView();
@@ -5549,7 +5536,31 @@
                         if (!element) {
                             console.error('can not find vis element');
                         }
+                        if (scope.tip){
+                            scope.tip.destroy();
+                        }
+                            scope.tip = d3.tip()
+                                .attr('class', 'd3-tip tips custom')
+                                .offset([10, 20])
+                                .direction('e')
+                                .html(function (values, title) {
+                                    var str = ''
+                                    str += '<h3>' + (title.length == 1 ? 'Brand ' : '') + title + '</h3>'
+                                    str += "<table>";
+                                    for (var i = 0; i < values.length; i++) {
+                                        if (values[i].key != 'pc1' && values[i].key != 'pc2') {
+                                            str += "<tr>";
+                                            str += "<td>" + values[i].key + "</td>";
+                                            var val = d3.format('.2f')(values[i].value);
+                                            val = isNaN(val)?values[i].value:val;
+                                            str += "<td class=pct>" + val + "</td>";
+                                            str + "</tr>";
+                                        }
+                                    }
+                                    str += "</table>";
 
+                                    return str;
+                                });
                         var shorthand = getShorthand();
                         var level= 7;
                         var maincolor = d3v4.scaleSequential(d3v4.interpolateViridis);
@@ -7590,11 +7601,9 @@
 
                     scope.$on('$destroy', function() {
                         console.log('vlplot destroyed');
-                        try {
+
                             scope.tip.destroy();
-                        } catch(e) {
-                            scope.tip.remove();
-                        }
+
                         if (view) {
                             destroyView();
                         }

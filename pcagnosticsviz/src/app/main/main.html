@@ -41,6 +41,11 @@
             <i class="fa fa-database"></i>
             <span class="dataset-name">{{Dataset.currentDataset.name}}</span>
           </div>
+          <div class="current-dataset">
+            <span class="dataset-info">Data have {{Dataset.data.length}} datapoint</span>
+          <br>
+            <span class="dataset-info">and {{Dataset.schema.fieldSchemas.length}} dimentions</span>
+          </div>
         </div>
         <h3>Overview</h3>
         <bi-plot></bi-plot>
