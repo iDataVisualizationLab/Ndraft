@@ -46,6 +46,21 @@
     //min-width: 150px;
     align-items: center;
   }
+  .nDimentional {
+    background-color: white;
+    position: relative;
+    canvas{
+      position: absolute;
+    }
+    .dimension.hightlight{
+      text {
+        stroke: black;
+      }
+      path {
+        stroke-width: 2px;
+      }
+    }
+  }
   .thum {
     position: relative;
     display: flex;

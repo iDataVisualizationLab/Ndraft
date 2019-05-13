@@ -142,9 +142,9 @@ angular.module('pcagnosticsviz')
 
                 }, true); //, true /* watch equality rather than reference */);
 
-                var posWatcher = $scope.$watch('[prop.pos]', function(spec) {
-
-                    selectInterface($scope.prop.dim,$scope.prop.pos);
+                var posWatcher = $scope.$watch('[prop.pos,prop.previewcharts]', function(newValue, oldValue) {
+                    if (newValue[1]!==oldValue[1])
+                        selectInterface($scope.prop.dim,$scope.prop.pos);
 
                 }, true);
 
@@ -161,6 +161,7 @@ angular.module('pcagnosticsviz')
                     // specWatcher();
                     generalWatcher();
                     posWatcher();
+                    generalattr.pc2 = undefined;
                 });
 
                 $scope.byPassHandle = function (){
@@ -198,7 +199,11 @@ angular.module('pcagnosticsviz')
                     }
                 }
                 function selectplot_nD(data){
-
+                    const dims = $scope.prop.mspec.fieldSet.map(d=>d.field);
+                    generalattr.pc2.svg.selectAll('.dimension')
+                        .classed('hightlight',false)
+                        .filter(f=>dims.find(d=>d===f)!==undefined)
+                        .classed('hightlight',true);
                 }
 
                 function makeLegend(x,y) {
@@ -927,7 +932,52 @@ angular.module('pcagnosticsviz')
                 }
 
                 function generalplot_nD (data) {
-                    generalattr.g.selectAll('*').remove();
+                    // clean
+                    generalattr.svg.select('g.threeDimentional').selectAll('*');
+                    if (generalattr.force) {
+                        generalattr.force.stop();
+                    }
+                    // init
+                    generalattr.margin= {left:0, top: 0, bottom:20, right:20};
+                    generalattr.height = generalattr.w()+generalattr.margin.top+generalattr.margin.bottom;
+                    generalattr.svg.attr('viewBox',[0,0,generalattr.width,generalattr.height]);
+                    // generalattr.canvas.attr('width',generalattr.width)
+                    //     .attr('height',generalattr.height);
+                    generalattr.g = d3v4.select('.thum').select('.nDimentional');
+
+                    //data
+                    let {domainByTrait , traits} = PCAplot.orderVariables($scope.prop.type);
+                    let dimObj ={}
+                    traits.filter(t=>{let f = Dataset.schema.fieldSchema(t.text);
+                    return !(f.primitiveType==="string"&&f.type==="nominal");}).forEach(t=>{
+                        dimObj[t.text] = {
+                            title: t.text,
+                        }
+                    });
+                    // if (generalattr.pc2===undefined) {
+                        generalattr.pc2 = generalattr.pc2||ParCoords()('.nDimentional');
+                    generalattr.pc2
+                        .mode("queue") // progressive rendering
+                        .margin({top: 50, left: 10, bottom: 12, right: 10})
+                        .alpha(0.2)
+                        .composite("darker")
+                        .color('steelblue')
+                            .data(Dataset.data)
+                            .bundlingStrength(0.35) // set bundling strength
+                            .smoothness(0.20)
+                            .bundleDimension(traits[0].text)
+                            .dimensions(dimObj)
+                            .render()
+                            .reorderable()
+                            .brushMode("1D-axes");
+                        generalattr.pc2.svg.selectAll('.dimension').select('text.label').style('fill', 'black');
+                        generalattr.pc2.svg.selectAll("text")
+                            .style("font", "10px sans-serif");
+                    // }else{
+                    //     // generalattr.pc2.dimension(dimObj)
+                    //     //     .render()
+                    //     //     .updateAxes();
+                    // }
                 }
 
 

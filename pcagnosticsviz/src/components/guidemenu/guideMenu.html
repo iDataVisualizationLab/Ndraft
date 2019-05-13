@@ -2,7 +2,7 @@
     <div class="sidebar-header">
         <h2>Guided navigation</h2>
     </div>
-    <div class="thum">
+    <div class="thum" ng-hide="prop.dim>2">
         <svg class = "mainview" viewBox="0 0 1200 1200" width = 100% height = 100% preserveAspectRatio="xMidYMid meet" style="background-color: white;position: relative;" ng-hide="prop.dim>3">
             <g class="oneDimentional" ng-hide = "prop.dim!==0">
                 <!--<g-->
@@ -54,8 +54,6 @@
             </g>
             <g class="threeDimentional" ng-hide = "prop.dim!=2">
             </g>
-            <g class="nDimentional" ng-hide = "prop.dim>1">
-            </g>
         </svg>
         <canvas class="scatterplot" width="1200" height="1200"  ng-hide = "prop.dim!=1">
 
@@ -88,4 +86,5 @@
             <!--</div>-->
         <!--</a>-->
     </div>
+    <div class="nDimentional"  style="width: 100%;min-height: 500px"></div>
 </div>

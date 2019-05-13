@@ -93,6 +93,7 @@
   "dependencies": {
     "angular-loading-bar": "^0.9.0",
     "glup": "^1.0.14",
-    "gulp-if": "^2.0.2"
+    "gulp-if": "^2.0.2",
+    "parcoord-es": "^2.2.9"
   }
 }
