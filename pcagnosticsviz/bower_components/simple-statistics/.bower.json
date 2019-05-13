@@ -1,12 +1,12 @@
 {
   "name": "simple-statistics",
   "homepage": "https://github.com/tmcw/simple-statistics",
-  "version": "6.1.0",
-  "_release": "6.1.0",
+  "version": "6.1.1",
+  "_release": "6.1.1",
   "_resolution": {
     "type": "version",
-    "tag": "v6.1.0",
-    "commit": "f1f542b21ea8b3b7884d88f7b9fa7bba0873c118"
+    "tag": "v6.1.1",
+    "commit": "d106cb083b72356938d5e76d842bdd5a6ef43f57"
   },
   "_source": "https://github.com/tmcw/simple-statistics.git",
   "_target": "~6.1.0",

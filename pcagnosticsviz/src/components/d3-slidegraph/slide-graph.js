@@ -43,7 +43,6 @@ angular.module('pcagnosticsviz')
                         update_buffer(scope.pos);
                         scope.limitup = scope.pos;//Math.min(scope.limitup,(scope.pos > scope.limit)? (scope.pos-2) : 0);
                         // scope.charts[scope.pos].vlSpec.config.typer = PCAplot.prop.mspec.config.typer;
-                        console.log(scope.buffer[scope.pos])
                         setTransform();
                         Pills.select(scope.charts[scope.pos].vlSpec);
                     }

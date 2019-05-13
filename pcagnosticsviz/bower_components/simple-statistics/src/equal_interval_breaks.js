@@ -1,7 +1,7 @@
 /* @flow */
 
-import max from './max';
-import min from './min';
+import max from "./max";
+import min from "./min";
 
 /**
  * Given an array of x, this will find the extent of the
@@ -16,26 +16,28 @@ import min from './min';
  * @example
  * equalIntervalBreaks([1, 2, 3, 4, 5, 6], 4); // => [1, 2.25, 3.5, 4.75, 6]
  */
-function equalIntervalBreaks(x/*: Array<number> */, nClasses/*:number*/)/*: Array<number> */ {
-
+function equalIntervalBreaks(
+    x /*: Array<number> */,
+    nClasses /*:number*/
+) /*: Array<number> */ {
     if (x.length < 2) {
         return x;
     }
 
-    var theMin = min(x);
-    var theMax = max(x);
+    const theMin = min(x);
+    const theMax = max(x);
 
     // the first break will always be the minimum value
     // in the xset
-    var breaks = [theMin];
+    const breaks = [theMin];
 
     // The size of each break is the full range of the x
     // divided by the number of classes requested
-    var breakSize = (theMax - theMin) / nClasses;
+    const breakSize = (theMax - theMin) / nClasses;
 
     // In the case of nClasses = 1, this loop won't run
     // and the returned breaks will be [min, max]
-    for (var i = 1; i < nClasses; i++) {
+    for (let i = 1; i < nClasses; i++) {
         breaks.push(breaks[0] + breakSize * i);
     }
 

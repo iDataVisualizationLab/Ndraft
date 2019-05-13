@@ -39,11 +39,57 @@ $fa-font-path: "../../bower_components/fontawesome/fonts";
   background: url("../assets/images/logov2.png") center no-repeat;
   background-size: contain;
   display: block;
-  width: 176px;
+  width: 150px;
   height: 33px;
-  margin-right: 47px; /* This margin further pushes the menu to the right */
+  margin-right: 0px; /* This margin further pushes the menu to the right */
 }
 
+#video {
+  display: block;
+  color: var(--fontColor);
+  font-size: 12px;
+  border-radius: 5px;
+  background-color: rgba(36, 64, 126, 0.96);
+  line-height: 1.5;
+  min-height: unset;
+  h3{
+    display: inline;
+    margin-left: 5px;
+  }
+}
+
+#videoOverlay {
+  position: fixed; /* Sit on top of the page content */
+  display: block; /* Hidden by default */
+  width: 100%; /* Full width (cover the whole page) */
+  height: 100%; /* Full height (cover the whole page) */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5); /* Black background with opacity */
+  z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+  cursor: pointer; /* Add a pointer on hover */
+  .videoContaint{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 50px;
+    color: white;
+    transform: translate(-50%,-50%);
+    -ms-transform: translate(-50%,-50%);
+    .md-button{
+      position: absolute;
+      right:0px;
+      top:0px;
+      line-height: 0.5;
+      height:25px;
+      width:30px;
+      background-color: #1b1613;
+      transform: translate(0,-50px);
+    }
+  }
+}
 .flex-root {
   background-color: var(--subdetailColor);
 }
@@ -70,8 +116,11 @@ null-filter-directive {
 .pane.encoding-pane {
   width: 235px;
   flex-shrink: 0;
-  .card {
+  .card:not(.preview) {
     background-color: var(--panel2Color);
+  }
+  .card.preview {
+    background-color: unset;
   }
 }
 
@@ -345,16 +394,50 @@ bi-plot {
 }
 
 .typerDiv{
+  border-radius: 2px;
   position: absolute;
   right: 0;
   top: 0;
   margin: 0;
-  padding: 5px 10px;
-  line-height: 0.5;
+  padding: 5px;
+  line-height: 1.2;
   text-align: start;
 }
-.typerDiv p{
-  margin: 5px ;
+
+.typerDiv table {
+  border-collapse: separate;
+  border:unset;
+  border-spacing: 0 1px;
+}
+
+.typerDiv th{
+  padding: 4px;
+}
+.typerDiv td {
+  background-color: white;
+  border-top: 1px solid #cccccc;
+  border-bottom: 1px solid #cccccc;
+  padding: 0 2px;
+}
+.typerDiv tr td:first-child {
+  -webkit-border-top-left-radius: 5px;
+  -moz-border-top-left-radius: 5px;
+  border-top-left-radius: 5px;
+  border-left: 1px solid #cccccc;
+
+  -webkit-border-bottom-left-radius: 5px;
+  -moz-border-bottom-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.typerDiv tr td:last-child {
+  -webkit-border-top-right-radius: 5px;
+  -moz-border-top-right-radius: 5px;
+  border-top-right-radius: 5px;
+  border-right: 1px solid #cccccc;
+  -webkit-border-bottom-right-radius: 5px;
+  -moz-border-bottom-right-radius: 5px;
+  border-bottom-right-radius: 5px;
 }
 
 .mainstroke {
@@ -391,4 +474,17 @@ bi-plot {
 
 .shadow {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+md-progress-linear.md-default-theme.md-theme .md-container, md-progress-linear.md-theme .md-container {
+  background-color: #4682b4;
+}
+
+md-progress-linear.md-default-theme.md-theme .md-bar  , md-progress-linear.md-theme .md-bar {
+  background-color: #203864;
+}
+.main-vl-plot-group.guideplot {
+  .vl-plot {
+    overflow-y: hidden;
+  }
 }

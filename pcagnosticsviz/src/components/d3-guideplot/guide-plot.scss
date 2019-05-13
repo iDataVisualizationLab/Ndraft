@@ -10,6 +10,10 @@
     flex-wrap: wrap;
     justify-content: space-between;
 }
+
+.wrapped-vl-plot-group, .vl-plot-group{
+    border-radius: var(--radiusBorder);
+}
 .guideplot.square {
     max-height:140px;
     height:140px;

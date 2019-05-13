@@ -23,19 +23,18 @@
  * @example
  * modeFast(['rabbits', 'rabbits', 'squirrels']); // => 'rabbits'
  */
-function modeFast/*::<T>*/(x /*: Array<T> */)/*: ?T */ {
-
+function modeFast /*::<T>*/(x /*: Array<T> */) /*: ?T */ {
     // This index will reflect the incidence of different values, indexing
     // them like
     // { value: count }
-    var index = new Map();
+    const index = new Map();
 
     // A running `mode` and the number of times it has been encountered.
-    var mode;
-    var modeCount = 0;
+    let mode;
+    let modeCount = 0;
 
-    for (var i = 0; i < x.length; i++) {
-        var newCount = index.get(x[i]);
+    for (let i = 0; i < x.length; i++) {
+        let newCount = index.get(x[i]);
         if (newCount === undefined) {
             newCount = 1;
         } else {
@@ -49,7 +48,7 @@ function modeFast/*::<T>*/(x /*: Array<T> */)/*: ?T */ {
     }
 
     if (modeCount === 0) {
-        throw new Error('mode requires at last one data point');
+        throw new Error("mode requires at last one data point");
     }
 
     return mode;

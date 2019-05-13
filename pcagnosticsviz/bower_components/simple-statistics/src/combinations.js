@@ -12,19 +12,20 @@
  */
 
 function combinations(
-    x/*: Array<any> */,
-    k/*: number */)/*: Array<Array<any>> */ {
-    var i;
-    var subI;
-    var combinationList = [];
-    var subsetCombinations;
-    var next;
+    x /*: Array<any> */,
+    k /*: number */
+) /*: Array<Array<any>> */ {
+    let i;
+    let subI;
+    const combinationList = [];
+    let subsetCombinations;
+    let next;
 
     for (i = 0; i < x.length; i++) {
         if (k === 1) {
-            combinationList.push([x[i]])
+            combinationList.push([x[i]]);
         } else {
-            subsetCombinations = combinations(x.slice( i + 1, x.length ), k - 1);
+            subsetCombinations = combinations(x.slice(i + 1, x.length), k - 1);
             for (subI = 0; subI < subsetCombinations.length; subI++) {
                 next = subsetCombinations[subI];
                 next.unshift(x[i]);

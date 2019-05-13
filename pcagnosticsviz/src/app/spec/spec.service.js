@@ -124,27 +124,24 @@ angular.module('pcagnosticsviz')
      */
     Spec.update = function(spec) {
         if (Spec.previewedSpec!=null && !Spec.isSelected) return Spec;
-        try {PCAplot.calscagnotic(Dataset.schema.fieldSchemas.map(function(d){return d.field}));}
+        try {PCAplot.calscagnotic(1);}
         catch(e){}
         var dim = 0;
         var fields = [];
         // const keys = Object.keys(vlSchema.definitions.UnitEncoding.properties).slice(0,4);
-        for (var key in spec.encoding) {
-            if (spec.encoding[key].field!== undefined && spec.encoding[key].field !== "*") {
+        vl.channel.CHANNELS.forEach(key=> {
+            if (spec.encoding[key]&&spec.encoding[key].field!== undefined && spec.encoding[key].field !== "*") {
                 dim++;
                 fields.push(spec.encoding[key].field);
             }
-        }
+        });
         dim = (dim<1)?0:(dim-1);
         var data;
         if (dim==0)
             data = Dataset.data;
         if( dim==1) {
             //PCAplot.calscagnotic(fields);
-            data = Dataset.schema.fieldSchemas.map(function(d){
-                var tem = {field: d.field};
-                tem[d.field] = d.scag;
-                return tem;});
+            data = PCAplot.requestupdate();
         }
 
         //if (PCAplot.mainfield != fields[0]){
@@ -153,6 +150,7 @@ angular.module('pcagnosticsviz')
         }
         PCAplot.dim = dim;
         PCAplot.plot(data,dim);
+        if(fields.length)
         spec = PCAplot.checkRender(spec,fields);
         spec = _.cloneDeep(spec || Spec.spec);
 

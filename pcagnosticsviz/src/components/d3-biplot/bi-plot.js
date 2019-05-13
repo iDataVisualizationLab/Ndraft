@@ -1,7 +1,11 @@
 'use strict'
 angular.module('pcagnosticsviz')
-    .component('biPlot', {
+    .directive('biPlot', function(){
+        return {
             //template: "<svg id =\'bi-plot\' width=\'100%\' class=\"\"></svg>",
+        scope: {
+            error: '<',
+        },
         templateUrl: 'components/d3-biplot/bi-plot.html',
         controller: function ($scope) {
                 d3.selectAll('.background-biplot')
@@ -11,4 +15,6 @@ angular.module('pcagnosticsviz')
                 // var menu = d3.select("#bi-plot");
                 // menu.append('text').text('toggle zoom');
                 // menu.append('rect')
-        }});
+        }
+        }}
+        );

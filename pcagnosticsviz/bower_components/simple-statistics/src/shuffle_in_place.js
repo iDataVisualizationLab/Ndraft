@@ -17,8 +17,10 @@
  * shuffleInPlace(x);
  * // x is shuffled to a value like [2, 1, 4, 3]
  */
-function shuffleInPlace(x/*: Array<any> */, randomSource/*: ?Function */)/*: Array<any> */ {
-
+function shuffleInPlace(
+    x /*: Array<any> */,
+    randomSource /*: ?Function */
+) /*: Array<any> */ {
     // a custom random number source can be provided if you want to use
     // a fixed seed or another random number generator, like
     // [random-js](https://www.npmjs.org/package/random-js)
@@ -26,14 +28,14 @@ function shuffleInPlace(x/*: Array<any> */, randomSource/*: ?Function */)/*: Arr
 
     // store the current length of the x to determine
     // when no elements remain to shuffle.
-    var length = x.length;
+    let length = x.length;
 
     // temporary is used to hold an item when it is being
     // swapped between indices.
-    var temporary;
+    let temporary;
 
     // The index to swap at each stage.
-    var index;
+    let index;
 
     // While there are still items to shuffle
     while (length > 0) {

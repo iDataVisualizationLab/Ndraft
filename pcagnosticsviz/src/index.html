@@ -5,21 +5,37 @@
     <title>HMAViz</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="text/javascript" src="https://idatavisualizationlab.github.io/Scagnostics2018/scagnostics/build/js/scagnostics.min.js"></script>
-    <script type="text/javascript" src="https://idatavisualizationlab.github.io/Scagnostics2018/scagnostics3d/build/js/scagnostics3d.min.js"></script>
-    <script type="text/javascript" src="https://idatavisualizationlab.github.io/Scagnostics2018/scagnosticsnd/build/js/scagnosticsnd.min.js"></script>
-    <script type="text/javascript" src="https://idatavisualizationlab.github.io/N/Scagnostic/scagnostics.min.js"></script>
-    <script type="text/javascript" src="https://idatavisualizationlab.github.io/binner/build/js/binnerN.min.js"></script>
-    <script type="text/javascript" src="https://unpkg.com/simple-statistics@6.1.0/dist/simple-statistics.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.10.0/d3.min.js"></script>
-    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-    <script src="https://d3js.org/d3-color.v1.min.js"></script>
-    <script src="https://d3js.org/d3-hsv.v0.1.min.js"></script>
+    <!--<script type="text/javascript" src="https://idatavisualizationlab.github.io/Scagnostics2018/scagnostics/build/js/scagnostics.min.js"></script>-->
+    <!--<script type="text/javascript" src="https://idatavisualizationlab.github.io/Scagnostics2018/scagnostics3d/build/js/scagnostics3d.min.js"></script>-->
+    <!--<script type="text/javascript" src="https://idatavisualizationlab.github.io/Scagnostics2018/scagnosticsnd/build/js/scagnosticsnd.min.js"></script>-->
+    <!--<script src="https://unpkg.com/d3-3d/build/d3-3d.js"></script>-->
+    <!--<script type="text/javascript" src="https://idatavisualizationlab.github.io/N/Scagnostic/scagnostics.min.js"></script>-->
+    <!--<script type="text/javascript" src="https://idatavisualizationlab.github.io/N/Scagnostic/scagnostics3d.min.js"></script>-->
+    <!--<script type="text/javascript" src="https://idatavisualizationlab.github.io/N/Scagnostic/scagnosticsnd.min.js"></script>-->
+    <!--<script type="text/javascript" src="https://idatavisualizationlab.github.io/binner/build/js/binnerN.min.js"></script>-->
+    <!--<script type="text/javascript" src="https://unpkg.com/simple-statistics@6.1.0/dist/simple-statistics.min.js"></script>-->
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.10.0/d3.min.js"></script>-->
+    <!--<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>-->
+    <!--<script src="https://d3js.org/d3-color.v1.min.js"></script>-->
+    <!--<script src="https://d3js.org/d3-hsv.v0.1.min.js"></script>-->
+    <!--<script type="text/javascript" src="lib/require.min.js"></script>-->
+    <script type="text/javascript" src="lib/scagnostics.min.js"></script>
+    <script type="text/javascript" src="lib/scagnostics3d.min.js"></script>
+    <script type="text/javascript" src="lib/scagnosticsnd.min.js"></script>
+    <script type="text/javascript" src="lib/binnerN.min.js"></script>
+    <script type="text/javascript" src="lib/simple-statistics.min.js"></script>
+    <script type="text/javascript" src="lib/d3.min.js"></script>
+    <!--<script src="https://d3js.org/d3.v5.min.js"></script>-->
+    <script type="text/javascript" src="lib/d3-scale-chromatic.v1.min.js"></script>
+    <script type="text/javascript" src="lib/d3-color.v1.min.js"></script>
+    <script type="text/javascript" src="lib/d3-hsv.v0.1.min.js"></script>
+    <script type="text/javascript" src="lib/d3-3d.js"></script>
     <script>
         d3v4 = d3;
         window.d3 = null;
     </script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
 
@@ -34,13 +50,11 @@
     <!-- run `gulp wiredep` to automatically populate bower script dependencies -->
     <!-- endbower -->
     <!-- endbuild -->
-
   </head>
   <body>
     <!--[if lt IE 10]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
-
     <div class="abs-100" ng-include="'app/main/main.html'"></div>
     <!-- build:js(src) scripts/vendor.js -->
     <!-- bower:js -->
@@ -57,6 +71,5 @@
     <!-- angular templates will be automatically converted in js and inserted here -->
     <!-- endinject -->
     <!-- endbuild -->
-
   </body>
 </html>

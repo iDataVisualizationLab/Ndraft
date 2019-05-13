@@ -7,18 +7,28 @@
   <div class="full-width no-shrink shadow">
     <div class="card top-card no-right-margin no-top-margin">
       <div class="hflex" style="justify-content: space-between;">
-        <div id="logo" ng-click="Logger.export()"></div>
+        <!--<div id="logo" ng-click="Logger.export()"></div>-->
+        <div class="pane" style="display: inline-flex;">
+            <div id="logo"></div>
+            <!--<md-button id="video" class="md-raised md-primary" ng-click="showvideo=!showvideo"><i class="fa fa-video-camera"></i><h3>Video</h3></md-button>-->
+        </div>
         <div class="pane">
           <div class="controls">
-            <a ng-show="Bookmarks.isSupported" class="command" ng-click="showModal('bookmark-list')">
-              <i class="fa fa-bookmark"></i>
-              Bookmarks ({{Bookmarks.list.length}})
-            </a>
+            <!--<a ng-show="Bookmarks.isSupported" class="command" ng-click="showModal('bookmark-list')">-->
+              <!--<i class="fa fa-bookmark"></i>-->
+              <!--Bookmarks ({{Bookmarks.list.length}})-->
+            <!--</a>-->
             <a class="command" ng-click="chron.undo()" ng-class="{disabled: !canUndo}"><i class="fa fa-undo"></i> Undo</a>
             <a class="command" ng-click="chron.redo()" ng-class="{disabled: !canRedo}"><i class="fa fa-repeat"></i> Redo</a>
           </div>
         </div>
-        <div class="pane">
+        <div class="pane" style="display: inline-flex;">
+
+          <div id ='processDisplay' ng-hide="PCAplot.calProcess==0">
+            <h4>Calculating {{PCAplot.calculateState}}....</h4>
+            <md-progress-linear class='md-theme' md-mode="determinate" value="{{PCAplot.calProcess}}" ></md-progress-linear>
+          </div>
+
           <div class="controls">
             <a class="command" ng-if = "themeDrak"  ng-click="changetheme()" >
               <i class="fa fa-moon-o"></i> Dark</a>
@@ -31,24 +41,25 @@
     </div>
     <alert-messages></alert-messages>
   </div>
+
   <div class="hflex full-width main-panel grow-1">
-    <div class="pane data-pane noselect ">
+    <div class="pane data-pane noselect">
       <div class="card no-top-margin data-card abs-100 modifedside">
         <div class="sidebar-header" ng-if="!embedded">
-          <h2>Data</h2>
           <dataset-selector class="right"></dataset-selector>
           <div class="current-dataset" title="{{Dataset.currentDataset.name}}">
+            <h2 style="display:inline-block; margin:0;">Data</h2>
             <i class="fa fa-database"></i>
             <span class="dataset-name">{{Dataset.currentDataset.name}}</span>
           </div>
-          <div class="current-dataset">
-            <span class="dataset-info">Data have {{Dataset.data.length}} datapoint</span>
-          <br>
-            <span class="dataset-info">and {{Dataset.schema.fieldSchemas.length}} dimentions</span>
+          <div style="color:var(--fontColor);">
+            <span class="dataset-info">Data contains <strong>{{Dataset.data.length}}</strong> instances and <strong>{{Dataset.schema.fieldSchemas.length}}</strong> variables</span>
           </div>
         </div>
         <h3>Overview</h3>
-        <bi-plot></bi-plot>
+        <bi-plot
+                error = "PCAplot.error.code==1"
+        ></bi-plot>
           <h3>Exemplar plots</h3>
         <div class = "scroll-y-nox scroll-y">
           <vl-plot-group
@@ -74,7 +85,7 @@
 
           ></vl-plot-group>
           <div class=" hflex full-width">
-            <h3>Fields</h3>
+            <h3>Variables</h3>
             <div class="header-drop active">
               <i class="fa fa-caret-down droplist" ng-click=" fieldShow = !fieldShow"></i>
             </div>
@@ -122,7 +133,13 @@
                     preview="false"
                     support-any="true"
                     ng-class = "shelvescustom"
-            ></shelves>
+                    prop="PCAplot.prop"
+                    custommarks ="PCAplot.marks"
+                    props = "PCAplot.types"
+                    updatefunc = "PCAplot.updateSpec"
+                    hidecustom = "PCAplot.prop&&Spec.isSpecific && !Spec.isEmptyPlot"
+            >
+            </shelves>
             <!-- preview shelf -->
             <shelves
                     class="preview"
@@ -131,6 +148,8 @@
                     preview="true"
                     support-any="true"
             ></shelves>
+            <!--custom shelf-->
+
           </div>
           <slide-graph
                   ng-if = "PCAplot.prop.charts && Spec.isSpecific && !Spec.isEmptyPlot"
@@ -141,10 +160,10 @@
           ></slide-graph>
         </div>
 
-        <div class="alternatives-pane card navigation" ng-class="{collapse: hideExplore}" ng-if="PCAplot.prop&&Spec.isSpecific && !Spec.isEmptyPlot">
+        <div class="alternatives-pane card navigation" ng-class="{collapse: hideExplore}" ng-if="PCAplot.prop&&Spec.isSpecific && !Spec.isEmptyPlot" style="margin-top: 0px;">
           <guide-menu
                   prop="PCAplot.prop"
-                  priority="2"
+                  priority="10"
                   marks ="PCAplot.marks"
                   props ="PCAplot.types"
                   limitup = "PCAplot.limitup"
@@ -348,11 +367,13 @@
                   list-title="alternative.title"
                   charts="alternative.charts"
                   enable-pills-preview="true"
-                  priority="$index * 1000"
+                  priority="$index * 2000"
                   initial-limit="alternative.limit || null"
                   post-select-action="$parent.scrollToTop()"
                   show-query-select="true"
                   query="alternative.query"
+                  show-bookmark="false"
+                  <!--ng-click = "choseByClick($event)"-->
           >
           </vl-plot-group-list>
         </div>
@@ -384,4 +405,12 @@
 
   <bookmark-list highlighted="Fields.highlighted" post-select-action="scrollToTop"></bookmark-list>
   <dataset-modal></dataset-modal>
+  <!--<md-card id="videoOverlay" ng-hide="!showvideo" >-->
+    <!--<div class="videoContaint">-->
+      <!--<md-button class="md-fab" aria-label="Eat cake" ng-click="showvideo=!showvideo">-->
+        <!--<i class="fa fa-close"></i>-->
+      <!--</md-button>-->
+      <!--<video controls width="560" height="315" ng-src="https://github.com/iDataVisualizationLab/HMaViz/raw/master/video/HMaViz_video_final.mp4" frameborder="0" allowfullscreen></video>-->
+    <!--</div>-->
+  <!--</md-card>-->
 </div>

@@ -13,11 +13,11 @@
  * var values = [1, 2, 3, 4];
  * sampleWithReplacement(values, 2); // returns 2 random values, like [2, 4];
  */
-function sampleWithReplacement/*::<T>*/(
-    x/*: Array<T> */,
-    n/*: number */,
-    randomSource/*: ?Function */) {
-
+function sampleWithReplacement /*::<T>*/(
+    x /*: Array<T> */,
+    n /*: number */,
+    randomSource /*: ?Function */
+) {
     if (x.length === 0) {
         return [];
     }
@@ -27,11 +27,11 @@ function sampleWithReplacement/*::<T>*/(
     // [random-js](https://www.npmjs.org/package/random-js)
     randomSource = randomSource || Math.random;
 
-    var length = x.length;
-    var sample = [];
+    const length = x.length;
+    const sample = [];
 
-    for (var i = 0; i < n; i++) {
-        var index = Math.floor(randomSource() * length);
+    for (let i = 0; i < n; i++) {
+        const index = Math.floor(randomSource() * length);
 
         sample.push(x[index]);
     }

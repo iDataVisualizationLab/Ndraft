@@ -1,7 +1,7 @@
 /* @flow */
 
-import sampleCovariance from './sample_covariance';
-import sampleStandardDeviation from './sample_standard_deviation';
+import sampleCovariance from "./sample_covariance";
+import sampleStandardDeviation from "./sample_standard_deviation";
 
 /**
  * The [correlation](http://en.wikipedia.org/wiki/Correlation_and_dependence) is
@@ -14,10 +14,13 @@ import sampleStandardDeviation from './sample_standard_deviation';
  * sampleCorrelation([1, 2, 3, 4, 5, 6], [2, 2, 3, 4, 5, 60]).toFixed(2);
  * // => '0.69'
  */
-function sampleCorrelation(x/*: Array<number> */, y/*: Array<number> */)/*:number*/ {
-    var cov = sampleCovariance(x, y),
-        xstd = sampleStandardDeviation(x),
-        ystd = sampleStandardDeviation(y);
+function sampleCorrelation(
+    x /*: Array<number> */,
+    y /*: Array<number> */
+) /*:number*/ {
+    const cov = sampleCovariance(x, y);
+    const xstd = sampleStandardDeviation(x);
+    const ystd = sampleStandardDeviation(y);
 
     return cov / xstd / ystd;
 }

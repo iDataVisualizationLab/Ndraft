@@ -29,6 +29,5 @@
   },
   "_source": "https://github.com/mattslocum/ng-webworker.git",
   "_target": "^0.2.3",
-  "_originalSource": "ng-webworker",
-  "_direct": true
+  "_originalSource": "ng-webworker"
 }

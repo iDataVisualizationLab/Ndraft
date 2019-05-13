@@ -13,14 +13,13 @@
  * // => [1, 4]
  */
 function extent(x /*: Array<number> */) /*:Array<number>*/ {
-
     if (x.length === 0) {
-        throw new Error('extent requires at least one data point');
+        throw new Error("extent requires at least one data point");
     }
 
-    var min = x[0];
-    var max = x[0];
-    for (var i = 1; i < x.length; i++) {
+    let min = x[0];
+    let max = x[0];
+    for (let i = 1; i < x.length; i++) {
         if (x[i] > max) {
             max = x[i];
         }

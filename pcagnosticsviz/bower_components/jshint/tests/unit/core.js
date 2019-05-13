@@ -38,6 +38,33 @@ exports.testCustomGlobals = function (test) {
     .addError(3, 1, "Read only.")
     .test(code, { es3: true, unused: true, predef: { foo: false }});
 
+  JSHINT("x = null;", { undef: true, globals: { x: true } });
+
+  test.ok(!JSHINT.data().errors);
+
+  JSHINT("x = null;", { undef: true, globals: { x: false } });
+
+  test.equal(JSHINT.data().errors.length, 1);
+
+  JSHINT("parseInt('');", { undef: true, globals: { "-parseInt": true } });
+
+  test.equal(JSHINT.data().errors.length, 1);
+
+  JSHINT('x = null;', { undef: true, globals: { x: false } }, { x: true });
+
+  test.ok(
+    !JSHINT.data().errors,
+    "`predef` parameter takes precedence over `globals` option"
+  );
+
+  JSHINT("x = null;", { undef: true, globals: { x: true } }, { x: false });
+
+  test.equal(
+    JSHINT.data().errors.length,
+    1,
+    "`predef` parameter takes precedence over `globals` option"
+  );
+
   test.done();
 };
 
@@ -270,7 +297,6 @@ exports.switchFallThrough = function (test) {
   var src = fs.readFileSync(__dirname + '/fixtures/switchFallThrough.js', 'utf8');
   TestRun(test)
     .addError(3, 18, "Expected a 'break' statement before 'case'.")
-    .addError(18, 7, "Expected a 'break' statement before 'default'.")
     .addError(40, 12, "Unexpected ':'.")
     .test(src);
 
@@ -598,15 +624,12 @@ exports.testReserved = function (test) {
 
   TestRun(test)
     .addError(1, 1, "Expected an identifier and instead saw 'volatile' (a reserved word).")
-    .addError(5, 5, "Expected an identifier and instead saw 'let' (a reserved word).")
-    .addError(10, 7, "Expected an identifier and instead saw 'let' (a reserved word).")
     .addError(13, 13, "Expected an identifier and instead saw 'class' (a reserved word).")
     .addError(14, 5, "Expected an identifier and instead saw 'else' (a reserved word).")
     .addError(15, 5, "Expected an identifier and instead saw 'protected' (a reserved word).")
     .test(src, {es3: true});
 
   TestRun(test)
-    .addError(5, 5, "Expected an identifier and instead saw 'let' (a reserved word).")
     .addError(10, 7, "Expected an identifier and instead saw 'let' (a reserved word).")
     .test(src, {}); // es5
 
@@ -719,8 +742,8 @@ exports.testForIn = function (test) {
 
   TestRun(test, "bad lhs errors")
     .addError(2, 7, "Invalid for-in loop left-hand-side: more than one ForBinding.")
-    .addError(3, 11, "Invalid for-in loop left-hand-side: more than one ForBinding.")
-    .addError(4, 6, "Invalid for-in loop left-hand-side: initializer is forbidden.")
+    .addError(3, 6, "Invalid for-in loop left-hand-side: more than one ForBinding.")
+    .addError(4, 8, "Invalid for-in loop left-hand-side: initializer is forbidden.")
     .addError(5, 6, "Invalid for-in loop left-hand-side: initializer is forbidden.")
     .test(src);
 
@@ -734,8 +757,8 @@ exports.testForIn = function (test) {
   ];
 
   TestRun(test, "bad lhs errors (lexical)")
-    .addError(2, 11, "Invalid for-in loop left-hand-side: more than one ForBinding.")
-    .addError(3, 13, "Invalid for-in loop left-hand-side: more than one ForBinding.")
+    .addError(2, 6, "Invalid for-in loop left-hand-side: more than one ForBinding.")
+    .addError(3, 6, "Invalid for-in loop left-hand-side: more than one ForBinding.")
     .addError(4, 6, "Invalid for-in loop left-hand-side: initializer is forbidden.")
     .addError(5, 6, "Invalid for-in loop left-hand-side: initializer is forbidden.")
     .test(src, { esnext: true });
@@ -753,6 +776,21 @@ exports.testForIn = function (test) {
       "for (x+y in {}) {}",
       "for ((this) in {}) {}"
     ]);
+
+  TestRun(test, "expression context")
+    .test([
+      "for (0 ? 0 in {} : 0 ; false; false ) {}",
+      "for (x[0 in {}] ; false; false ) {}",
+      "for (x = function() { return 0 in {}; } ; false; false ) {}"
+    ]);
+
+  TestRun(test, "expression context (ES2015 forms)")
+    .test([
+      "for (({ [x in {}]: null }); false; false ) {}",
+      "for (var { prop = 'x' in {} } of [{}]) {}",
+      "for (x = () => { return 0 in {}; } ; false; false ) {}",
+      "for (x = function(x = 0 in {}) {} ; false; false ) {}"
+    ], { esversion: 2015 });
 
   test.done();
 };
@@ -889,6 +927,46 @@ exports.testES6Modules = function (test) {
       "export function afterLabelExported() {}",
       "import afterLabelImported from 'elsewhere';"
     ], { esversion: 6 });
+
+  TestRun(test, "async as Identifier")
+    .test([
+      "var async;",
+      "export default async;"
+    ], { esversion: 6, module: true });
+
+  TestRun(test, "async in CallExpression")
+    .test([
+      "var async, x, y, z;",
+      "export default async(x, y, z);"
+    ], { esversion: 6, module: true });
+
+  TestRun(test, "async functions")
+    .test([
+      "export async function f() { await 0; }",
+      "export default async function() { await 0; }",
+    ], { esversion: 8, module: true });
+
+  TestRun(test, "async arrow function - zero arguments")
+    .test([
+      "export default async () => {};"
+    ], { esversion: 8, module: true });
+
+  TestRun(test, "async arrow function - concise argument")
+    .test([
+      "export default async _ => {};"
+    ], { esversion: 8, module: true });
+
+  TestRun(test, "async arrow function - many arguments")
+    .test([
+      "export default async (x, y, z) => {};"
+    ], { esversion: 8, module: true });
+
+
+  TestRun(test, "async generator functions")
+    .test([
+      "export async function * f() { yield 0; await 0; }",
+      "export default async function * () { yield 0; await 0; }",
+    ], { esversion: 9, module: true });
 
   test.done();
 };
@@ -2246,6 +2324,37 @@ exports["TDZ within for in/of head"] = function(test) {
     .addError(7, 19, "'g' was used before it was declared, which is illegal for 'let' variables.")
     .addError(8, 19, "'h' was used before it was declared, which is illegal for 'const' variables.")
     .test(code, { esversion: 6 });
+
+  test.done();
+};
+
+// regression test for gh-3370
+exports.initializeCStyle = function(test) {
+  TestRun(test)
+    .test([
+      "for (let x, y = x; ;) {}",
+      "for (const x = 0, y = x; ;) {}"
+    ], { esversion: 6 });
+
+  test.done();
+};
+
+exports.constWithoutInit = function(test) {
+  TestRun(test, "single binding")
+    .addError(1, 6, "const 'x' is initialized to 'undefined'.")
+    .test([
+      "for (const x; ;) {",
+      "  void x;",
+      "}"
+    ], { esversion: 6 });
+
+  TestRun(test, "multiple bindings")
+    .addError(1, 6, "const 'y' is initialized to 'undefined'.")
+    .test([
+      "for (const y, z; ;) {",
+      "  void (y, z);",
+      "}"
+    ], { esversion: 6 });
 
   test.done();
 };

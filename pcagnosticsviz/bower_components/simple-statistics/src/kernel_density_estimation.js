@@ -1,20 +1,20 @@
 /* @flow */
 
-import interquartileRange from './interquartile_range';
-import stddev from './sample_standard_deviation';
+import interquartileRange from "./interquartile_range";
+import stddev from "./sample_standard_deviation";
 
-var SQRT_2PI = Math.sqrt(2 * Math.PI);
+const SQRT_2PI = Math.sqrt(2 * Math.PI);
 
 /**
  * [Well-known kernels](https://en.wikipedia.org/wiki/Kernel_(statistics)#Kernel_functions_in_common_use)
  * @private
  */
-var kernels /*: {[string]: (number) => number} */ = {
+const kernels /*: {[string]: (number) => number} */ = {
     /**
      * The gaussian kernel.
      * @private
      */
-    gaussian: function (u) {
+    gaussian: function(u) {
         return Math.exp(-0.5 * u * u) / SQRT_2PI;
     }
 };
@@ -23,7 +23,7 @@ var kernels /*: {[string]: (number) => number} */ = {
  * Well known bandwidth selection methods
  * @private
  */
-var bandwidthMethods /*: {[string]: (Array<number>) => number} */ = {
+const bandwidthMethods /*: {[string]: (Array<number>) => number} */ = {
     /**
      * The ["normal reference distribution"
      * rule-of-thumb](https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/bandwidth.nrd.html),
@@ -31,15 +31,15 @@ var bandwidthMethods /*: {[string]: (Array<number>) => number} */ = {
      * rule-of-thumb](https://en.wikipedia.org/wiki/Kernel_density_estimation#A_rule-of-thumb_bandwidth_estimator).
      * @private
      */
-    nrd: function (x /*: Array<number> */) {
-        var s = stddev(x);
-        var iqr = interquartileRange(x);
-        if (typeof iqr === 'number') {
-            s = Math.min(s, iqr / 1.34)
+    nrd: function(x /*: Array<number> */) {
+        let s = stddev(x);
+        const iqr = interquartileRange(x);
+        if (typeof iqr === "number") {
+            s = Math.min(s, iqr / 1.34);
         }
         return 1.06 * s * Math.pow(x.length, -0.2);
     }
-}
+};
 
 /**
  * [Kernel density estimation](https://en.wikipedia.org/wiki/Kernel_density_estimation)
@@ -57,10 +57,10 @@ function kernelDensityEstimation(
     kernel /*: $Keys<typeof kernels> | ((number) => number) | void*/,
     bandwidthMethod /*: $Keys<typeof bandwidthMethods> | number | void*/
 ) {
-    var kernelFn/*: (number) => number */;
+    let kernelFn /*: (number) => number */;
     if (kernel === undefined) {
         kernelFn = kernels.gaussian;
-    } else if (typeof kernel === 'string') {
+    } else if (typeof kernel === "string") {
         if (!kernels[kernel]) {
             throw new Error('Unknown kernel "' + kernel + '"');
         }
@@ -69,26 +69,28 @@ function kernelDensityEstimation(
         kernelFn = kernel;
     }
 
-    var bandwidth;
-    if (typeof bandwidthMethod === 'undefined') {
+    let bandwidth;
+    if (typeof bandwidthMethod === "undefined") {
         bandwidth = bandwidthMethods.nrd(X);
-    } else if (typeof bandwidthMethod === 'string') {
+    } else if (typeof bandwidthMethod === "string") {
         if (!bandwidthMethods[bandwidthMethod]) {
-            throw new Error('Unknown bandwidth method "' + bandwidthMethod + '"');
+            throw new Error(
+                'Unknown bandwidth method "' + bandwidthMethod + '"'
+            );
         }
         bandwidth = bandwidthMethods[bandwidthMethod](X);
     } else {
         bandwidth = bandwidthMethod;
     }
 
-    return function (x /*: number*/) {
-        var i = 0;
-        var sum = 0;
+    return function(x /*: number*/) {
+        let i = 0;
+        let sum = 0;
         for (i = 0; i < X.length; i++) {
             sum += kernelFn((x - X[i]) / bandwidth);
         }
         return sum / bandwidth / X.length;
-    }
+    };
 }
 
 export default kernelDensityEstimation;

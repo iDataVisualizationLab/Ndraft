@@ -1,7 +1,7 @@
 /* @flow */
 
-import mean from './mean';
-import sampleVariance from './sample_variance';
+import mean from "./mean";
+import sampleVariance from "./sample_variance";
 
 /**
  * This is to compute [two sample t-test](http://en.wikipedia.org/wiki/Student's_t-test).
@@ -31,35 +31,43 @@ import sampleVariance from './sample_variance';
  * tTestTwoSample([1, 2, 3, 4], [3, 4, 5, 6], 0); // => -2.1908902300206643
  */
 function tTestTwoSample(
-    sampleX/*: Array<number> */,
-    sampleY/*: Array<number> */,
-    difference/*: ?number */)/*: ?number */ {
-    var n = sampleX.length,
-        m = sampleY.length;
+    sampleX /*: Array<number> */,
+    sampleY /*: Array<number> */,
+    difference /*: ?number */
+) /*: ?number */ {
+    const n = sampleX.length;
+    const m = sampleY.length;
 
     // If either sample doesn't actually have any values, we can't
     // compute this at all, so we return `null`.
-    if (!n || !m) { return null; }
+    if (!n || !m) {
+        return null;
+    }
 
     // default difference (mu) is zero
     if (!difference) {
         difference = 0;
     }
 
-    var meanX = mean(sampleX),
-        meanY = mean(sampleY),
-        sampleVarianceX = sampleVariance(sampleX),
-        sampleVarianceY = sampleVariance(sampleY);
+    const meanX = mean(sampleX);
+    const meanY = mean(sampleY);
+    const sampleVarianceX = sampleVariance(sampleX);
+    const sampleVarianceY = sampleVariance(sampleY);
 
-    if (typeof meanX === 'number' &&
-        typeof meanY === 'number' &&
-        typeof sampleVarianceX === 'number' &&
-        typeof sampleVarianceY === 'number') {
-        var weightedVariance = ((n - 1) * sampleVarianceX +
-            (m - 1) * sampleVarianceY) / (n + m - 2);
+    if (
+        typeof meanX === "number" &&
+        typeof meanY === "number" &&
+        typeof sampleVarianceX === "number" &&
+        typeof sampleVarianceY === "number"
+    ) {
+        const weightedVariance =
+            ((n - 1) * sampleVarianceX + (m - 1) * sampleVarianceY) /
+            (n + m - 2);
 
-        return (meanX - meanY - difference) /
-            Math.sqrt(weightedVariance * (1 / n + 1 / m));
+        return (
+            (meanX - meanY - difference) /
+            Math.sqrt(weightedVariance * (1 / n + 1 / m))
+        );
     }
 }
 

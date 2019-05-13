@@ -14,13 +14,13 @@
  * @example
  * rootMeanSquare([-1, 1, -1, 1]); // => 1
  */
-function rootMeanSquare(x /*: Array<number> */)/*:number*/ {
+function rootMeanSquare(x /*: Array<number> */) /*:number*/ {
     if (x.length === 0) {
-        throw new Error('rootMeanSquare requires at least one data point');
+        throw new Error("rootMeanSquare requires at least one data point");
     }
 
-    var sumOfSquares = 0;
-    for (var i = 0; i < x.length; i++) {
+    let sumOfSquares = 0;
+    for (let i = 0; i < x.length; i++) {
         sumOfSquares += Math.pow(x[i], 2);
     }
 

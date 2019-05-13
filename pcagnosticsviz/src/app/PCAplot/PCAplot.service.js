@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('pcagnosticsviz')
-    .factory('PCAplot', function(ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,Alerts,Chart,Config,Schema,util,GuidePill, Webworker) {
+    .factory('PCAplot', function($mdToast,ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,Alerts,Chart,Config,Schema,util,GuidePill, Webworker) {
         var keys =  _.keys(Schema.schema.definitions.Encoding.properties).concat([ANY+0]);
         var colordot = '#4682b4';
         var states = {IDLE:0,GENERATE_GUIDE:1,GENERATE_ALTERNATIVE:2,FREE:3, UPDATEPOSITION:4};
@@ -25,6 +25,7 @@ angular.module('pcagnosticsviz')
         }
 
         var PCAplot = {
+            data:[],
             dataencde: null,
             alternatives: [],
             autoGroupBy: null,
@@ -33,19 +34,21 @@ angular.module('pcagnosticsviz')
             chart:null,
             charts:[],
             mainfield: null,
-            prop:null,
+            prop:{dim:-1,pos:0,type:null,mark:null,fieldDefs:[], charts:[],previewcharts:[]},
             dim: 0,
             dataref:[],
             limit: 10,
             mspec:null,
             limitup: 0,
             state:states.IDLE,
+            calProcess: 0,
+            calculateState: null
         };
         PCAplot.mark2plot = mark2plot;
         var abtractionLevel =['Individual instances','Regular binning','Data-dependent binning','Abtracted'];
         var support =[{
             types : ['outlier','variance', 'multimodality', 'skewness'],
-            marks : ['tick','bar','area','boxplot'],
+            marks : ['circle','bar','area','boxplot'],
             option : 'auto',
             getmark: getmark
         }, {
@@ -54,7 +57,7 @@ angular.module('pcagnosticsviz')
             option : 'auto',
             getmark: getmark
         }, {
-            types : ['outlying','sparse','clumpy','skewed'],
+            types : ['outlying','sparse','clumpy','skewed','striated','convex','skinny','stringy','monotonic'],
             marks :['scatter3D-point','scatter3D-evenbin','scatter3D','scatter3D-contour'],
             option : 'auto',
             getmark: getmark
@@ -68,6 +71,14 @@ angular.module('pcagnosticsviz')
             var supportdim = ( dim> (support.length-1))?(support.length-1):dim;
             return support[supportdim];
         };
+
+        function gettrueData (d,f){
+            const field =Dataset.schema.fieldSchema(f);
+            if (field.primitiveType==='date' || field.primitiveType==="string" ){
+                return Object.keys(field.stats.unique).indexOf(d[f]);
+            }
+            return d[f];
+        }
         //PCAplot.updateplot = function (data){};
         PCAplot.plot =function(dataor,dimension) {
             if (!Object.keys(Config.data).length){return PCAplot;}
@@ -79,7 +90,8 @@ angular.module('pcagnosticsviz')
             // Biplot.data;
             //var data = Dataset.data);
             if (typeof dataor !=='undefined' ) {
-                PCAplot.data = [Dataset.schema.fieldSchemas, PCAplot.dataref];
+                PCAplot.data[0] = Dataset.schema.fieldSchemas;
+                PCAplot.data[1] =PCAplot.dataref;
                 var biplotselect = $('.biplot');
                 var data = _.cloneDeep(dataor);
                 var margin = {top: 20, right: 20, bottom: 20, left: 20};
@@ -129,27 +141,6 @@ angular.module('pcagnosticsviz')
 
                     outlier = Dataset.schema._fieldSchemas.map(function (b, i) {
                        const  d= b.field
-                        // var outliernum = 0,
-                        //     row = matrix.map(function (r) {
-                        //         return r[i]
-                        //     }),
-                        //     q1 = ss.quantile(row, 0.25),
-                        //     q3 = ss.quantile(row, 0.75),
-                        //     iqr = (q3 - q1) * 1.5;
-                        // //iqr = Dataset.schema.fieldSchema(d).stats.stdev*1.35;
-                        // // console.log('q1: '+q1+'q3: '+q3+'iqr: '+iqr);
-                        // Dataset.schema.fieldSchema(d).stats.q1 = q1;
-                        // Dataset.schema.fieldSchema(d).stats.q3 = q3;
-                        // Dataset.schema.fieldSchema(d).stats.q1iqr = Math.max(q1 - iqr, ss.min(row));
-                        // Dataset.schema.fieldSchema(d).stats.q3iqr = Math.min(q3 + iqr, ss.max(row));
-                        // Dataset.schema.fieldSchema(d).stats.iqr = iqr;
-                        // //console.log(Dataset.schema.fieldSchema(d).stats);
-                        // row.forEach(function (e) {
-                        //     if ((e < q1 - 2 * iqr) || (e > q3 + 2 * iqr))
-                        //         outliernum += 10;
-                        //     else if ((e < q1 - iqr) || (e > q3 + iqr))
-                        //         outliernum = outliernum + 1;
-                        // });
 
                         if ((Dataset.schema.fieldSchema(d).type !== "quantitative") || (Dataset.schema.fieldSchema(d).primitiveType === "string")) {
                             Dataset.schema.fieldSchema(d).stats.outlier = 0;
@@ -165,12 +156,11 @@ angular.module('pcagnosticsviz')
                 else {
                     var newdata = [];
                     data.forEach(function (d) {
-                        for (var e in d[d.field]) {
-                            if (d[d.field][e].invalid !== 1) {
-                                idlabel.push([d.field, e]);
-                                newdata.push(d[d.field][e]);
+
+                            if (d.scag.invalid !== 1) {
+                                idlabel.push([d.fieldDefs[0].field, d.fieldDefs[1].field]);
+                                newdata.push(d.scag);
                             }
-                        }
                     });
                     data = newdata
                     .filter(function (d) {
@@ -846,7 +836,17 @@ angular.module('pcagnosticsviz')
                     arrangeLabels();
                 }
                 PCAplot.dataencde = data;
-            }catch(e){console.log('Not enough dimension');}
+            }catch(e){
+                    let brands = brand_names
+                        .map(function (key, i) {
+                            return {
+                                brand: key,
+                            }
+                        });
+                    PCAplot.estimate(brands, dimension, data);
+                    PCAplot.error = {code:1};
+                    Alerts.add('Not enough dimension');
+                }
             }
             return PCAplot};
         function getSpPoint(A,B,C){
@@ -1011,6 +1011,7 @@ angular.module('pcagnosticsviz')
             switch (mark) {
                 case 'bar': barplot(spec, object); break;
                 case 'tick': dashplot(spec, object); break;
+                case 'circle': dashplot(spec, object,'circle'); break;
                 case 'area': areaplot(spec, object); break;
                 case 'boxplot': boxplot(spec, object); break;
                 case 'point': pointplot(spec, object); break; // 2D
@@ -1027,13 +1028,15 @@ angular.module('pcagnosticsviz')
                 case 'radar-contour': radarplot(spec,object,'contour'); break;
             }
         }
-        function update_dataref (dataref){
-            PCAplot.dataref = dataref.map(function(d){
-                return {fieldDefs: [Dataset.schema.fieldSchema(d.label[0]),Dataset.schema.fieldSchema(d.label[1])],
-                    scag: d,};
-            });
-            PCAplot.data[1] = PCAplot.dataref;
-            PCAplot.madeprop(PCAplot.prop.mspec)
+        function update_dataref (index){
+            // PCAplot.dataref = dataref.map(function(d){
+            //     return {fieldDefs: [Dataset.schema.fieldSchema(d.label[0]),Dataset.schema.fieldSchema(d.label[1])],
+            //         scag: d,};
+            // });
+            // PCAplot.data[1] = PCAplot.dataref;
+            if (index===1)
+                PCAplot.dataref = PCAplot.data[index];
+            PCAplot.madeprop(PCAplot.prop.mspec);
         }
         var guideon = function(prop,mspec){
             if (this) {
@@ -1046,10 +1049,10 @@ angular.module('pcagnosticsviz')
             //console.log(prop);
             //prop.charts = Dataset.schema.fieldSchemas.sort(prop.ranking)
             PCAplot.types =  support[prop.dim].types;
-            PCAplot.marks = support[prop.dim].marks.map((m,i)=> {return {label:abtractionLevel[i], mark: m}});
+            PCAplot.marks = support[prop.dim].marks.map((m,i)=> {return {label:abtractionLevel[i], mark: m, level:i}});
             var axis = prop.fieldDefs.map(function(d){return d.field});
             // PCAplot.spec = mspec;
-            prop.charts = (prop.dim>1?[prop.fieldDefs]:(getData(prop.dim).sort(prop.ranking)))
+            prop.charts = (prop.dim>4?[prop.fieldDefs]:(getData(prop.dim).sort(prop.ranking)))
             .map(function(d){
                 var chart = prop.plot((d.fieldDefs||d ),prop.mark,prop.mspec);
                 chart.vlSpec.config.typer = {type: prop.type,val: (prop.dim>1?0:getTypeVal(undefined,d.fieldDefs||d))};
@@ -1069,7 +1072,7 @@ angular.module('pcagnosticsviz')
                         grid: false,
                         //ticks: false,
                         labels: false,
-                        titleOffset: 20
+                        titleOffset: 15
                     },
                     overlay: {line: true},
                     scale: {useRawDomain: true},
@@ -1090,25 +1093,51 @@ angular.module('pcagnosticsviz')
             PCAplot.updateguide(prop);
         };
         var getData = function (dim) {
-            if (dim<2)
-                return PCAplot.data[dim>1?1:dim];
+            if (PCAplot.data[dim])
+                return PCAplot.data[dim];
+            // if (dim<3) // use to 2
+            //     return PCAplot.data[dim>2?1:dim];
             else{
-                var dataout = combinations(PCAplot.data[0],0,0,dim,[],[]);
-                return dataout;
+                // var dataout = combinations(PCAplot.data[0],0,0,dim,[],[]);
+                oncalscagnotic(dim);
+                // var dataout = combinations(PCAplot.data[0],dim+1);
+                return [];
             }
         };
-        function combinations(choices,start,curentn, dim,data,prefix) {
-            for (var  i = start;i<choices.length;i++){
-                var current_comb = (prefix || []).concat(choices[i]);
-                if (curentn===dim) {
-                    data.push(current_comb);
+        function combinations(set, k) {
+            const elemTransform = elem => [elem];
+            const tailcombPush = (combs, elem) => tailcomb => combs.push([elem, ...tailcomb]);
+            const k_combPush = combs => k_komb => combs.push(k_komb);
 
-                }
-                else
-                    combinations(choices,start+1,curentn+1, dim,data, current_comb);
+            const setLen = set.length;
+            if (k > setLen || k <= 0) {
+                return [];
             }
-            return data;
+            if (k === setLen) {
+                return [set];
+            }
+            if (k === 1) {
+                return _.map(set, elemTransform);
+            }
+            const combs = [];
+            for (let i = 0; i < setLen - k + 1; i++) {
+                _.each(combinations(set.slice(i + 1), k - 1), tailcombPush(combs, set[i]));
+            }
+            return combs;
         }
+
+        // function combinations(choices,start,curentn, dim,data,prefix) {
+        //     for (var  i = start;i<choices.length;i++){
+        //         var current_comb = (prefix || []).concat(choices[i]);
+        //         if (curentn===dim) {
+        //             data.push(current_comb);
+        //
+        //         }
+        //         else
+        //             combinations(choices,start+1,curentn+1, dim,data, current_comb);
+        //     }
+        //     return data;
+        // }
 
         function drawGuideplot (object,type,dataref) {
             if (dataref === undefined)
@@ -1124,7 +1153,7 @@ angular.module('pcagnosticsviz')
                 axis: {
                     grid: false,
                     ticks: 0,
-                    titleOffset: 20
+                    titleOffset: 15
                 },
                 overlay: {line: true},
                 scale: {useRawDomain: true}
@@ -1167,12 +1196,31 @@ angular.module('pcagnosticsviz')
         function checksimilar(prop1,prop2){
             if (!(prop1 && prop2))
                 return false;
-            const testFields = prop1.fieldDefs.map(d=>d.field).join(',')===prop2.fieldDefs.map(d=>d.field).join(',')
-            const testMark = prop1.mark===prop2.mark;
-            const testDim = prop1.dim===prop2.dim;
-            const testType = prop1.type===prop2.type;
-            return testFields &&testMark&&testDim&&testType;
+            try {
+                const testFields = prop1.fieldDefs.map(d => d.field).join(',') === prop2.fieldDefs.map(d => d.field).join(',');
+                const testMark = prop1.mark === prop2.mark;
+                const testDim = prop1.dim === prop2.dim;
+                const testType = prop1.type === prop2.type;
+                return testFields && testMark && testDim && testType;
+            }catch(e){
+                return false;
+            }
         }
+
+        PCAplot.orderVariables = function (type){
+            let domainByTrait = {},
+                traits = Dataset.schema.fieldSchemas.map(d=>{return {text:d.field,value:0}});
+
+            traits.forEach(function(trait) {
+                trait.value = d3.sum(getData(1).filter(pc=> pc.fieldDefs.find(f=> f.field === trait.text) !== undefined ).map(d=>d.scag[type]));
+                domainByTrait[trait] = [Dataset.schema.fieldSchema(trait.text).stats.min,Dataset.schema.fieldSchema(trait.text).stats.max];
+
+            });
+
+            traits.sort((a,b)=>b.value-a.value);
+            return {domainByTrait,traits};
+        };
+
         PCAplot.madeprop = function (spec){
             var type = PCAplot.prop.type;
             var dim = PCAplot.prop.dim;
@@ -1203,12 +1251,12 @@ angular.module('pcagnosticsviz')
         };
         function spec2typer(spec,fields){
             var typer ={};
-            if (PCAplot.prop) {
-                if (spec.type) {
+            if ((PCAplot.prop.dim!=-1)&& PCAplot.prop.type!==null) {
+                if (spec.config.typer) {
                     var extra = spec.config.extraconfig;
                     typer.mark = extra ? spec.mark + "-" + extra : spec.mark;
                     typer.dim = PCAplot.dim;
-                    typer.type = spec.type;
+                    typer.type = spec.config.typer.type;
                     typer.fieldDefs = fields.map(function (f) {
                         return Dataset.schema.fieldSchema(f)
                     });
@@ -1242,7 +1290,10 @@ angular.module('pcagnosticsviz')
                     PCAplot.state = states.GENERATE_GUIDE;
                     if ((PCAplot.dim !== PCAplot.prop.dim)||(typer.mark==='__ANY__')){
                         if (wrongMarkDim(typer.mark,PCAplot.dim)) {
-                            spec.mark = type2mark(type, PCAplot.dim);
+                            if (typer.mark)
+                                spec.mark = mark2mark(spec.mark,PCAplot.prop.dim, PCAplot.dim);
+                            else
+                                spec.mark = type2mark(type, PCAplot.dim);
                             PCAplot.prop.mark = spec.mark;
                         }else {
                             PCAplot.prop.mark = typer.mark;
@@ -1300,37 +1351,29 @@ angular.module('pcagnosticsviz')
                 return (countcheck > fields.length)||(countcheck === fields.length);
             });
         }
+        PCAplot.requestupdate = function (){
+            if (PCAplot.dataref.length ===0|| PCAplot.dataref== null){
+                Dataset.schema.fieldSchemas.forEach(fd=>{
+                    go2Level(fd,PCAplot.data[1],1);
+                });
+                PCAplot.dataref = PCAplot.data[1];
+            }
+            return PCAplot.data[1];
+        };
         PCAplot.alternativeupdate = function(mspec){
 
             mspec = _.cloneDeep(mspec || PCAplot.prop.mspec);
             if (PCAplot.dataref.length ===0|| PCAplot.dataref== null){
-                var data = [];
-                var datarefn = [];
-                var idlabel=[];
-                data = PCAplot.data[0].map(function(d){
-                    var tem = {field: d.field};
-                    tem[d.field] = d.scag;
-                    return tem;});
-                var newdata=[];
-                data.forEach(function(d){
-                    for (var e in d[d.field]) {
-                        //if (d[d.field][e].invalid!=1){ FIXME
-                            idlabel.push([d.field,e]);
-                            newdata.push(d[d.field][e]);//}
-                    }
+                Dataset.schema.fieldSchemas.forEach(fd=>{
+                    go2Level(fd,PCAplot.data[1],1);
                 });
-                data = newdata;//.filter(function(d){return !d.invalid});
-                data.forEach(function(d,i){d.label = idlabel[i]});
-                datarefn = _.cloneDeep(data);
-                PCAplot.dataref = datarefn.map(function(d){
-                    return {fieldDefs: [Dataset.schema.fieldSchema(d.label[0]),Dataset.schema.fieldSchema(d.label[1])],
-                        scag: d,};
-                });
-                PCAplot.data[1] =PCAplot.dataref;
+                PCAplot.dataref = PCAplot.data[1];
             }
             //var fieldsets = mspec.fieldSet.map(function(d){return d.field}).filter(function(d){return d!="count"&&d!="*"});
             var fieldsets = mspec.fieldSet.map(function(d){return d.field}).filter(function(d){return d!="count"&&d!="*"});
-            if(fieldsets.length>2){
+
+            // fix me !!
+            if(fieldsets.length>3){
                 PCAplot.alternatives = [{'charts': []}];
                 return;
             }
@@ -1338,7 +1381,7 @@ angular.module('pcagnosticsviz')
                 PCAplot.alternatives.length = 0;
                 return;
             }
-            if (fieldsets.length<2) {
+            if (fieldsets.length<2) { // use to 2
                 var possible = getData(1).filter(function (d) {
                     var ff = true;
                     fieldsets.forEach(function (it) {
@@ -1408,87 +1451,157 @@ angular.module('pcagnosticsviz')
                 }
             }
             else {
-            var possible = getData(fieldsets.length-1).filter(function (d){
-                var ff= false;
-                fieldsets.forEach(function(it){
-                    var f=false;
-                    d.fieldDefs.forEach(function(m){f=(f||(m.field===it)); });
-                    ff=ff||f;});
-                return ff;});
-
-            possible = possible.filter(function (d){
-                var ff= true;
-                fieldsets.forEach(function(it){
-                    var f=false;
-                    d.fieldDefs.forEach(function(m){f=(f||(m.field===it)); });
-                    ff=ff&&f;});
-                return !ff;});
-            var topitem = support[1].types.map(function (d) {
-                return possible.sort(function (a, b) {
-                    return (a.scag[d] < b.scag[d]) ? 1 : -1;
-                })[0];
-            });
-            // FIX ME lack of relationship mapping here
-            var unique = [];
-            var uniquetype = [];
-            topitem.forEach(function (d, i) {
-                if (unique.filter(function (u) {
-                        return u.fieldDefs === d.fieldDefs;
-                    }).length === 0) {
-                    unique.push(JSON.parse(JSON.stringify(d)));
-                    var currentsupport = support.getsupport(fieldsets.length-1);
-                    var maxsupport = currentsupport.types.length;
-                    uniquetype.push(currentsupport.types[i>maxsupport?(maxsupport-1):i]);
-                }
-            });
-            unique.forEach(function(d,i){
-                var label='';
-                var newf = fieldsets.map(function(f){
-                    label=label+'-'+f;
-                    return Dataset.schema.fieldSchema(f);});
-
-                Array.prototype.push.apply(newf,d.fieldDefs.filter(function(fe){
+                var possible = getData(fieldsets.length).filter(function (d) {
                     var ff = true;
-                    fieldsets.forEach(function(fs){ff=ff&&(fs!==fe.field)});
-                    if (ff) label=label+'-'+fe.field;
-                    return ff;})
-                );
-                d.label = label;
-                d.type = uniquetype[i];
-            d.fieldDefs=newf});
-                unique  = _.uniqBy(unique,'label');
+                    fieldsets.forEach(function (it) {
+                        var f = false;
+                        d.fieldDefs.forEach(function (m) {
+                            f = (f || (m.field=== it));
+                        });
+                        ff = ff && f;
+                    });
+                    return ff;
+                }).filter(d=> !d.scag.invalid);
+                if (possible.length !== 0) {
+                    var topitem = support[PCAplot.dim + 1].types.map(function (d) {
+                        return possible.sort(function (a, b) {
+                            return (a.scag[d] < b.scag[d]) ? 1 : -1;
+                        })[0];
+                    });
+                    var unique = [];
+                    var uniquetype = [];
+                    topitem.forEach(function (d, i) {
+                        if (unique.filter(function (u) {
+                            return u === d;
+                        }).length === 0) {
+                            unique.push(d);
+                            uniquetype.push(support[PCAplot.dim + 1].types[i]);
+                        }
+                    });
+                    var charts = uniquetype.map(function (d, i) {
+                            return {v: unique[i], type: d}
+                    })
+                        .map(function (d) {
+                            var spec = {};
+                            //spec.data = Dataset.dataset;
+                            // spec.type = d.type;
+                            spec.config = {
+                                /*cell: {
+                                    width: PCAplot.dim?100:200,
+                                    height: PCAplot.dim?100:30,
+                                },*/
+                                axis: {
+                                    grid: false,
+                                },
+                                overlay: {line: true},
+                                scale: {useRawDomain: true}
+                            };
+                            spec.config.typer = {type: d.type, val: d.v.scag[d.type] };
+                            var extra = mspec.vlSpec.config.extraconfig;
+                            var mmark = extra ? mspec.vlSpec.mark + "-" + extra : mspec.vlSpec.mark;
+                            mark2plot(mark2mark(mmark, PCAplot.dim), spec, d.v.fieldDefs);
+                            var query = getQuery(spec,undefined,d.type);
+                            var output = cql.query(query, Dataset.schema);
+                            PCAplot.query = output.query;
+                            var topItem = output.result.getTopSpecQueryModel();
+                            var temc = Chart.getChart(topItem);
+                            // temc.vlSpec.config.typer = {type: d.type,mark: mark2mark(mspec.vlSpec.mark, PCAplot.dim)
+                            //     ,dim: d.v.fieldDefs.length-1, fieldDefs:d.v.fieldDefs};
+                            temc.query={
+                                groupBy: 'encoding',
+                                orderBy: ['feature'],
+                                chooseBy: ['abstraction'],
+                                //chooseBy: ['aggregationQuality', 'effectiveness'],
+                            };
+                            return temc;
 
-            var charts = unique.map(function (d, i) {
-                return {v: d, type: d.type}
-            })
-                .map(function (d) {
-                    var spec = {};
-                    spec.type = d.type;
-                    spec.config = {
-
-                        axis: {
-                            grid: false,
-                            ticks: false,
-                            titleOffset: 20
-                        },
-                        overlay: {line: true},
-                        scale: {useRawDomain: true}
-                    };
-                    mark2plot(mark2mark(mspec.vlSpec.mark, PCAplot.dim), spec, d.v.fieldDefs);
-                    var query = getQuery(spec,undefined,d.type);
-                    var output = cql.query(query, Dataset.schema);
-                    PCAplot.query = output.query;
-                    var topItem = output.result.getTopSpecQueryModel();
-                    var charttemp = Chart.getChart(topItem);
-                    charttemp.query={
-                        groupBy: 'encoding',
-                        orderBy: ['feature'],
-                        chooseBy: ['abstraction'],
-                        //chooseBy: ['aggregationQuality', 'effectiveness'],
-                    };
-                    return charttemp;
-
-                });
+                        });
+                    PCAplot.alternatives = [{'charts': charts}];
+                }
+                else {
+                    PCAplot.alternatives.length = 0;
+                }
+            // var possible = getData(fieldsets.length-1).filter(function (d){
+            //     var ff= false;
+            //     fieldsets.forEach(function(it){
+            //         var f=false;
+            //         d.fieldDefs.forEach(function(m){f=(f||(m.field===it)); });
+            //         ff=ff||f;});
+            //     return ff;});
+            //
+            // possible = possible.filter(function (d){
+            //     var ff= true;
+            //     fieldsets.forEach(function(it){
+            //         var f=false;
+            //         d.fieldDefs.forEach(function(m){f=(f||(m.field===it)); });
+            //         ff=ff&&f;});
+            //     return !ff;});
+            // var topitem = support[1].types.map(function (d) {
+            //     return possible.sort(function (a, b) {
+            //         return (a.scag[d] < b.scag[d]) ? 1 : -1;
+            //     })[0];
+            // });
+            // // FIX ME lack of relationship mapping here
+            // var unique = [];
+            // var uniquetype = [];
+            // topitem.forEach(function (d, i) {
+            //     if (unique.filter(function (u) {
+            //             return u.fieldDefs === d.fieldDefs;
+            //         }).length === 0) {
+            //         unique.push(JSON.parse(JSON.stringify(d)));
+            //         var currentsupport = support.getsupport(fieldsets.length-1);
+            //         var maxsupport = currentsupport.types.length;
+            //         uniquetype.push(currentsupport.types[i>maxsupport?(maxsupport-1):i]);
+            //     }
+            // });
+            // unique.forEach(function(d,i){
+            //     var label='';
+            //     var newf = fieldsets.map(function(f){
+            //         label=label+'-'+f;
+            //         return Dataset.schema.fieldSchema(f);});
+            //
+            //     Array.prototype.push.apply(newf,d.fieldDefs.filter(function(fe){
+            //         var ff = true;
+            //         fieldsets.forEach(function(fs){ff=ff&&(fs!==fe.field)});
+            //         if (ff) label=label+'-'+fe.field;
+            //         return ff;})
+            //     );
+            //     d.label = label;
+            //     d.type = uniquetype[i];
+            // d.fieldDefs=newf});
+            //     unique  = _.uniqBy(unique,'label');
+            //
+            // var charts = unique.map(function (d, i) {
+            //     return {v: d, type: d.type}
+            // })
+            //     .map(function (d) {
+            //         var spec = {};
+            //         spec.type = d.type;
+            //         spec.config = {
+            //
+            //             axis: {
+            //                 grid: false,
+            //                 ticks: false,
+            //                 titleOffset: 15
+            //             },
+            //             overlay: {line: true},
+            //             scale: {useRawDomain: true}
+            //         };
+            //         mark2plot(mark2mark(mspec.vlSpec.mark, PCAplot.dim), spec, d.v.fieldDefs);
+            //         var query = getQuery(spec,undefined,d.type);
+            //         var output = cql.query(query, Dataset.schema);
+            //         PCAplot.query = output.query;
+            //         var topItem = output.result.getTopSpecQueryModel();
+            //         var charttemp = Chart.getChart(topItem);
+            //         charttemp.query={
+            //             groupBy: 'encoding',
+            //             orderBy: ['feature'],
+            //             chooseBy: ['abstraction'],
+            //             //chooseBy: ['aggregationQuality', 'effectiveness'],
+            //         };
+            //         return charttemp;
+            //
+            //     });
             PCAplot.alternatives = [{'charts': charts}];
             }
 
@@ -1497,13 +1610,13 @@ angular.module('pcagnosticsviz')
         PCAplot.updateSpec = function(prop){
             //PCAplot.
             PCAplot.types =  support[prop.dim].types;
-            PCAplot.marks = support[prop.dim].marks.map((m,i)=> {return {label:abtractionLevel[i], mark: m}});
+            PCAplot.marks = support[prop.dim].marks.map((m,i)=> {return {label:abtractionLevel[i], mark: m, level:i}});
             var nprop = _.cloneDeep(prop);
             nprop.ranking = getranking(prop.type);
             mark2plot (prop.mark,nprop.mspec,Dataset.schema.fieldSchemas.slice(0,prop.dim+1));
             nprop.charts.length = 0;
 
-            var dataref = prop.dim>1?[prop.fieldDefs]:getData(nprop.dim);//?PCAplot.dataref:Dataset.schema.fieldSchemas;
+            var dataref = prop.dim>4?[prop.fieldDefs]:getData(nprop.dim);//?PCAplot.dataref:Dataset.schema.fieldSchemas;
             nprop.charts = dataref.sort(nprop.ranking)
                 .map(function(d) {
                     var chart = drawGuideexplore((d.fieldDefs||d),nprop.mark,nprop.mspec);
@@ -1523,7 +1636,7 @@ angular.module('pcagnosticsviz')
                         grid: false,
                         // ticks: false,
                         labels: false,
-                        titleOffset: 20
+                        titleOffset: 15
                     },
                     overlay: {line: true},
                     scale: {useRawDomain: true},
@@ -1557,7 +1670,7 @@ angular.module('pcagnosticsviz')
             support[dim].marks.forEach(function(d,i){
                 if (d==oldmark){
                     pos= i; return ;}});
-            return support[dim+1].marks[pos>support[newdim].marks.length-1?0:pos];
+            return support[newdim].marks[pos>support[newdim].marks.length-1?0:pos];
         }
         function type2type(oldtype,olddim,newdim){
             if (oldtype===undefined){
@@ -1698,9 +1811,9 @@ angular.module('pcagnosticsviz')
 
         }
 
-        function dashplot(spec,objectin) {
+        function dashplot(spec,objectin,mark) {
             var object = objectin[0]||objectin;
-            spec.mark = "tick";
+            spec.mark = mark||"tick";
             spec.encoding = {
                 x: {field: object.field, type: object.type}
             };
@@ -1746,16 +1859,18 @@ angular.module('pcagnosticsviz')
                 y: { field: objects[1].field, type: objects[1].type},
                 column: { field: objects[2].field, type: objects[2].type},
             };
-            if (option)
+            if (option) {
+                spec.config = spec.config || {};
                 spec.config.extraconfig = option;
+            }
         }
         function radarplot(spec,objects,option){
             spec.mark = "radar";
             spec.encoding = {
                 x: { field: objects[0].field, type: objects[0].type},
                 y: { field: objects[1].field, type: objects[1].type},
-                column: { field: objects[2].field, type: objects[2].type},
-                row: { field: objects[3].field, type: objects[3].type},
+                row: { field: objects[2].field, type: objects[2].type},
+                column: { field: objects[3].field, type: objects[3].type},
             };
             if (option) {
                 spec.config = spec.config ||{};
@@ -1915,49 +2030,85 @@ angular.module('pcagnosticsviz')
          * @param data
          * @param maxCombine
          */
-        function calscagnotic (primfield,dataschema,data,maxCombine){
-            importScripts("https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.20/require.min.js");
-            const collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
-            Array.prototype.naturalSort= function(_){
-                if (arguments.length) {
-                    return this.sort(function (as, bs) {
-                        return collator.compare(as[_],bs[_]);
-                    });
-                }else {
-                    return this.sort(collator.compare);
-                }
-            };
-            function stackforScag(queue,fields, matrix){
-                if (fields.length === maxCombine) {
-                    const nameTag = combineName(fields);
-                    if (dataschema.scag[maxCombine-1][nameTag]) {
-                        const scag = scagnoticscoreAll(matrix);
-                        notify({source: nameTag, value: scag});
-                        return true;
-                    }
-                        return false;
-                }
-                else {
-                    const field = queue.pop();
-                    stackforScag(newfield,fields, matrix)
-                }
-            }
+        function calscagnotic (dataschema,data,maxCombine){
+            // importScripts("//lib/require.min.js");
+            // importScripts("../lib/scagnostics.min.js");
+            // importScripts("../lib/require.min.js");
 
-            require(['https://idatavisualizationlab.github.io/N/Scagnostic/scagnostics.min.js'], function() {
-                primfield.forEach(function (selectedfield) {
-                    dataschema._fieldSchemas.forEach(function (d) {
-                        if ((d.field !== selectedfield) && (dataschema._fieldSchemaIndex[selectedfield].scag == undefined || dataschema._fieldSchemaIndex[selectedfield].scag[d.field] === undefined) && (d.scag === undefined || (d.scag[selectedfield] === undefined))) {
-                                var scag = scagnoticscore([selectedfield, d.field],checkValid(dataschema._fieldSchemaIndex[selectedfield]) && checkValid(dataschema._fieldSchemaIndex[d.field]));
-                            if (dataschema._fieldSchemaIndex[selectedfield].scag === undefined)
-                                dataschema._fieldSchemaIndex[selectedfield].scag = {};
-                            dataschema._fieldSchemaIndex[selectedfield] .scag[d.field] = scag;
-                            notify({source: selectedfield, target: d.field, value: scag});
+            const k_combinations = (set, k) => {
+                if (k > set.length || k <= 0) {
+                    return []
+                }
+
+                if (k == set.length) {
+                    return [set]
+                }
+
+                if (k == 1) {
+                    return set.reduce((acc, cur) => [...acc, [cur]], [])
+                }
+
+                let combs = [], tail_combs = []
+
+                for (let i = 0; i <= set.length - k + 1; i++) {
+                    tail_combs = k_combinations(set.slice(i + 1), k - 1)
+                    for (let j = 0; j < tail_combs.length; j++) {
+                        combs.push([set[i], ...tail_combs[j]])
+                    }
+                }
+
+                return combs
+            };
+            const onScag = (maxCombine)=>{
+                //asume that _fieldSchemaIndex sorted and won't change over time
+                const  combination = k_combinations(Object.keys(dataschema._fieldSchemaIndex), maxCombine);
+                console.log(combination)
+                combination.forEach((fields,index_progress)=>{
+                    let dest = dataschema._fieldSchemaIndex[fields[0]];
+                    let calKey = false; // should we calculate scag or not
+                    let valid = true;
+                    for (let i=1; i< maxCombine; i++){
+                        const selectedfield = fields[i];
+                        if(dest.scagStats===undefined){
+                            calKey = true||calKey;
+                            dest.scagStats ={};
+                            dest.scagStats[selectedfield] = {};
+                        }else if(dest.scagStats[selectedfield]===undefined){
+                            calKey = true||calKey;
+                            dest.scagStats[selectedfield] ={};
                         }
-                    })
+                        valid = valid && checkValid(dataschema._fieldSchemaIndex[selectedfield]);
+                        dest = dest.scagStats[selectedfield];
+                    }
+                    if(calKey){
+                        switch (maxCombine){
+                            case 2:
+                                var scag = scagnoticscore(fields, valid);
+                                break;
+                            case 3:
+                                var scag = scagnoticscore_simulation(fields, valid);
+                                // var scag = scagnoticscore3D(fields, valid);
+                                break;
+                            default:
+                                var scag = scagnoticscore_simulation(fields, valid);
+                                // var scag = scagnoticscorenD(fields, valid);
+                                break;
+                        }
+                        dest.scag = scag;
+                        notify({fields: fields, value: scag, progress: index_progress/ (combination.length-1)});
+                    }
                 });
                 return complete(dataschema);
-                // stackforScag(primfield,[], []);
-            });
+            };
+
+
+            if (this.scagnostics){
+                onScag(maxCombine)
+            }else{
+                require(['https://idatavisualizationlab.github.io/N/Scagnostic/scagnostics.min.js','https://idatavisualizationlab.github.io/N/Scagnostic/scagnostics3d.min.js','https://idatavisualizationlab.github.io/N/Scagnostic/scagnosticsnd.min.js'],
+                    function () {onScag(maxCombine)});
+            }
+
 
             function checkValid(field) {
                 return (field.type !== 'temporal')&&(field.primitiveType!=="string");
@@ -1979,31 +2130,17 @@ angular.module('pcagnosticsviz')
                             binType: 'leader',
                             startBinGridSize: 40
                         });
-                        if (!isNaN(scag.skinnyScore))
-                            return {
-                                'outlying': scag.outlyingScore,
-                                'skewed': scag.skewedScore,
-                                'sparse': scag.sparseScore,
-                                'clumpy': scag.clumpyScore,
-                                'striated': scag.striatedScore,
-                                'convex': scag.convexScore,
-                                'skinny': scag.skinnyScore,
-                                'stringy': scag.stringyScore,
-                                'monotonic': scag.monotonicScore
-                            };
-                        else return {
-                            'outlying': scag.outlyingScore,
-                            'skewed': scag.skewedScore,
-                            'sparse': scag.sparseScore,
-                            'clumpy': scag.clumpyScore,
-                            'striated': scag.striatedScore,
-                            'convex': scag.convexScore,
-                            'skinny': 0,
-                            'stringy': scag.stringyScore,
-                            'monotonic': scag.monotonicScore,
-                            invalid: 1
-                        };
-
+                        return {
+                            'outlying': isNaN(scag.outlyingScore)?0:scag.outlyingScore,
+                            'skewed': isNaN(scag.skewedScore)?0:scag.skewedScore,
+                            'sparse': isNaN(scag.sparseScore)?0:scag.sparseScore,
+                            'clumpy': isNaN(scag.clumpyScore)?0:scag.clumpyScore,
+                            'striated': isNaN(scag.striatedScore)?0:scag.striatedScore,
+                            'convex': isNaN(scag.convexScore)?0:scag.convexScore,
+                            'skinny': isNaN(scag.skinnyScore)?0:scag.skinnyScore,
+                            'stringy': isNaN(scag.stringyScore)?0:scag.stringyScore,
+                            'monotonic': isNaN(scag.monotonicScore)?0:scag.monotonicScore
+                        }
                     } catch (e) {
                         return {
                             'outlying': 0,
@@ -2033,147 +2170,256 @@ angular.module('pcagnosticsviz')
                     };
                 }
             }
-                function scagnoticscore3D (field1,field2,field3){
-                    var matrix = Dataset.data.map(function(d){return [d[field1],d[field2],d[field3]]});
-                    try {
-                        var scag = scagnostics3d(matrix,{
-                            binType: 'leader',
-                            startBinGridSize: 20});
-                        if (!isNaN(scag.skinnyScore))
-                            return {
-                                'outlying': scag.outlyingScore,
-                                'skewed': scag.skewedScore,
-                                'sparse':scag.sparseScore,
-                                'clumpy':scag.clumpyScore,
-                                'striated':scag.striatedScore,
-                                'convex':scag.convexScore,
-                                'skinny':scag.skinnyScore,
-                                'stringy':scag.stringyScore,
-                                'monotonic':scag.monotonicScore};
-                        else return {
-                            'outlying': 0,
-                            'skewed': 0,
-                            'sparse':0,
-                            'clumpy':0,
-                            'striated':0,
-                            'convex':0,
-                            'skinny':0,
-                            'stringy':0,
-                            'monotonic':0,
-                            invalid:1
-                        };
-
-                    }catch(e){
-                        return {
-                            'outlying': 0,
-                            'skewed': 0,
-                            'sparse':0,
-                            'clumpy':0,
-                            'striated':0,
-                            'convex':0,
-                            'skinny':0,
-                            'stringy':0,
-                            'monotonic':0,
-                            invalid:1,
-                        };
-                    }
+            function scagnoticscore_simulation (fields,valid){  //just simulation from 2D
+                if (valid) {
+                    const  combination = k_combinations(fields, 2); // get combination 2D
+                    let results = {
+                        'outlying': 0,
+                        'skewed': 0,
+                        'sparse': 0,
+                        'clumpy': 0,
+                        'striated': 0,
+                        'convex': 0,
+                        'skinny': 0,
+                        'stringy': 0,
+                        'monotonic': 0,
+                        invalid: 1,
+                    };
+                    combination.forEach(c=>{
+                        const curretn_scag = (dataschema._fieldSchemaIndex[c[0]].scagStats[c[1]]||dataschema._fieldSchemaIndex[c[0]].scagStats[c[1]]).scag;
+                        results.outlying = Math.max(curretn_scag.outlying,results.outlying);
+                        results.skewed = Math.max(curretn_scag.skewed,results.skewed);
+                        results.sparse = Math.max(curretn_scag.sparse,results.sparse);
+                        results.clumpy = Math.max(curretn_scag.clumpy,results.clumpy);
+                        results.striated = Math.max(curretn_scag.striated,results.striated);
+                        results.convex = Math.max(curretn_scag.convex,results.convex);
+                        results.skinny = Math.max(curretn_scag.skinny,results.skinny);
+                        results.stringy = Math.max(curretn_scag.stringy,results.stringy);
+                        results.monotonic = Math.max(curretn_scag.monotonic,results.monotonic);
+                        results.invalid = curretn_scag.invalid && results.invalid;
+                    });
+                    if (results.invalid)
+                        results.invalid = 1;
+                    else
+                        delete results.invalid;
+                    return results;
+                } else {
+                    return {
+                        'outlying': 0,
+                        'skewed': 0,
+                        'sparse': 0,
+                        'clumpy': 0,
+                        'striated': 0,
+                        'convex': 0,
+                        'skinny': 0,
+                        'stringy': 0,
+                        'monotonic': 0,
+                        invalid: 1,
+                    };
                 }
-                function scagnoticscoreND (fields){
-                    var matrix = Dataset.data.map(function(d){return fields.map(
-                        function (f) {
-                            return d[f]})});
-                    try {
-                        var scag = scagnosticsnd(matrix,{
-                            binType: 'leader',
-                            startBinGridSize: 20});
-                        return {
-                            'outlying': scag.outlyingScore,
-                        };
-                    }catch(e){
-                        return {
-                            'outlying': 0,
-                            invalid:1,
-                        };
-                    }
+            }
+            // function scagnoticscore3D (fields,valid){
+            //     if (valid) {
+            //         var matrix = [];
+            //         data.forEach(function (d) {
+            //             if (d[fields[0]] !== undefined && d[fields[1]] !== undefined&& d[fields[2]] !== undefined)
+            //                 matrix.push( fields.map(f => d[f]))
+            //         });
+            //
+            //         try {
+            //             var scag = this.scagnostics3d(matrix, {
+            //                 // isBinned: false,
+            //                 binType: 'leader',
+            //                 startBinGridSize: 10
+            //             });
+            //             return {
+            //                 'outlying': isNaN(scag.outlyingScore)?0:scag.outlyingScore,
+            //                 'skewed': isNaN(scag.skewedScore)?0:scag.skewedScore,
+            //                 'sparse': isNaN(scag.sparseScore)?0:scag.sparseScore,
+            //                 'clumpy': isNaN(scag.clumpyScore)?0:scag.clumpyScore,
+            //                 'striated': isNaN(scag.striatedScore)?0:scag.striatedScore,
+            //                 'convex': isNaN(scag.convexScore)?0:scag.convexScore,
+            //                 'skinny': isNaN(scag.skinnyScore)?0:scag.skinnyScore,
+            //                 'stringy': isNaN(scag.stringyScore)?0:scag.stringyScore,
+            //                 'monotonic': isNaN(scag.monotonicScore)?0:scag.monotonicScore
+            //             }
+            //         } catch (e) {
+            //             return {
+            //                 'outlying': 0,
+            //                 'skewed': 0,
+            //                 'sparse': 0,
+            //                 'clumpy': 0,
+            //                 'striated': 0,
+            //                 'convex': 0,
+            //                 'skinny': 0,
+            //                 'stringy': 0,
+            //                 'monotonic': 0,
+            //                 invalid: 1,
+            //             };
+            //         }
+            //     } else {
+            //         return {
+            //             'outlying': 0,
+            //             'skewed': 0,
+            //             'sparse': 0,
+            //             'clumpy': 0,
+            //             'striated': 0,
+            //             'convex': 0,
+            //             'skinny': 0,
+            //             'stringy': 0,
+            //             'monotonic': 0,
+            //             invalid: 1,
+            //         };
+            //     }
+            // }
+            function scagnoticscoreND (fields){
+                var matrix = Dataset.data.map(function(d){return fields.map(
+                    function (f) {
+                        return d[f]})});
+                try {
+                    var scag = scagnosticsnd(matrix,{
+                        binType: 'leader',
+                        startBinGridSize: 20});
+                    return {
+                        'outlying': scag.outlyingScore,
+                    };
+                }catch(e){
+                    return {
+                        'outlying': 0,
+                        invalid:1,
+                    };
                 }
+            }
 
 
 
             //console.log (Dataset.schema.fieldSchema(primfield[0]));
-        };
-        function handleScagnostic () {
-            Alerts.add('done with scagnostic calculation');
-            try {
-                let dataref = []
-                Dataset.schema.fieldSchemas.map(function(d){
-                    var tem = {field: d.field};
-                    tem[d.field] = d.scag;
-                    return tem;}).forEach(function (d) {
-                    for (var e in d[d.field]) {
+        }
 
-                        d[d.field][e].label = [d.field, e];
-                        dataref.push(d[d.field][e]);
-
-                    }
-                });
-                update_dataref(dataref);
-            }catch(e){}
-            if (PCAplot.dim==1) {
-                PCAplot.firstrun =true;
-                PCAplot.plot(Dataset.schema.fieldSchemas.map(function (d) {
-                    var tem = {field: d.field};
-                    tem[d.field] = d.scag;
-                    return tem;
-                }), 1)
+        // function collect all scag
+        function go2Level (s,collection,level){
+            if (level && s.scagStats !==undefined){
+                Object.keys(s.scagStats).forEach((subf)=>
+                    go2Level (s.scagStats[subf],collection,level-1));
+            }else {
+                if (s.label) {
+                    //reach to destination
+                    collection.push({
+                        fieldDefs: s.label.map(d => Dataset.schema.fieldSchema(d)),
+                        scag: s.scag
+                    });
+                }
             }
+        }
+
+        function handleScagnostic (index) {
+            // Alerts.add('done with scagnostic calculation');
+            $mdToast.show(
+                $mdToast.simple()
+                    .textContent('Finish calculation for scatterplot matrix')
+                    .position('top right')
+                    .hideDelay(2000));
+            try {
+                PCAplot.data[index]=[];
+                Dataset.schema.fieldSchemas.sort((a,b)=>a.index-b.index);
+                Dataset.schema.fieldSchemas.forEach(fd=>{
+                    go2Level(fd,PCAplot.data[index],index);
+                });
+                // if (PCAplot.dim===index-1)
+                    update_dataref(index);
+            }catch(e){}
+            if (PCAplot.dim===index) {
+                PCAplot.firstrun =true;
+                PCAplot.plot(PCAplot.data[index].map(d=>d), 1);
+            }
+            try {
+                PCAplot.updateSpec(PCAplot.prop);
+            }catch(e){}
         }
         PCAplot.initialize = _.once(handleScagnostic);
         PCAplot.workerScagnotic = undefined;
         PCAplot.checkCalculateStatus = function (dim) {
 
-        }
-        PCAplot.calscagnotic = function (primfield){
+        };
+        PCAplot.calscagnotic = _.once(oncalscagnotic);
+        function oncalscagnotic (index){
             let count =0;
             if (!PCAplot.workerScagnotic) {
+                PCAplot.calProcess = 0;
+                PCAplot.calculateState = 'Scagnostic 2D';
                 PCAplot.workerScagnotic = Webworker.create(calscagnotic, {async: true});
-                PCAplot.workerScagnotic.run(primfield, Dataset.schema, Dataset.data).then(function (result) {
-                    PCAplot.initialize();
+                PCAplot.workerScagnotic.run(Dataset.schema, Dataset.data,index+1).then(function (result) {
+                    handleScagnostic(index);
+                    PCAplot.calculateState = null;
                     PCAplot.workerScagnotic = undefined;
+                    if (index===1)// auto trigger scagnostic calcualtion for 3D
+                        oncalscagnotic (2);
+                    PCAplot.calProcess = 0;
                 }, null, function (progress) {
-                    // Alerts.add(progress);
-                    if (Dataset.schema.fieldSchema(progress.source).scag === undefined)
-                        Dataset.schema.fieldSchema(progress.source).scag = {};
-                    // if (Dataset.schema.fieldSchema(progress.target).scag === undefined)
-                    //     Dataset.schema.fieldSchema(progress.target).scag = {};
-                    Dataset.schema.fieldSchema(progress.source).scag[progress.target] = progress.value;
-                    // Dataset.schema.fieldSchema(progress.target).scag[progress.source] = Dataset.schema.fieldSchema(progress.source).scag[progress.target];
+                    count++;
+                    PCAplot.calProcess = progress.progress*100;
+                    // Process results
+                    var label_stack = [progress.fields.shift()];
+                    var source = Dataset.schema._fieldSchemaIndex[label_stack[0]];
+                    if (source.scagStats=== undefined) {
+                        source.scagStats = {};
+                    }
+                    source = source.scagStats;
+                    var source_scag = source;
+                    progress.fields.forEach(f=> {
+                        label_stack.push(f);
+                        if (source[f]=== undefined) {
+                            source[f] = {};
+                            source[f].label = label_stack.map(l=>l);
+                            source[f].scagStats = {};
+                        }
+                        source_scag = source[f];
+                        source = source[f].scagStats;
+                    });
+                    source_scag.scag = progress.value;
                 }).catch(function (oError) {
                     PCAplot.workerScagnotic = undefined;
                 });
             }
 
         };
-
-        PCAplot.updateAlternative= function (prop,dataref){
-
-
+        PCAplot.transpose = function (index){
+            transposeFieldset(PCAplot.prop.charts[index]);
+            transposeFieldset(PCAplot.prop.previewcharts[index]);
+            Chart.transpose(PCAplot.prop.charts[index].vlSpec);
+            Chart.transpose(PCAplot.prop.previewcharts[index].vlSpec);
         };
+
+        function transposeFieldset (spec){
+            var fieldSet = _.clone(spec.fieldSet);
+            var oldXEnc = fieldSet[0];
+            var oldYEnc = fieldSet[1];
+            fieldSet[0] = oldYEnc;
+            fieldSet[0].channel = 'x';
+            fieldSet[1] = oldXEnc;
+            fieldSet[1].channel = 'y';
+            spec.fieldSet = fieldSet;
+        }
+
         PCAplot.mark2mark = mark2mark;
         PCAplot.reset = function(hard) {
             if (PCAplot.workerScagnotic)
                 PCAplot.workerScagnotic.stop();
             var spec = instantiate();
             spec.transform.filter = FilterManager.reset(null, hard);
+            PCAplot.data = [];
             PCAplot.spec = spec;
             PCAplot.firstrun =true;
             PCAplot.charts.length = 0;
             PCAplot.chart=null;
-            PCAplot.prop=null;
+            PCAplot. prop = {dim:-1,pos:0,type:null,mark:null, fieldDefs:[],charts:[],previewcharts:[]};
             PCAplot.alternatives=[];
             PCAplot.dataref = [];
             PCAplot.mspec = null;
             PCAplot.state = states.IDLE;
             PCAplot.initialize = _.once(handleScagnostic);
+            PCAplot.calscagnotic = _.once(oncalscagnotic);
+            PCAplot.calculateState = null;
             //PCAplot.plot(Dataset.data);
         };
         PCAplot.reset();

@@ -1,20 +1,15 @@
 {
-  "name": "pcagnosticsviz",
-  "version": "0.2.1",
-  "description": "Visualization specification interface.",
+  "name": "HAmViz",
+  "version": "0.0.1",
+  "description": "Human-machine analytics for visual recommendation.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/uwdata/pcagnosticsviz.git"
+    "url": "https://github.com/iDataVisualizationLab/HMaViz.git"
   },
   "author": {
-    "name": "UW Interactive Data Lab",
-    "url": "http://idl.cs.washington.edu"
+    "name": "Interactive Data Visualization Lab",
+    "url": "http://myweb.ttu.edu/tnhondan/iDVL/index.php"
   },
-  "collaborators": [
-    "Dominik Moritz <domoritz@cs.washington.edu> (http://domoritz.de)",
-    "Kanit Wongsuphasawat <kanitw@gmail.com> (http://kanitw.yellowpigz.com)",
-    "Jeffrey Heer <jheer@uw.edu> (http://jheer.org)"
-  ],
   "license": "BSD-3-Clause",
   "scripts": {
     "postinstall": "bower install",

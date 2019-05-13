@@ -16,8 +16,8 @@
  */
 function quantileRankSorted(
     x /*: Array<number> */,
-    value /*: number */)/*: number */ {
-
+    value /*: number */
+) /*: number */ {
     // Value is lesser than any value in the array
     if (value < x[0]) {
         return 0;
@@ -28,7 +28,7 @@ function quantileRankSorted(
         return 1;
     }
 
-    var l = lowerBound(x, value);
+    let l = lowerBound(x, value);
 
     // Value is not in the array
     if (x[l] !== value) {
@@ -37,7 +37,7 @@ function quantileRankSorted(
 
     l++;
 
-    var u = upperBound(x, value);
+    const u = upperBound(x, value);
 
     // The value exists only once in the array
     if (u === l) {
@@ -48,25 +48,24 @@ function quantileRankSorted(
     // containing our searched value. But, instead, of initializing an
     // array and looping over it, there is a dedicated math formula that
     // we apply below to get the result.
-    var r = u - l + 1;
-    var sum = (r * (u + l)) / 2;
-    var mean = sum / r;
+    const r = u - l + 1;
+    const sum = (r * (u + l)) / 2;
+    const mean = sum / r;
 
     return mean / x.length;
 }
 
 function lowerBound(x, value) {
-    var mid = 0;
-    var lo = 0;
-    var hi = x.length;
+    let mid = 0;
+    let lo = 0;
+    let hi = x.length;
 
     while (lo < hi) {
         mid = (lo + hi) >>> 1;
 
         if (value <= x[mid]) {
             hi = mid;
-        }
-        else {
+        } else {
             lo = -~mid;
         }
     }
@@ -75,17 +74,16 @@ function lowerBound(x, value) {
 }
 
 function upperBound(x, value) {
-    var mid = 0;
-    var lo = 0;
-    var hi = x.length;
+    let mid = 0;
+    let lo = 0;
+    let hi = x.length;
 
     while (lo < hi) {
         mid = (lo + hi) >>> 1;
 
         if (value >= x[mid]) {
             lo = -~mid;
-        }
-        else {
+        } else {
             hi = mid;
         }
     }

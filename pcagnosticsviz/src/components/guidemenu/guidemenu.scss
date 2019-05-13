@@ -10,6 +10,24 @@
 .alternatives-pane.navigation {
   background-image: var(--panelColor);
 }
+.md-button.warningbtn {
+  font-size: 12px;
+  border-radius: 5px;
+  background-color: rgba(255, 222, 121, 0.96);
+  line-height: 1.5;
+  min-height: unset;
+}
+.md-button.warningbtn:not([disabled]):hover {
+  background-color: rgba(107, 103, 91, 0.96);
+  color: white;
+}
+
+.md-button.warningbtn.byPass {
+  background-color: rgba(107, 103, 91, 0.96);
+  background-color: rgba(90, 230, 146, 0.96);
+}
+
+
 .pane.guidemenu, .alternatives-pane.navigation  {
   .contain {
     display: flex;
@@ -55,17 +73,17 @@
       min-height: 75px;
       margin: 5px;
       transition: all .2s ease-in-out;
-      -webkit-transform: scale(0.5);
-      -moz-transform: scale(0.5);
-      -ms-transform: scale(0.5);
-      -o-transform: scale(0.5);
-      transform: scale(0.5);
       .thumplot {
+        -webkit-transform: scale(0.5);
+        -moz-transform: scale(0.5);
+        -ms-transform: scale(0.5);
+        -o-transform: scale(0.5);
+        transform: scale(0.5);
         max-height: calc( 100% - 30px);
         max-width: calc( 100% - 30px);
         margin:0;
         padding:0;
-        border: black solid 2px;
+        border: #9c9c9c solid 2px;
         .vl-plot {
           min-width: 270px;
         }
@@ -80,27 +98,30 @@
       pointer-events: none;
     }
 
+    svg.legend {
+      position: absolute;
+      top:0;
+      right:0;
+      height:100%;
+      width:80px;
+      overflow: visible;
+      pointer-events: none;
+    }
 
     .active {
       .card {
-        border: var(--fontColor) solid 5px;
+        border: black solid 4px;
         box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
       }
     }
-    .active foreignObject {
-      transform: scale(1);
-    }
 
-    .hover foreignObject {
+    foreignObject.hover .thumplot  {
       transform: scale(1);
     }
 
     .legend {
-      stroke: black;
-    }
-    .cell.active {
-      stroke: black;
-      stroke-width: 5px;
+      color:black;
+      //stroke: black;
     }
     .active {
       margin: 5px;

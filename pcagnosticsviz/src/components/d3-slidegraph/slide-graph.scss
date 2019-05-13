@@ -57,6 +57,24 @@
 .item{
   justify-content: center;
 }
+.item.vl-plot-group{
+  height:100%;
+}
+.item .vega {
+  height: 100%;
+}
+
+.item .vega canvas, .item .vega svg:not(.main-svg,.icon) {
+  padding: 0;
+  margin: auto;
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
 @keyframes appearing {
   from {
     height: 0;

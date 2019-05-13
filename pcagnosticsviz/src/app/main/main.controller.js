@@ -28,6 +28,7 @@ angular.module('pcagnosticsviz')
     $scope.showEncoding = false;
     $scope.showExtraGuide = false;
     $scope.themeDrak = false;
+    $scope.showvideo = true;
       $scope.fieldAdd = function(fieldDef) {
           Pills.add(fieldDef);
       };
@@ -144,9 +145,9 @@ angular.module('pcagnosticsviz')
       // PCAplot.plot(Dataset.data);
       //Biplot.data = Dataset.data;
       $scope.chron = Chronicle.record('Spec.spec', $scope, true,
-        ['Dataset.dataset', 'Config.config', 'FilterManager.filterIndex']);
-      // $scope.chron = Chronicle.record('PCAplot.spec', $scope, true,
-      //      ['Dataset.dataset', 'Config.config', 'FilterManager.filterIndex']);
+        ['Dataset.dataset', 'Config.config', 'FilterManager.filterIndex','PCAplot.prop.fieldDefs','PCAplot.prop.pos','PCAplot.prop.dim','PCAplot.prop.type','PCAplot.prop.mark']);
+      // $scope.chron = Chronicle.record(['PCAplot.prop.mspec','PCAplot.prop.type','PCAplot.prop.dim','PCAplot.prop.pos'], $scope, true,
+      //      ['Dataset.dataset', 'Config.config', 'FilterManager.filterIndex','Spec.spec']);
       $scope.canUndoRedo = function() {
         $scope.canUndo = $scope.chron.canUndo();
         $scope.canRedo = $scope.chron.canRedo();
@@ -157,11 +158,17 @@ angular.module('pcagnosticsviz')
 
       $scope.chron.addOnUndoFunction(function() {
         Logger.logInteraction(Logger.actions.UNDO);
+        PCAplot.updateSpec(PCAplot.prop);
       });
       $scope.chron.addOnRedoFunction(function() {
         Logger.logInteraction(Logger.actions.REDO);
+          PCAplot.updateSpec(PCAplot.prop);
       });
 
+      $scope.choseByClick = function ($event) {
+          d3v4.select($event.currentTarget).select('.command.select.ng-scope').dispatch('click');
+          // d3v4.select(this).select('.command.select.ng-scope').dispatch('click');
+      };
       angular.element($document).on('keydown', function(e) {
         if (e.keyCode === 'Z'.charCodeAt(0) && (e.ctrlKey || e.metaKey) && !e.shiftKey) {
           $scope.chron.undo();

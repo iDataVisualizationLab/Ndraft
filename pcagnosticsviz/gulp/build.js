@@ -10,6 +10,12 @@ var paths = gulp.paths;
 //     pattern: ['gulp-*', 'main-bower-files', 'uglify-save-license', 'del']
 // });
 var $ = require('gulp-load-plugins')();
+gulp.task('video', function () {
+    return gulp.src([
+        paths.src + '/video/*.mp4',
+    ])
+        .pipe(gulp.dest(paths.dist + '/video/'));
+});
 gulp.task('partials', function () {
     return gulp.src([
         paths.src + '/{app,components}/**/*.html',
@@ -72,6 +78,11 @@ gulp.task('data', function () {
         .pipe(gulp.dest(paths.dist + '/data/'));
 });
 
+gulp.task('lib', function () {
+    return gulp.src(paths.src + '/lib/*')
+        .pipe(gulp.dest(paths.dist + '/lib/'));
+});
+
 gulp.task('fonts', function () {
     return gulp.src($.mainBowerFiles())
         .pipe($.filter('**/*.{eot,svg,ttf,woff,woff2}'))
@@ -93,4 +104,4 @@ gulp.task('clean', function (done) {
     $.del([paths.dist + '/', paths.tmp + '/'], done);
 });
 
-gulp.task('build', ['html', 'data', 'misc', 'zeroclipboard']);
+gulp.task('build', ['html', 'data', 'misc', 'zeroclipboard','video','lib']);

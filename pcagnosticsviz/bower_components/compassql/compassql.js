@@ -1400,173 +1400,282 @@ stats.mutual.dist = function(values, a, b, counts) {
 };
 
 // Compute a profile of summary statistics for a variable.
-stats.profile = function(values, f) {
-  var mean = 0,
-      valid = 0,
-      missing = 0,
-      distinct = 0,
-      min = null,
-      max = null,
-      M2 = 0,
-      M2s = 0,
-      multimodality = 0,
-      outlier = 0,
-      q1,q3,iqr,
-      vals = [],
-      u = {}, delta, sd, i, v, x;
+        stats.profile = function(values, f) {
+            var mean = 0,
+                valid = 0,
+                missing = 0,
+                distinct = 0,
+                min = null,
+                max = null,
+                M2 = 0,
+                M2s = 0,
+                multimodality = 0,
+                outlier = 0,
+                q1,q3,iqr,
+                vals = [],
+                u = {}, delta, sd, i, v, x;
 
-  // compute summary stats
-  for (i=0; i<values.length; ++i) {
-    v = f ? f(values[i]) : values[i];
+            // compute summary stats
+            for (i=0; i<values.length; ++i) {
+                v = f ? f(values[i]) : values[i];
 
-    // update unique values
-    u[v] = (v in u) ? u[v] + 1 : (distinct += 1, 1);
+                // update unique values
+                u[v] = (v in u) ? u[v] + 1 : (distinct += 1, 1);
 
-    if (v == null) {
-      ++missing;
-    } else if (util.isValid(v)) {
-      // update stats
-      x = (typeof v === 'string') ? v.length : v;
-      if (min===null || x < min) min = x;
-      if (max===null || x > max) max = x;
-      delta = x - mean;
-      mean = mean + delta / (++valid);
-      M2 = M2 + delta * (x - mean);
-      vals.push(x);
-    }
-  }
-  M2 = M2 / (valid - 1);
-  sd = Math.sqrt(M2);
-
-  // sort values for median and iqr
-  vals.sort(util.cmp);
-    q1 = stats.quantile(vals, 0.25);
-    q3 = stats.quantile(vals, 0.75);
-    iqr = (q3 - q1);
-    if (max !==min) {
-        var means = (stats.mean(vals) - min) / (max - min);
-        var standardizedData = []
-        for (i = 0; i < vals.length; ++i) {
-            x = (vals[i] - min) / (max - min);
-            standardizedData.push(x);
-            delta = x - means;
-            M2s = M2s + delta * delta;
-            // outlier
-            if ((vals[i] < q1 - 1.5 * iqr) || (vals[i] > q3 + 1.5 * iqr))
-                outlier += 1;
-        }
-        M2s = M2s / (valid*0.25);
-
-        // Apply K-means
-        var k_mean = stats.k_means1(standardizedData, 2);
-        var count_loop = 0;
-        var deltaerror = 2;
-        while (count_loop<100 && deltaerror > 0.0001){
-            var k_mean_new = stats.k_means1(standardizedData, 2,k_mean);
-            deltaerror =  Math.abs(k_mean_new[0].val-k_mean[0].val)+Math.abs(k_mean_new[1].val-k_mean[1].val);
-            k_mean = k_mean_new;
-            count_loop++
-        }
-        // Compute multimodality feature
-        multimodality = Math.sqrt(Math.abs(k_mean[0].val-k_mean[1].val))
-    }
-
-
-
-  return {
-    type:     type(values, f),
-    unique:   u,
-    count:    values.length,
-    valid:    valid,
-    missing:  missing,
-    distinct: distinct,
-    min:      min,
-    max:      max,
-    mean:     mean,
-    stdev:    sd,
-    median:   (v = stats.quantile(vals, 0.5)),
-    q1:       q1,
-    q3:       q3,
-    iqr:      iqr,
-    q1iqr:    Math.max(q1 - iqr, min),
-    q3iqr:    Math.min(q3 + iqr, max),
-    outlier: outlier,
-    modeskew: sd === 0 ? 0 : (mean - v) / sd,
-    variance: M2s,
-    multimodality: multimodality
-  };
-};
-stats.k_means1 = function(x, n, means) {
-    // A simple average function, just because
-    // JavaScript doesn't provide one by default.
-    function avg(x) {
-        var s = 0;
-        for (var i = 0; i < x.length; i++) {
-            s += x[i];
-        }
-        return (x.length > 0) ? (s / x.length) : 0;
-    }
-
-    // n is the number of means to choose.
-    if (n === 0) {
-        throw new Error('The number of means must be non-zero');
-    } else if (n > x.length) {
-        throw new Error('The number of means must be fewer than the length of the dataset');
-    }
-
-    var seen = {};
-    if (!means) {
-        means = [];
-        // Randomly choose k means from the data and make sure that no point
-        // is chosen twice. This bit inspired by polymaps
-        while (means.length < n) {
-            var idx = Math.floor(Math.random() * (x.length - 1));
-            if (!seen[idx]) {
-                means.push({ val: x[idx], vals: [] });
-                seen[idx] = true;
+                if (v == null) {
+                    ++missing;
+                } else if (util.isValid(v)) {
+                    // update stats
+                    x = (typeof v === 'string') ? distinct : v;
+                    if (min===null || x < min) min = x;
+                    if (max===null || x > max) max = x;
+                    delta = x - mean;
+                    mean = mean + delta / (++valid);
+                    M2 = M2 + delta * (x - mean);
+                    vals.push(x);
+                }
             }
-        }
-    }
+            M2 = M2 / (valid - 1);
+            sd = Math.sqrt(M2);
 
-    var i;
-    // For every value, find the closest mean and add that value to the
-    // mean's `vals` array.
-    for (i = 0; i < x.length; i++) {
-        var dists = [];
-        for (var j = 0; j < means.length; j++) {
-            dists.push(Math.abs(x[i] - means[j].val));
-        }
-        var closest_index = dists.indexOf(Math.min.apply(null, dists));
-        means[closest_index].vals.push(x[i]);
-    }
+            // sort values for median and iqr
+            vals.sort(util.cmp);
+            q1 = stats.quantile(vals, 0.25);
+            q3 = stats.quantile(vals, 0.75);
+            iqr = (q3 - q1);
+            if (max !==min) {
+                var means = (stats.mean(vals) - min) / (max - min);
+                var standardizedData = []
+                for (i = 0; i < vals.length; ++i) {
+                    x = (vals[i] - min) / (max - min);
+                    standardizedData.push(x);
+                    delta = x - means;
+                    M2s = M2s + delta * delta;
+                    // outlier
+                    if ((vals[i] < q1 - 3 * iqr) || (vals[i] > q3 + 3 * iqr))
+                        outlier += 1;
+                }
+                M2s = M2s / (valid*0.25);
 
-    // Create new centers from the centroids of the values in each
-    // group.
-    //
-    // > In the case of one-dimensional data, such as the test scores,
-    // the centroid is the arithmetic average of the values
-    // of the points in a cluster.
-    //
-    // [Vance Faber](http://bit.ly/LHCh2y)
-    var newvals = [];
-    for (i = 0; i < means.length; i++) {
-        var centroid = avg(means[i].vals);
-        newvals.push({
-            val: centroid,
-            vals: []
-        });
-    }
-    return newvals;
-}
+                // Apply K-means
+                var k_mean = stats.k_means1(standardizedData, 2);
+                var count_loop = 0;
+                var deltaerror = 2;
+                while (count_loop<100 && deltaerror > 0.0001){
+                    var k_mean_new = stats.k_means1(standardizedData, 2,k_mean);
+                    deltaerror =  Math.abs(k_mean_new[0].val-k_mean[0].val)+Math.abs(k_mean_new[1].val-k_mean[1].val);
+                    k_mean = k_mean_new;
+                    count_loop++
+                }
+                // Compute multimodality feature
+                multimodality = Math.sqrt(Math.abs(k_mean[0].val-k_mean[1].val))
+            }
+
+
+
+            return {
+                type:     type(values, f),
+                unique:   u,
+                count:    values.length,
+                valid:    valid,
+                missing:  missing,
+                distinct: distinct,
+                min:      min,
+                max:      max,
+                mean:     mean,
+                stdev:    sd,
+                median:   (v = stats.quantile(vals, 0.5)),
+                q1:       q1,
+                q3:       q3,
+                iqr:      iqr,
+                q1iqr:    Math.max(q1 - iqr, min),
+                q3iqr:    Math.min(q3 + iqr, max),
+                outlier: outlier,
+                modeskew: sd === 0 ? 0 : (mean - v) / sd,
+                variance: M2s,
+                multimodality: multimodality
+            };
+        };
+        stats.profileNumber = function(values, f,fn) {
+            var mean = 0,
+                valid = 0,
+                missing = 0,
+                distinct = 0,
+                min = null,
+                max = null,
+                M2 = 0,
+                M2s = 0,
+                multimodality = 0,
+                outlier = 0,
+                q1,q3,iqr,
+                vals = [],
+                u = {}, delta, sd, i, v, x;
+
+            // compute summary stats
+            for (i=0; i<values.length; ++i) {
+                v = f ? f(values[i]) : values[i];
+
+                // update unique values
+                u[v] = (v in u) ? u[v] + 1 : (distinct += 1, 1);
+
+                if (v == null) {
+                    ++missing;
+                } else if (util.isValid(v)) {
+                    // update stats
+                    x =+ v;
+                    if (!isNaN(x)) {
+                        // TODO
+                        if (f)
+                            values[i][fn] = x;
+                        else
+                            values[i] = x;
+                        if (min === null || x < min) min = x;
+                        if (max === null || x > max) max = x;
+                        delta = x - mean;
+                        mean = mean + delta / (++valid);
+                        M2 = M2 + delta * (x - mean);
+                        vals.push(x);
+                    }
+                }
+            }
+            M2 = M2 / (valid - 1);
+            sd = Math.sqrt(M2);
+
+            // sort values for median and iqr
+            vals.sort(util.cmp);
+            q1 = stats.quantile(vals, 0.25);
+            q3 = stats.quantile(vals, 0.75);
+            iqr = (q3 - q1);
+            if (max !==min) {
+                var means = (stats.mean(vals) - min) / (max - min);
+                var standardizedData = []
+                for (i = 0; i < vals.length; ++i) {
+                    x = (vals[i] - min) / (max - min);
+                    standardizedData.push(x);
+                    delta = x - means;
+                    M2s = M2s + delta * delta;
+                    // outlier
+                    if ((vals[i] < q1 - 3 * iqr) || (vals[i] > q3 + 3 * iqr))
+                        outlier += 1;
+                }
+                M2s = M2s / (valid*0.25);
+
+                // Apply K-means
+                var k_mean = stats.k_means1(standardizedData, 2);
+                var count_loop = 0;
+                var deltaerror = 2;
+                while (count_loop<100 && deltaerror > 0.0001){
+                    var k_mean_new = stats.k_means1(standardizedData, 2,k_mean);
+                    deltaerror =  Math.abs(k_mean_new[0].val-k_mean[0].val)+Math.abs(k_mean_new[1].val-k_mean[1].val);
+                    k_mean = k_mean_new;
+                    count_loop++
+                }
+                // Compute multimodality feature
+                multimodality = Math.sqrt(Math.abs(k_mean[0].val-k_mean[1].val))
+            }
+
+
+
+            return {
+                type:     type(values, f),
+                unique:   u,
+                count:    values.length,
+                valid:    valid,
+                missing:  missing,
+                distinct: distinct,
+                min:      min,
+                max:      max,
+                mean:     mean,
+                stdev:    sd,
+                median:   (v = stats.quantile(vals, 0.5)),
+                q1:       q1,
+                q3:       q3,
+                iqr:      iqr,
+                q1iqr:    Math.max(q1 - iqr, min),
+                q3iqr:    Math.min(q3 + iqr, max),
+                outlier: outlier,
+                modeskew: sd === 0 ? 0 : (mean - v) / sd,
+                variance: M2s,
+                multimodality: multimodality
+            };
+        };
+        stats.k_means1 = function(x, n, means) {
+            // A simple average function, just because
+            // JavaScript doesn't provide one by default.
+            function avg(x) {
+                var s = 0;
+                for (var i = 0; i < x.length; i++) {
+                    s += x[i];
+                }
+                return (x.length > 0) ? (s / x.length) : 0;
+            }
+
+            // n is the number of means to choose.
+            if (n === 0) {
+                throw new Error('The number of means must be non-zero');
+            } else if (n > x.length) {
+                throw new Error('The number of means must be fewer than the length of the dataset');
+            }
+
+            var seen = {};
+            if (!means) {
+                means = [];
+                // Randomly choose k means from the data and make sure that no point
+                // is chosen twice. This bit inspired by polymaps
+                while (means.length < n) {
+                    var idx = Math.floor(Math.random() * (x.length - 1));
+                    if (!seen[idx]) {
+                        means.push({ val: x[idx], vals: [] });
+                        seen[idx] = true;
+                    }
+                }
+            }
+
+            var i;
+            // For every value, find the closest mean and add that value to the
+            // mean's `vals` array.
+            for (i = 0; i < x.length; i++) {
+                var dists = [];
+                for (var j = 0; j < means.length; j++) {
+                    dists.push(Math.abs(x[i] - means[j].val));
+                }
+                var closest_index = dists.indexOf(Math.min.apply(null, dists));
+                means[closest_index].vals.push(x[i]);
+            }
+
+            // Create new centers from the centroids of the values in each
+            // group.
+            //
+            // > In the case of one-dimensional data, such as the test scores,
+            // the centroid is the arithmetic average of the values
+            // of the points in a cluster.
+            //
+            // [Vance Faber](http://bit.ly/LHCh2y)
+            var newvals = [];
+            for (i = 0; i < means.length; i++) {
+                var centroid = avg(means[i].vals);
+                newvals.push({
+                    val: centroid,
+                    vals: []
+                });
+            }
+            return newvals;
+        }
 // Compute profiles for all variables in a data set.
-stats.summary = function(data, fields) {
-  fields = fields || util.keys(data[0]);
-  var s = fields.map(function(f) {
-    var p = stats.profile(data, util.$(f));
-    return (p.field = f, p);
-  });
-  return (s.__summary__ = true, s);
-};
+        stats.summary = function(data, fields) {
+            fields = fields || util.keys(data[0]);
+            var s = fields.map(function(f) {
+                var p = stats.profile(data, util.$(f));
+                return (p.field = f, p);
+            });
+            return (s.__summary__ = true, s);
+        };
+
+
+        stats.convert2Number = function(data, f) {
+            var p = stats.profileNumber(data, util.$(f),f);
+            return (p.field = f, p);
+        };
 
 },{"./generate":4,"./import/type":5,"./util":8}],7:[function(require,module,exports){
 var d3_time = require('d3-time');
@@ -8395,6 +8504,8 @@ var Schema = (function () {
             var type;
             if (primitiveType === PrimitiveType.NUMBER) {
                 type = type_1.Type.QUANTITATIVE;
+                if (summary.type==="string")
+                    summary = stats_1.convert2Number(data,field);
             }
             else if (primitiveType === PrimitiveType.INTEGER) {
                 // use ordinal or nominal when cardinality of integer type is relatively low and the distinct values are less than an amount specified in options
@@ -8403,6 +8514,8 @@ var Schema = (function () {
                 }
                 else {
                     type = type_1.Type.QUANTITATIVE;
+                    if (summary.type==="string")
+                        summary = stats_1.convert2Number(data,field);
                 }
             }
             else if (primitiveType === PrimitiveType.DATE) {

@@ -1,7 +1,7 @@
 /* @flow */
 
-import mean from './mean';
-import standardDeviation from './standard_deviation';
+import mean from "./mean";
+import standardDeviation from "./standard_deviation";
 
 /**
  * This is to compute [a one-sample t-test](https://en.wikipedia.org/wiki/Student%27s_t-test#One-sample_t-test), comparing the mean
@@ -20,15 +20,18 @@ import standardDeviation from './standard_deviation';
  * @example
  * tTest([1, 2, 3, 4, 5, 6], 3.385).toFixed(2); // => '0.16'
  */
-function tTest(x/*: Array<number> */, expectedValue/*: number */)/*:number*/ {
+function tTest(
+    x /*: Array<number> */,
+    expectedValue /*: number */
+) /*:number*/ {
     // The mean of the sample
-    var sampleMean = mean(x);
+    const sampleMean = mean(x);
 
     // The standard deviation of the sample
-    var sd = standardDeviation(x);
+    const sd = standardDeviation(x);
 
     // Square root the length of the sample
-    var rootN = Math.sqrt(x.length);
+    const rootN = Math.sqrt(x.length);
 
     // returning the t value
     return (sampleMean - expectedValue) / (sd / rootN);

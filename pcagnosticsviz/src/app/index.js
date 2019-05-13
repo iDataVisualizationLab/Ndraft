@@ -44,7 +44,10 @@ angular.module('pcagnosticsviz', [
     '720kb.tooltips',
     'ngOrderObjectBy',
     'angular-google-analytics',
-    'ngWebworker'])
+    'ngWebworker',
+    'ngAnimate',
+    'ngAria',
+    'ngMaterial'])
   .constant('_', window._)
   .constant('vg', window.vg)
   .constant('cql', window.cql)
@@ -53,7 +56,7 @@ angular.module('pcagnosticsviz', [
   .constant('Drop', window.Drop)
   .constant('Blob', window.Blob)
   .constant('URL', window.URL)
-  .constant('scagnostics', window.scagnostics)
+  .constant('scagnostics', self.scagnostics)
   .constant('scagnostics3D', window.scagnostics3D)
   .constant('scagnosticsnD', window.scagnosticsnD)
   .constant('jsondiffpatch', window.jsondiffpatch)
@@ -84,4 +87,5 @@ angular.module('pcagnosticsviz', [
     if (consts.embeddedData) return;
     AnalyticsProvider
       .setAccount({ tracker: 'UA-44428446-4', name: 'pcagnosticsviz', trackEvent: false });
-  });
+  }).config(function($mdThemingProvider) {
+});

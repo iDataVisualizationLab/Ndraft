@@ -38,15 +38,16 @@ function PerceptronModel() {
  * @returns {number} 1 if the score is over 0, otherwise 0
  */
 PerceptronModel.prototype.predict = function(features) {
-
     // Only predict if previously trained
     // on the same size feature array(s).
-    if (features.length !== this.weights.length) { return null; }
+    if (features.length !== this.weights.length) {
+        return null;
+    }
 
     // Calculate the sum of features times weights,
     // with the bias added (implicitly times one).
-    var score = 0;
-    for (var i = 0; i < this.weights.length; i++) {
+    let score = 0;
+    for (let i = 0; i < this.weights.length; i++) {
         score += this.weights[i] * features[i];
     }
     score += this.bias;
@@ -69,7 +70,9 @@ PerceptronModel.prototype.predict = function(features) {
  */
 PerceptronModel.prototype.train = function(features, label) {
     // Require that only labels of 0 or 1 are considered.
-    if (label !== 0 && label !== 1) { return null; }
+    if (label !== 0 && label !== 1) {
+        return null;
+    }
     // The length of the feature array determines
     // the length of the weight array.
     // The perceptron will continue learning as long as
@@ -80,11 +83,11 @@ PerceptronModel.prototype.train = function(features, label) {
         this.bias = 1;
     }
     // Make a prediction based on current weights.
-    var prediction = this.predict(features);
+    const prediction = this.predict(features);
     // Update the weights if the prediction is wrong.
     if (prediction !== label) {
-        var gradient = label - prediction;
-        for (var i = 0; i < this.weights.length; i++) {
+        const gradient = label - prediction;
+        for (let i = 0; i < this.weights.length; i++) {
             this.weights[i] += gradient * features[i];
         }
         this.bias += gradient;
