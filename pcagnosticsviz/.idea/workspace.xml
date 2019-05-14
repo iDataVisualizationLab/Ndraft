@@ -34,10 +34,10 @@
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="CSS" value="3" />
-          <entry key="HTML" value="162" />
+          <entry key="HTML" value="166" />
           <entry key="JSHint" value="1" />
           <entry key="JSON" value="66" />
-          <entry key="JavaScript" value="635" />
+          <entry key="JavaScript" value="652" />
           <entry key="PLAIN_TEXT" value="8" />
           <entry key="SCSS" value="66" />
           <entry key="SourceMap" value="4" />
@@ -47,12 +47,12 @@
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="HTML" value="2884" />
+          <entry key="HTML" value="2945" />
           <entry key="JSHint" value="4" />
           <entry key="JSON" value="84" />
-          <entry key="JavaScript" value="43205" />
+          <entry key="JavaScript" value="46569" />
           <entry key="PLAIN_TEXT" value="46" />
-          <entry key="SCSS" value="2256" />
+          <entry key="SCSS" value="2257" />
           <entry key="TypeScript" value="31" />
           <entry key="tsconfig" value="5" />
         </counts>
@@ -60,33 +60,56 @@
       <usages-collector id="statistics.js.language.service.starts">
         <counts>
           <entry key="Angular2LanguageService" value="1" />
-          <entry key="TypeScriptServerServiceImpl" value="13" />
+          <entry key="TypeScriptServerServiceImpl" value="14" />
         </counts>
       </usages-collector>
     </session>
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="224">
-              <caret line="845" column="20" selection-start-line="845" selection-start-column="20" selection-end-line="845" selection-end-column="20" />
+            <state relative-caret-position="129">
+              <caret line="2101" column="61" lean-forward="true" selection-start-line="2101" selection-start-column="61" selection-end-line="2101" selection-end-column="61" />
               <folding>
+                <element signature="e#6152#7250#0" />
+                <element signature="e#7272#8935#0" />
+                <element signature="e#8955#39573#0" />
+                <element signature="e#39675#39813#0" />
                 <element signature="e#62258#64987#0" />
+                <element signature="e#87469#88179#0" />
+                <element signature="e#88211#89618#0" />
                 <element signature="e#92958#95378#0" />
                 <element signature="e#93150#93550#0" />
+                <element signature="e#92918#92962#0" />
                 <element signature="e#94555#95169#0" />
+                <element signature="e#95337#95837#0" />
+                <element signature="e#96900#98620#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/bower_components/d3/d3.js">
+        <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="138">
-              <caret line="966" column="6" selection-start-line="966" selection-start-column="6" selection-end-line="966" selection-end-column="6" />
+            <state relative-caret-position="468">
+              <caret line="7142" column="59" lean-forward="true" selection-start-line="7140" selection-start-column="91" selection-end-line="7142" selection-end-column="59" />
+              <folding>
+                <element signature="e#199#206#1" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#div#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#1;n#div#0;n#div#0;n#!!top" expanded="true" />
+                <element signature="e#284473#287759#0" />
+                <element signature="e#292602#294535#0" />
+                <element signature="e#296421#309387#0" />
+                <element signature="e#309420#319091#0" />
+                <element signature="e#319124#332813#0" />
+                <element signature="e#332846#346180#0" />
+                <element signature="e#346213#361036#0" />
+                <element signature="e#361069#390679#0" />
+                <element signature="e#406031#428419#0" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -94,48 +117,35 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="201" column="42" selection-start-line="201" selection-start-column="42" selection-end-line="201" selection-end-column="42" />
+            <state relative-caret-position="-976">
+              <caret line="748" column="37" selection-start-line="748" selection-start-column="33" selection-end-line="748" selection-end-column="37" />
               <folding>
-                <element signature="e#8497#9776#0" />
-                <element signature="e#9825#15233#0" />
-                <element signature="e#15892#34360#0" />
+                <element signature="e#659#689#0" />
+                <element signature="e#771#1564#0" />
+                <element signature="e#52772#52812#0" />
+                <element signature="e#50776#51720#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guideMenu.html">
+        <entry file="file://$PROJECT_DIR$/bower_components/vega/vega.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="85">
-              <caret line="88" column="4" selection-start-line="88" selection-start-column="4" selection-end-line="88" selection-end-column="75" />
-              <folding>
-                <element signature="n#div#1;n#div#0;n#!!top" />
-                <element signature="n#g#0;n#svg#0;n#div#1;n#div#0;n#!!top" />
-                <element signature="n#style#0;n#div#2;n#div#0;n#!!top" expanded="true" />
-              </folding>
+            <state relative-caret-position="538">
+              <caret line="12584" column="24" selection-start-line="12584" selection-start-column="17" selection-end-line="12584" selection-end-column="24" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guidemenu.scss">
+        <entry file="file://$PROJECT_DIR$/src/components/d3-biplot/bi-plot.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="241">
-              <caret line="55" column="12" selection-start-line="55" selection-start-column="12" selection-end-line="55" selection-end-column="12" />
+            <state relative-caret-position="289">
+              <caret line="29" column="30" lean-forward="true" selection-start-line="29" selection-start-column="17" selection-end-line="29" selection-end-column="30" />
               <folding>
-                <element signature="e#1339#1838#0" />
+                <element signature="n#style#0;n#h4#0;n#!!top" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/package.json">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-901">
-              <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
             </state>
           </provider>
         </entry>
@@ -143,8 +153,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/app/main/main.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="77" column="44" selection-start-line="77" selection-start-column="44" selection-end-line="77" selection-end-column="44" />
+            <state relative-caret-position="164">
+              <caret line="61" column="32" selection-start-line="61" selection-start-column="32" selection-end-line="61" selection-end-column="32" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/components/d3-biplot/bi-plot.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="136">
+              <caret line="8" column="22" selection-start-line="8" selection-start-column="12" selection-end-line="8" selection-end-column="22" />
             </state>
           </provider>
         </entry>
@@ -152,8 +171,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="22" column="70" selection-start-line="22" selection-start-column="70" selection-end-line="22" selection-end-column="70" />
+            <state relative-caret-position="164">
+              <caret line="16" column="79" selection-start-line="16" selection-start-column="21" selection-end-line="16" selection-end-column="79" />
             </state>
           </provider>
         </entry>
@@ -161,16 +180,18 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/bower_components/ng-webworker/src/ng-webworker.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="103">
-              <caret line="100" selection-start-line="100" selection-end-line="100" />
+            <state relative-caret-position="248">
+              <caret line="92" column="55" selection-start-line="92" selection-start-column="49" selection-end-line="92" selection-end-column="55" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/dist/lib/parcoords.standalone.js">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/app/spec/spec.service.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1071" />
+            <state relative-caret-position="129">
+              <caret line="144" column="9" lean-forward="true" selection-start-line="144" selection-start-column="9" selection-end-line="144" selection-end-column="9" />
+            </state>
           </provider>
         </entry>
       </file>
@@ -185,36 +206,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>drag</find>
-      <find>axis</find>
-      <find>transi</find>
-      <find>draw3Dcubes</find>
-      <find>scope.tip =</find>
+      <find>View</find>
+      <find>render()</find>
+      <find>new View</find>
+      <find>PCAplot</find>
+      <find>_renderer</find>
+      <find>PCAplot.view</find>
+      <find>canvas</find>
+      <find>PCAplot.plot</find>
+      <find>update</find>
+      <find>bi-plot</find>
+      <find>bi-plot2</find>
+      <find>subgraph</find>
+      <find>bi</find>
+      <find>bin.binr</find>
+      <find>updateplot</find>
+      <find>draw</find>
+      <find>PCAplot.updateplot</find>
+      <find>getdata</find>
+      <find>binner</find>
+      <find>margin = {top: 20, right: 20, bottom: 20, left: 20};</find>
+      <find>_loader</find>
+      <find>config =</find>
+      <find>config = {</find>
+      <find>.r</find>
+      <find>d.r = d3.max(d.map(function (p) {</find>
+      <find>binnerN</find>
+      <find>distance</find>
+      <find>subgr</find>
       <find>cube</find>
-      <find>scope.tip</find>
-      <find>trait</find>
-      <find>tip</find>
-      <find>generalattr.svg</find>
-      <find>generalattr.svg.call</find>
-      <find>gener</find>
-      <find>mouseover</find>
-      <find>_cube</find>
-      <find>bandwidth</find>
-      <find>Scale3d</find>
-      <find>axis[0]</find>
-      <find>trackingRotation</find>
-      <find>percentage</find>
-      <find>preview</find>
-      <find>legend</find>
-      <find>thum</find>
-      <find>ndim</find>
-      <find>pc2</find>
-      <find>calscag</find>
-      <find>selec</find>
-      <find>select</find>
-      <find>mspec</find>
-      <find>watch</find>
-      <find>hightlight</find>
+      <find>tsne</find>
     </findStrings>
     <replaceStrings>
       <replace>AE43AF</replace>
@@ -230,6 +251,7 @@
       <replace>Average Number of  PhDs Graduated</replace>
       <replace>3 * iqr</replace>
       <replace>\n</replace>
+      <replace>onCal_</replace>
     </replaceStrings>
     <dirStrings>
       <dir>E:\nvtng\Projects\GitHub\N\voyager2</dir>
@@ -244,9 +266,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/bower_components/compassql/node_modules/datalib/src/stats.js" />
-        <option value="$PROJECT_DIR$/bower_components/datalib/src/format.js" />
-        <option value="$PROJECT_DIR$/bower_components/datalib/datalib.js" />
         <option value="$PROJECT_DIR$/bower_components/vega-tooltip/src/vg-tooltip.js" />
         <option value="$PROJECT_DIR$/src/data/HPCC_26_September_2018.json" />
         <option value="$PROJECT_DIR$/src/data/HPCC_26_September_2018_1pm.json" />
@@ -261,8 +280,6 @@
         <option value="$PROJECT_DIR$/bower_components/vega-lite-ui/src/index.scss" />
         <option value="$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.scss" />
         <option value="$PROJECT_DIR$/src/components/d3-slidegraph/slide-com.html" />
-        <option value="$PROJECT_DIR$/src/components/d3-biplot/bi-plot.html" />
-        <option value="$PROJECT_DIR$/src/components/d3-biplot/bi-plot.js" />
         <option value="$PROJECT_DIR$/src/components/d3-slidegraph/slide-graph.html" />
         <option value="$PROJECT_DIR$/src/components/d3-slidegraph/slide-graph.js" />
         <option value="$PROJECT_DIR$/src/components/d3-slidegraph/slide-graph.scss" />
@@ -274,7 +291,6 @@
         <option value="$PROJECT_DIR$/src/app/index.scss" />
         <option value="$PROJECT_DIR$/bower_components/compassql/compassql.js" />
         <option value="$PROJECT_DIR$/bower.json" />
-        <option value="$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.js" />
         <option value="$PROJECT_DIR$/package.json" />
         <option value="$PROJECT_DIR$/src/lib/simple-statistics.min.js" />
         <option value="$PROJECT_DIR$/src/lib/d3.min.js" />
@@ -285,16 +301,22 @@
         <option value="$PROJECT_DIR$/src/lib/require.min.js" />
         <option value="$PROJECT_DIR$/bower_components/ng-webworker/src/worker_wrapper.js" />
         <option value="$PROJECT_DIR$/gulp/build.js" />
-        <option value="$PROJECT_DIR$/src/app/spec/spec.service.js" />
         <option value="$PROJECT_DIR$/src/lib/d3-3d.js" />
+        <option value="$PROJECT_DIR$/dist/lib/d3.min.js" />
+        <option value="$PROJECT_DIR$/src/index.html" />
+        <option value="$PROJECT_DIR$/src/components/guidemenu/guidemenu.scss" />
+        <option value="$PROJECT_DIR$/src/components/guidemenu/guideMenu.html" />
+        <option value="$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.js" />
+        <option value="$PROJECT_DIR$/bower_components/vega/vega.js" />
+        <option value="$PROJECT_DIR$/dist/lib/parcoords.standalone.js" />
+        <option value="$PROJECT_DIR$/src/lib/tf.min.js" />
+        <option value="$PROJECT_DIR$/src/components/guidemenu/guiMenu.js" />
+        <option value="$PROJECT_DIR$/src/app/spec/spec.service.js" />
+        <option value="$PROJECT_DIR$/bower_components/ng-webworker/src/ng-webworker.js" />
+        <option value="$PROJECT_DIR$/src/components/d3-biplot/bi-plot.js" />
+        <option value="$PROJECT_DIR$/src/components/d3-biplot/bi-plot.html" />
         <option value="$PROJECT_DIR$/src/app/main/main.html" />
         <option value="$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js" />
-        <option value="$PROJECT_DIR$/dist/lib/d3.min.js" />
-        <option value="$PROJECT_DIR$/src/components/guidemenu/guideMenu.html" />
-        <option value="$PROJECT_DIR$/src/components/guidemenu/guiMenu.js" />
-        <option value="$PROJECT_DIR$/src/components/guidemenu/guidemenu.scss" />
-        <option value="$PROJECT_DIR$/src/index.html" />
-        <option value="$PROJECT_DIR$/bower_components/ng-webworker/src/ng-webworker.js" />
       </list>
     </option>
   </component>
@@ -497,11 +519,11 @@
       <path value="$PROJECT_DIR$/package.json" />
     </packageJsonPaths>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="772" />
-    <option name="y" value="237" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="497" />
+    <option name="y" value="73" />
     <option name="width" value="1598" />
-    <option name="height" value="898" />
+    <option name="height" value="867" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -599,11 +621,6 @@
             <path>
               <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
               <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
-              <item name="back_up" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
               <item name="bower_components" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -622,23 +639,19 @@
             <path>
               <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
               <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
-              <item name="dist" type="462c0819:PsiDirectoryNode" />
+              <item name="bower_components" type="462c0819:PsiDirectoryNode" />
+              <item name="vega" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
               <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
-              <item name="dist" type="462c0819:PsiDirectoryNode" />
-              <item name="lib" type="462c0819:PsiDirectoryNode" />
+              <item name="bower_components" type="462c0819:PsiDirectoryNode" />
+              <item name="zeroclipboard" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
               <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
               <item name="gulp" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
-              <item name="node_modules" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
@@ -681,7 +694,21 @@
               <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
               <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="app" type="462c0819:PsiDirectoryNode" />
+              <item name="spec" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="components" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="components" type="462c0819:PsiDirectoryNode" />
+              <item name="d3-biplot" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
@@ -705,7 +732,7 @@
   <component name="PropertiesComponent">
     <property name="HbShouldOpenHtmlAsHb" value="" />
     <property name="JavaScriptWeakerCompletionTypeGuess" value="true" />
-    <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file://E:/nvtng/Projects/GitHub/N/voyager2/src/app/spec/spec.service.js" />
+    <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file://E:/nvtng/Projects/GitHub/Ndraft/pcagnosticsviz/src/components/guidemenu/guiMenu.js" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="js.buildTools.gulp.gulp_package_dir" value="$PROJECT_DIR$/node_modules/gulp" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../../HMaViz" />
@@ -713,7 +740,7 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="settings.editor.selected.configurable" value="Settings.JavaScript" />
-    <property name="ts.external.directory.path" value="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\bower_components\compassql\node_modules\typescript\lib" />
+    <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\WebStorm 2018.2.7\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -855,7 +882,7 @@
       <workItem from="1556917408746" duration="138103000" />
       <workItem from="1557448357005" duration="11581000" />
       <workItem from="1557466173228" duration="4687000" />
-      <workItem from="1557596684766" duration="74443000" />
+      <workItem from="1557596684766" duration="126215000" />
     </task>
     <servers />
   </component>
@@ -868,12 +895,12 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1969410000" />
+    <option name="totallyTimeSpent" value="2021182000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1616" height="876" extended-state="6" />
+    <frame x="1351" y="447" width="1598" height="867" extended-state="0" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49620637" visible="true" weight="0.37982005" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49620637" visible="true" weight="0.1827048" />
       <window_info id="Structure" order="1" weight="0.25" />
       <window_info id="Gulp" order="2" sideWeight="0.5037936" side_tool="true" weight="0.30695188" />
       <window_info id="npm" order="3" sideWeight="0.5005171" side_tool="true" weight="0.20119047" />
@@ -881,13 +908,13 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4051144" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.506812" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" weight="0.32833788" />
-      <window_info anchor="bottom" id="Terminal" order="9" visible="true" weight="0.45087484" />
+      <window_info anchor="bottom" id="Terminal" order="9" weight="0.36239782" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="TypeScript" order="11" weight="0.3283237" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -914,11 +941,6 @@
           <url>mock://src/core/View.js</url>
           <line>462</line>
           <option name="timeStamp" value="278" />
-        </line-breakpoint>
-        <line-breakpoint type="javascript">
-          <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>80</line>
-          <option name="timeStamp" value="520" />
         </line-breakpoint>
         <line-breakpoint type="javascript">
           <url>mock://E:/nvtng/Projects/GitHub/Ndraft/pcagnosticsviz/bower_components/compassql/src/model.js</url>
@@ -957,12 +979,12 @@
         </line-breakpoint>
         <line-breakpoint type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1661</line>
+          <line>1668</line>
           <option name="timeStamp" value="626" />
         </line-breakpoint>
         <line-breakpoint type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1657</line>
+          <line>1664</line>
           <option name="timeStamp" value="645" />
         </line-breakpoint>
         <line-breakpoint type="javascript">
@@ -971,44 +993,24 @@
           <option name="timeStamp" value="653" />
         </line-breakpoint>
         <line-breakpoint type="javascript">
-          <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>98</line>
-          <option name="timeStamp" value="680" />
-        </line-breakpoint>
-        <line-breakpoint type="javascript">
-          <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>93</line>
-          <option name="timeStamp" value="828" />
-        </line-breakpoint>
-        <line-breakpoint type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1327</line>
+          <line>1334</line>
           <option name="timeStamp" value="1006" />
         </line-breakpoint>
         <line-breakpoint type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>457</line>
+          <line>454</line>
           <option name="timeStamp" value="1014" />
         </line-breakpoint>
         <line-breakpoint type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>417</line>
+          <line>414</line>
           <option name="timeStamp" value="1015" />
         </line-breakpoint>
         <line-breakpoint type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1038</line>
+          <line>1045</line>
           <option name="timeStamp" value="1017" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>845</line>
-          <option name="timeStamp" value="1111" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>839</line>
-          <option name="timeStamp" value="1113" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/app/spec/spec.service.js</url>
@@ -1017,56 +1019,62 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/dist/scripts/app.js</url>
-          <line>3410</line>
+          <line>6034</line>
           <option name="timeStamp" value="1134" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>664</line>
-          <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="1196" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>810</line>
-          <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="1206" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>826</line>
-          <properties />
-          <option name="timeStamp" value="1208" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>849</line>
-          <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="1209" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>957</line>
-          <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="1211" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>973</line>
+          <line>1022</line>
           <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="1212" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>956</line>
+          <url>file://$PROJECT_DIR$/bower_components/vega/vega.js</url>
+          <line>6922</line>
           <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="1214" />
+          <option name="timeStamp" value="1252" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>202</line>
-          <properties />
-          <option name="timeStamp" value="1215" />
+          <line>1006</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1299" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>853</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1301" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>2552</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1302" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>2558</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1303" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>2561</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1304" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>2494</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1307" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>2495</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1308" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
@@ -1075,54 +1083,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/bower_components/compassql/compassql.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="80">
-          <caret line="1400" selection-start-line="1400" selection-end-line="1400" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bower_components/angular-animate/.bower.json">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bower_components/angular-aria/.bower.json">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bower.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="344">
-          <caret line="22" column="17" selection-start-line="22" selection-start-column="17" selection-end-line="22" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/index.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="59" selection-start-line="59" selection-end-line="59" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="392">
-          <caret line="53" column="38" selection-start-line="53" selection-start-column="38" selection-end-line="53" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/main/main.controller.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="510">
-          <caret line="30" column="20" selection-start-line="30" selection-start-column="11" selection-end-line="30" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gulp/watch.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="9" column="35" selection-start-line="9" selection-start-column="35" selection-end-line="9" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/gulp/unit-tests.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -1171,13 +1131,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/dist/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
-          <caret line="3" column="46" lean-forward="true" selection-end-line="3" selection-end-column="337" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/bower_components/ng-webworker/src/worker_wrapper.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="153">
@@ -1209,20 +1162,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/dist/scripts/app.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="563">
-          <caret line="1031" column="8" selection-start-line="1031" selection-start-column="8" selection-end-line="1031" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/spec/spec.service.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="251">
-          <caret line="226" column="20" selection-start-line="226" selection-start-column="20" selection-end-line="226" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/components/d3-guideplot/guide-plot.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -1241,13 +1180,6 @@
         <state relative-caret-position="-1574" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1407">
-          <caret line="5726" column="54" selection-start-line="5726" selection-start-column="45" selection-end-line="5726" selection-end-column="54" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/dist/lib/d3.min.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="33609">
@@ -1257,13 +1189,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/lib/parcoords.css">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/main/main.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="77" column="44" selection-start-line="77" selection-start-column="44" selection-end-line="77" selection-end-column="44" />
-        </state>
-      </provider>
     </entry>
     <entry file="http://localhost:3000/components/guidemenu/guiMenu.js">
       <provider selected="true" editor-type-id="httpFileEditor" />
@@ -1275,48 +1200,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/bower_components/d3/d3.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="138">
-          <caret line="966" column="6" selection-start-line="966" selection-start-column="6" selection-end-line="966" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="224">
-          <caret line="845" column="20" selection-start-line="845" selection-start-column="20" selection-end-line="845" selection-end-column="20" />
-          <folding>
-            <element signature="e#62258#64987#0" />
-            <element signature="e#92958#95378#0" />
-            <element signature="e#93150#93550#0" />
-            <element signature="e#94555#95169#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="201" column="42" selection-start-line="201" selection-start-column="42" selection-end-line="201" selection-end-column="42" />
-          <folding>
-            <element signature="e#8497#9776#0" />
-            <element signature="e#9825#15233#0" />
-            <element signature="e#15892#34360#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guidemenu.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="241">
-          <caret line="55" column="12" selection-start-line="55" selection-start-column="12" selection-end-line="55" selection-end-column="12" />
-          <folding>
-            <element signature="e#1339#1838#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-901">
@@ -1324,10 +1207,34 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/stringmap/stringmap.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1452">
+          <caret line="98" column="18" selection-start-line="98" selection-start-column="18" selection-end-line="98" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/d3/d3.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="138">
+          <caret line="966" column="6" selection-start-line="966" selection-start-column="6" selection-end-line="966" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guidemenu.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="122">
+          <caret line="54" column="16" selection-start-line="53" selection-start-column="5" selection-end-line="54" selection-end-column="16" />
+          <folding>
+            <element signature="e#1339#1838#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guideMenu.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="85">
-          <caret line="88" column="4" selection-start-line="88" selection-start-column="4" selection-end-line="88" selection-end-column="75" />
+          <caret line="88" column="30" selection-start-line="88" selection-start-column="30" selection-end-line="88" selection-end-column="30" />
           <folding>
             <element signature="n#div#1;n#div#0;n#!!top" />
             <element signature="n#g#0;n#svg#0;n#div#1;n#div#0;n#!!top" />
@@ -1336,23 +1243,157 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/index.html">
+    <entry file="http://localhost:3000/lib/parcoords.standalone.js">
+      <provider selected="true" editor-type-id="httpFileEditor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dist/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="22" column="70" selection-start-line="22" selection-start-column="70" selection-end-line="22" selection-end-column="70" />
+        <state relative-caret-position="51">
+          <caret line="3" column="37" selection-start-line="3" selection-start-column="37" selection-end-line="3" selection-end-column="37" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/bower_components/ng-webworker/src/ng-webworker.js">
+    <entry file="file://$PROJECT_DIR$/src/lib/parcoords.standalone.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/src/components/schemalist/schemalistitem.test.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="103">
-          <caret line="100" selection-start-line="100" selection-end-line="100" />
+        <state relative-caret-position="-289">
+          <caret line="10" column="6" selection-start-line="10" selection-start-column="6" selection-end-line="10" selection-end-column="6" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/dist/lib/parcoords.standalone.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1071" />
+        <state relative-caret-position="130">
+          <caret line="10946" column="50" selection-start-line="10946" selection-start-column="44" selection-end-line="10946" selection-end-column="50" />
+          <folding>
+            <element signature="e#287120#291933#0" />
+            <element signature="e#291994#294173#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/lib/tf.min.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="34" selection-start-line="2" selection-start-column="34" selection-end-line="2" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dist/scripts/app.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="4717" column="8" selection-start-line="4717" selection-start-column="8" selection-end-line="4717" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/spec/spec.service.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="129">
+          <caret line="144" column="9" lean-forward="true" selection-start-line="144" selection-start-column="9" selection-end-line="144" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/ng-webworker/src/ng-webworker.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="248">
+          <caret line="92" column="55" selection-start-line="92" selection-start-column="49" selection-end-line="92" selection-end-column="55" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components/d3-biplot/bi-plot.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="8" column="22" selection-start-line="8" selection-start-column="12" selection-end-line="8" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/main/main.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="164">
+          <caret line="61" column="32" selection-start-line="61" selection-start-column="32" selection-end-line="61" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components/d3-biplot/bi-plot.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="29" column="30" lean-forward="true" selection-start-line="29" selection-start-column="17" selection-end-line="29" selection-end-column="30" />
+          <folding>
+            <element signature="n#style#0;n#h4#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/vega/vega.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="538">
+          <caret line="12584" column="24" selection-start-line="12584" selection-start-column="17" selection-end-line="12584" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="164">
+          <caret line="16" column="79" selection-start-line="16" selection-start-column="21" selection-end-line="16" selection-end-column="79" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="468">
+          <caret line="7142" column="59" lean-forward="true" selection-start-line="7140" selection-start-column="91" selection-end-line="7142" selection-end-column="59" />
+          <folding>
+            <element signature="e#199#206#1" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#1;n#div#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="e#284473#287759#0" />
+            <element signature="e#292602#294535#0" />
+            <element signature="e#296421#309387#0" />
+            <element signature="e#309420#319091#0" />
+            <element signature="e#319124#332813#0" />
+            <element signature="e#332846#346180#0" />
+            <element signature="e#346213#361036#0" />
+            <element signature="e#361069#390679#0" />
+            <element signature="e#406031#428419#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-976">
+          <caret line="748" column="37" selection-start-line="748" selection-start-column="33" selection-end-line="748" selection-end-column="37" />
+          <folding>
+            <element signature="e#659#689#0" />
+            <element signature="e#771#1564#0" />
+            <element signature="e#52772#52812#0" />
+            <element signature="e#50776#51720#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="129">
+          <caret line="2101" column="61" lean-forward="true" selection-start-line="2101" selection-start-column="61" selection-end-line="2101" selection-end-column="61" />
+          <folding>
+            <element signature="e#6152#7250#0" />
+            <element signature="e#7272#8935#0" />
+            <element signature="e#8955#39573#0" />
+            <element signature="e#39675#39813#0" />
+            <element signature="e#62258#64987#0" />
+            <element signature="e#87469#88179#0" />
+            <element signature="e#88211#89618#0" />
+            <element signature="e#92958#95378#0" />
+            <element signature="e#93150#93550#0" />
+            <element signature="e#92918#92962#0" />
+            <element signature="e#94555#95169#0" />
+            <element signature="e#95337#95837#0" />
+            <element signature="e#96900#98620#0" />
+          </folding>
+        </state>
       </provider>
     </entry>
   </component>

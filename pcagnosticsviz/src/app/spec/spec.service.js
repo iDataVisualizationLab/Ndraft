@@ -137,7 +137,7 @@ angular.module('pcagnosticsviz')
         });
         dim = (dim<1)?0:(dim-1);
         var data;
-        if (dim==0)
+        if (dim==0||dim>2)
             data = Dataset.data;
         if( dim==1) {
             //PCAplot.calscagnotic(fields);
@@ -145,7 +145,7 @@ angular.module('pcagnosticsviz')
         }
 
         //if (PCAplot.mainfield != fields[0]){
-        if (PCAplot.dim != dim && dim <2){
+        if (PCAplot.dim !== dim && dim != 2){
             PCAplot.firstrun = true;
         }
         PCAplot.dim = dim;

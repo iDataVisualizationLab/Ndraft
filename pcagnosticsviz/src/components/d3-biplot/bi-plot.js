@@ -5,6 +5,8 @@ angular.module('pcagnosticsviz')
             //template: "<svg id =\'bi-plot\' width=\'100%\' class=\"\"></svg>",
         scope: {
             error: '<',
+            hideSvg: '=',
+            hideCanvas: '='
         },
         templateUrl: 'components/d3-biplot/bi-plot.html',
         controller: function ($scope) {

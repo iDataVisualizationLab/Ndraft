@@ -5574,28 +5574,28 @@
                         if (scope.tip){
                             scope.tip.destroy();
                         }
-                            scope.tip = d3.tip()
-                                .attr('class', 'd3-tip tips custom')
-                                .offset([10, 20])
-                                .direction('e')
-                                .html(function (values, title) {
-                                    var str = ''
-                                    str += '<h3>' + (title.length == 1 ? 'Brand ' : '') + title + '</h3>'
-                                    str += "<table>";
-                                    for (var i = 0; i < values.length; i++) {
-                                        if (values[i].key != 'pc1' && values[i].key != 'pc2') {
-                                            str += "<tr>";
-                                            str += "<td>" + values[i].key + "</td>";
-                                            var val = d3.format('.2f')(values[i].value);
-                                            val = isNaN(val)?values[i].value:val;
-                                            str += "<td class=pct>" + val + "</td>";
-                                            str + "</tr>";
-                                        }
+                        scope.tip = d3.tip()
+                            .attr('class', 'd3-tip tips custom')
+                            .offset([10, 20])
+                            .direction('e')
+                            .html(function (values, title) {
+                                var str = ''
+                                str += '<h3>' + (title.length == 1 ? 'Brand ' : '') + title + '</h3>'
+                                str += "<table>";
+                                for (var i = 0; i < values.length; i++) {
+                                    if (values[i].key != 'pc1' && values[i].key != 'pc2') {
+                                        str += "<tr>";
+                                        str += "<td>" + values[i].key + "</td>";
+                                        var val = d3.format('.2f')(values[i].value);
+                                        val = isNaN(val)?values[i].value:val;
+                                        str += "<td class=pct>" + val + "</td>";
+                                        str + "</tr>";
                                     }
-                                    str += "</table>";
+                                }
+                                str += "</table>";
 
-                                    return str;
-                                });
+                                return str;
+                            });
                         var shorthand = getShorthand();
                         var level= 7;
                         var maincolor = d3v4.scaleSequential(d3v4.interpolateViridis);

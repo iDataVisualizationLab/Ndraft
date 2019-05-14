@@ -1,7 +1,11 @@
 'use strict';
 angular.module('pcagnosticsviz')
-    .directive('guideMenu', function(){
+    .directive('guideMenu',['Heap','$timeout', function(Heap,$timeout){
         //template: "<svg id =\'bi-plot\' width=\'100%\' class=\"\"></svg>",
+        let renderQueue = new Heap(function(a, b){
+                return a.priority - b.priority;
+            }),
+            rendering = false;
         return {
             templateUrl: 'components/guidemenu/guideMenu.html',
             restrict: 'E',
@@ -15,7 +19,7 @@ angular.module('pcagnosticsviz')
                 limitup: '=',
             },
             replace: true,
-            controller: function($scope, PCAplot, Logger,Dataset) {
+            controller: function($scope, PCAplot, Logger,Dataset,Heap) {
                 var first = true;
 
                 //<editor-fold desc=“new area"
@@ -40,8 +44,9 @@ angular.module('pcagnosticsviz')
                 generalattr.g.attr('transform','translate('+generalattr.margin.left+','+generalattr.margin.top+')');
                 let detachedContainer = document.createElement('custom');
                 let dataContainer = d3v4.select(detachedContainer);
-                //</editor-fold>
 
+                //</editor-fold>
+                //<editor-fold desc="ui-watcher">
                 $scope.confict = false;
                 $scope.recommendLevel = 0;
                 $scope.byPass = false;
@@ -70,17 +75,7 @@ angular.module('pcagnosticsviz')
                         return str;
                     });
 
-                // $scope.typeChange =function (){
-                //     var tolog = {level_explore: $scope.prop.dim, abtraction: $scope.prop.mark, visual_feature: $scope.prop.type};
-                //     Logger.logInteraction(Logger.actions.FEATURE_SELECT, $scope.prop.type,{
-                //         val:{PS:tolog,spec:this.vlSpec,query:this.query},
-                //         time:new Date().getTime()});
-                //     first = true;
-                //     PCAplot.updateSpec($scope.prop);
-                //     $scope.limit = $scope.initialLimit || (($scope.prop.dim<1)?10:5);
-                //     $scope.limitup =  ($scope.prop.pos > 1 )?Math.min( $scope.limitup,($scope.prop.pos-2)): 0;
-                //     console.log("dim: " + $scope.prop.dim + "limit: " + $scope.limit);
-                // };
+
                 $scope.previewSlider = function (index){
                     // $scope.prop.pos =index+$scope.limitup;
                     console.log(index);
@@ -91,26 +86,7 @@ angular.module('pcagnosticsviz')
                         time:new Date().getTime()});
                     //console.log($scope.prop.pos);
                 };
-                // $scope.markChange =function (){
-                //     var tolog = {level_explore: $scope.prop.dim, abtraction: $scope.prop.mark, visual_feature: $scope.prop.type};
-                //     Logger.logInteraction(Logger.actions.TYPEPLOT_SELECT, $scope.prop.mark,{
-                //         val:{PS:tolog,spec:this.vlSpec,query:this.query},
-                //         time:new Date().getTime()});
-                //     first = true;
-                //     PCAplot.updateSpec($scope.prop);
-                //     $scope.limit = $scope.initialLimit || (($scope.prop.dim<1)?10:5);
-                //     $scope.limitup =  ($scope.prop.pos > 1 )?Math.min( $scope.limitup,($scope.prop.pos-2)): 0;
-                //     console.log("dim: " + $scope.prop.dim + "limit: " + $scope.limit);
-                // };
-
-                // var specWatcher = $scope.$watch('prop', function(spec) {
-                //     $scope.limit = first?($scope.initialLimit || (($scope.prop.dim<1)?10:5)):$scope.limit;
-                //     first = false;
-                //     // console.log("dim: " + $scope.prop.dim + "limit: " + $scope.limit);
-                //     $scope.limitup = Math.min($scope.limitup,($scope.prop.pos > $scope.limit)? ($scope.prop.pos-2) : 0);
-                //
-                //
-                // }, true);
+                var renderQueueNextPromise = null;
                 function size2type (l,d){
                     const combination = d*(d-1)/2*l;
                     if (combination<50000)
@@ -136,9 +112,9 @@ angular.module('pcagnosticsviz')
                 }
                 var generalWatcher = $scope.$watch('[prop.dim,prop.type,prop.mark,prop.previewcharts.length]', function(newValue, oldValue) {
                     first = false;
-                    if(newValue[0]!=oldValue[0])
+                    if(newValue[0]!== oldValue[0])
                         checkAvailability(newValue[0]);
-                    updateInterface($scope.prop.dim,$scope.prop);
+                    render($scope.prop);
 
                 }, true); //, true /* watch equality rather than reference */);
 
@@ -157,8 +133,13 @@ angular.module('pcagnosticsviz')
                 };
 
                 $scope.$on('$destroy', function() {
+                    console.log('guidemenu destroyed');
                     // Clean up watcher
                     // specWatcher();
+                    if (view) {
+                        destroyView();
+                    }
+                    scope.destroyed = true;
                     generalWatcher();
                     posWatcher();
                     generalattr.pc2 = undefined;
@@ -166,22 +147,67 @@ angular.module('pcagnosticsviz')
 
                 $scope.byPassHandle = function (){
                     $scope.byPass = !$scope.byPass;
-                    updateInterface($scope.prop.dim,$scope.prop);
+                    render($scope.prop);
                 };
-                function updateInterface (dim,data){
-                    switch (dim){
-                        case 0:
-                            generalplot_1D(data);
-                            break;
-                        case 1:
-                            generalplot_2D(data);
-                            break;
-                        case 2:
-                            generalplot_3D(data);
-                            break;
-                        default:
-                            generalplot_nD(data);
-                            break;
+
+                function renderQueueNext() {
+                    // render next item in the queue
+                    if (renderQueue.size() > 0) {
+                        var next = renderQueue.pop();
+                        next.parse();
+                    } else {
+                        // or say that no one is rendering
+                        rendering = false;
+                    }
+
+                }
+
+                function render(data) {
+                    if (!data) {
+                        if (view) {
+                            destroyView();
+                        }
+                        return;
+                    }
+                    function updateInterface (){
+                        if ($scope.destroyed || $scope.disabled) {
+                            console.log('cancel rendering', shorthand);
+                            renderQueueNext();
+                            return;
+                        }
+                        try {
+                            switch ($scope.prop.dim) {
+                                case 0:
+                                    generalplot_1D($scope.prop);
+                                    break;
+                                case 1:
+                                    generalplot_2D($scope.prop);
+                                    break;
+                                case 2:
+                                    generalplot_3D($scope.prop);
+                                    break;
+                                default:
+                                    generalplot_nD($scope.prop);
+                                    break;
+                            }
+                        }catch (e) {
+                            console.error(e, JSON.stringify($scope.prop));
+                        }finally {
+                            renderQueueNextPromise = $timeout(renderQueueNext, 1);
+                        }
+
+                    }
+
+                    if (!rendering) { // if no instance is being render -- rendering now
+                        rendering=true;
+                        updateInterface();
+
+                    } else {
+                        // otherwise queue it
+                        renderQueue.push({
+                            priority: $scope.priority || 0,
+                            parse: updateInterface
+                        });
                     }
                 }
 
@@ -193,11 +219,19 @@ angular.module('pcagnosticsviz')
                         case 1:
                             selectplot_2D(data);
                             break;
+                        case 2:
+                            selectplot_3D(data);
+                            break;
                         default:
                             selectplot_nD(data);
                             break;
                     }
                 }
+                function selectplot_3D(data){
+                    const dims = $scope.prop.mspec.fieldSet.map(d=>d.field);
+
+                }
+
                 function selectplot_nD(data){
                     const dims = $scope.prop.mspec.fieldSet.map(d=>d.field);
                     generalattr.pc2.svg.selectAll('.dimension')
@@ -343,7 +377,9 @@ angular.module('pcagnosticsviz')
                         .range([0.5,1]);
                     // update
 
-                    let {domainByTrait , traits} = PCAplot.orderVariables($scope.prop.type);
+                    const r = PCAplot.orderVariables($scope.prop.type);
+                    let domainByTrait = r.domainByTrait;
+                    let traits = r.traits;
 
                     // traits.forEach(function(trait) {
                     //     trait.value = d3.sum($scope.prop.previewcharts.filter(pc=> pc.fieldSet.find(f=> f.field === trait.text) !== undefined ).map(d=>Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])));
@@ -662,7 +698,9 @@ angular.module('pcagnosticsviz')
                         .range([0.5,1]);
                     // update
 
-                    let {domainByTrait , traits} = PCAplot.orderVariables($scope.prop.type);
+                    const r = PCAplot.orderVariables($scope.prop.type);
+                    let domainByTrait = r.domainByTrait;
+                    let traits = r.traits;
                     var origin = [generalattr.width/4, generalattr.height/2], scale = 0.5, j = generalattr.width, cubesData = [], alpha = 0, beta = 0, startAngle = Math.PI/6;
                     var cubes3D = d3v4._3d()
                         .shape('CUBE')
@@ -707,7 +745,6 @@ angular.module('pcagnosticsviz')
                         // if (pos[0]>pos[1])
                             // PCAplot.transpose(d.order);
                         pos.sort((a,b)=>b.value-a.value);
-                        console.log(pos);
                         let h = generalattr.xScale.bandwidth();
                             var _cube = makeCube(pos[2].value,generalattr.yScale(pos[0].key), pos[1].value, h);
                         _cube.id = 'cube_' + d.id;
@@ -732,15 +769,15 @@ angular.module('pcagnosticsviz')
                         axis.forEach((a,ai)=>{
                             let tick ;
                             if (ai===0) { // x
-                                tick = [generalattr.xScale(t.text),generalattr.yScale(traits[1].text),generalattr.xScale.bandwidth()];
+                                tick = [generalattr.xScale(t.text)+generalattr.xScale.bandwidth()/2,generalattr.yScale(traits[1].text),generalattr.xScale.bandwidth()];
                                 tick.text = t.text;
                             }
                             if (ai===1) { // y
-                                tick = [0,generalattr.yScale(t.text),generalattr.xScale.bandwidth()];
+                                tick = [0,generalattr.yScale(t.text)-generalattr.xScale.bandwidth()/2,generalattr.xScale.bandwidth()];
                                 tick.text = i>1?t.text:'';
                             }
                             if (ai===2){ // z
-                                tick = [0,generalattr.yScale(traits[1].text),generalattr.xScale(t.text)+generalattr.xScale.bandwidth()];
+                                tick = [generalattr.xScale.bandwidth()/2,generalattr.yScale(traits[1].text),generalattr.xScale(t.text)+generalattr.xScale.bandwidth()/2];
                                 tick.text = i>0?t.text:'';
                             }
                             tick.index = t.value;
@@ -830,7 +867,7 @@ angular.module('pcagnosticsviz')
 
                         let axisn = axisn_new
                             .merge(axisG)
-                            .attr('text-anchor',d=>d.id!=='y'?'start':'end')
+                            .attr('text-anchor',d=>d.id!=='y'?'middle':'end')
                             .sort(Scale3d.sort);
                         /* ----------- y-Scale ----------- */
 
@@ -852,7 +889,7 @@ angular.module('pcagnosticsviz')
                             .append('text')
                             .attr('class', '_3d axisText')
                             .attr('dx', '.3em')
-                            .attr('dy', -generalattr.xScale.bandwidth()*scale/2)
+                            // .attr('dy', -generalattr.xScale.bandwidth()*scale/2)
                             .merge(axisText)
                             .transition().duration(tt)
                             .each(function(d){
@@ -899,7 +936,6 @@ angular.module('pcagnosticsviz')
                         mouseY = mouseY || 0;
                         beta   = (d3v4.event.x - mx + mouseX) * Math.PI / 230 ;
                         alpha  = (d3v4.event.y - my + mouseY) * Math.PI / 230  * (-1);
-                        console.log((beta + startAngle)  +' Y---X '+ (alpha - startAngle));
                         draw3Dcubes(cubes3D.rotateY(beta + startAngle).rotateX(alpha - startAngle)(cubesData)
                             , Scale3d.rotateY(beta + startAngle).rotateX(alpha - startAngle)(axis)
                             , floor3D.rotateY(beta + startAngle).rotateX(alpha - startAngle)([floor])
@@ -938,27 +974,40 @@ angular.module('pcagnosticsviz')
                         generalattr.force.stop();
                     }
                     // init
-                    generalattr.margin= {left:0, top: 0, bottom:20, right:20};
+                    generalattr.margin= {top: 50, left: 10, bottom: 12, right: 10};
                     generalattr.height = generalattr.w()+generalattr.margin.top+generalattr.margin.bottom;
                     generalattr.svg.attr('viewBox',[0,0,generalattr.width,generalattr.height]);
                     // generalattr.canvas.attr('width',generalattr.width)
                     //     .attr('height',generalattr.height);
                     generalattr.g = d3v4.select('.thum').select('.nDimentional');
 
+
                     //data
-                    let {domainByTrait , traits} = PCAplot.orderVariables($scope.prop.type);
+                    const r = PCAplot.orderVariables($scope.prop.type);
+                    let domainByTrait = r.domainByTrait;
+                    let traits = r.traits;
                     let dimObj ={}
                     traits.filter(t=>{let f = Dataset.schema.fieldSchema(t.text);
                     return !(f.primitiveType==="string"&&f.type==="nominal");}).forEach(t=>{
-                        dimObj[t.text] = {
+                        let dimFormat = {
                             title: t.text,
+                        };
+                        if (Dataset.schema.fieldSchema(t.text).type==='temporal') {
+                            //FIXME will fix in future
+                            dimFormat.tickFormat = function(d){
+                                return '';
+                            }
+                            // let scaleTime =
+                            // dimFormat.type = 'date';
+                            // dimFormat.yscale = d3.sc;
                         }
+                        dimObj[t.text] = dimFormat;
                     });
-                    // if (generalattr.pc2===undefined) {
+                    if (generalattr.pc2===undefined) {
                         generalattr.pc2 = generalattr.pc2||ParCoords()('.nDimentional');
                     generalattr.pc2
                         .mode("queue") // progressive rendering
-                        .margin({top: 50, left: 10, bottom: 12, right: 10})
+                        .margin(generalattr.margin)
                         .alpha(0.2)
                         .composite("darker")
                         .color('steelblue')
@@ -973,17 +1022,52 @@ angular.module('pcagnosticsviz')
                         generalattr.pc2.svg.selectAll('.dimension').select('text.label').style('fill', 'black');
                         generalattr.pc2.svg.selectAll("text")
                             .style("font", "10px sans-serif");
-                    // }else{
-                    //     // generalattr.pc2.dimension(dimObj)
-                    //     //     .render()
-                    //     //     .updateAxes();
+                    }else{
+                        generalattr.pc2.dimension(dimObj)
+                            .render()
+                            .updateAxes();
+                    }
+                }
+                //TODO
+                function Time2format(field){
+                    const orderTIME = ['year','month','date'];
+                    const timeStats = Dataset.schema.fieldSchema(field).timestats;
+                    const highestorder = orderTIME.find(o=>timeStats[o].distinct>1);
+                    if (highestorder){
+                        return
+                    }else{
+
+                    }
+                }
+                //</editor-fold>
+
+                //<editor-fold desc="render">
+                function destroyView() {
+                    // if (view) {
+                    //     try {
+                    //         if (scope.tip)
+                    //             scope.tip.destroy();
+                    //     } catch(e) {
+                    //         if (scope.tip)
+                    //             scope.tip.remove();
+                    //     }
+                    //     if (tooltip)
+                    //         tooltip.destroy(); // destroy tooltip (promise and event listners)
+                    //     view.off('mouseover');
+                    //     view.off('mouseout');
+                    //     view.destroy();
+                    //     view = null;
+                    //
+                    //     var shorthand = getShorthand();
+                    //     if (consts.debug && $window.views) {
+                    //         delete $window.views[shorthand];
+                    //     }
                     // }
                 }
-
-
+                //</editor-fold>
             }
         }
-    })
+    }])
     .directive('foRepeatDirective', function() {
         return function(scope, element, attrs) {
 

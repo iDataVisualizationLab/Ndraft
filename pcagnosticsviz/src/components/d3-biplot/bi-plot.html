@@ -4,7 +4,21 @@
     width: 100%;
     text-align: center;" ng-if="error">
     Can't display the corresponding bi-plot</h4>
-<svg id ="bi-plot" width="100%" class="biplot" >
+<!--<canvas id ="bi-plot-canvas" width="100%" class="biplot" ng-hide="hideCanvas">-->
+    <!--<g id ="bi-plot2">-->
+
+    <!--</g>-->
+    <!--<rect class= "overlay"></rect>-->
+    <!--<g id="bi-plot-g">-->
+        <!--<g id = "bi-plot-axis">-->
+
+        <!--</g>-->
+        <!--<g id = "bi-plot-point">-->
+
+        <!--</g>-->
+    <!--</g>-->
+<!--</canvas>-->
+<svg id ="bi-plot" width="100%" class="biplot" ng-hide="hideSvg">
     <g id ="bi-plot2">
 
     </g>
@@ -18,6 +32,7 @@
         </g>
     </g>
 </svg>
+
 
 
 
