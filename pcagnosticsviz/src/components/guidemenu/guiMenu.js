@@ -103,7 +103,7 @@ angular.module('pcagnosticsviz')
                         let chose = $scope.marks.find(d=> d.mark === $scope.prop.mark).level;
                         return  chose;
                     }else {
-                        $scope.recommendLevel = size2type(Dataset.data.length,Dataset.schema._fieldSchemas.length);
+                        $scope.recommendLevel = size2type(Dataset.data.length,Dataset.schema._fieldSchemas_selected.length);
                         let chose = $scope.marks.find(d=> d.mark === $scope.prop.mark).level;
                         $scope.confict = chose < $scope.recommendLevel;
                         let finalDecision = ($scope.confict&&!$scope.byPass)?$scope.recommendLevel:chose;
@@ -187,7 +187,9 @@ angular.module('pcagnosticsviz')
                                     generalplot_3D($scope.prop);
                                     break;
                                 default:
-                                    generalplot_nD($scope.prop);
+                                    $scope.$on('nDimentional:ready', () => {
+                                        generalplot_nD($scope.prop);
+                                    });
                                     break;
                             }
                         }catch (e) {
@@ -234,6 +236,7 @@ angular.module('pcagnosticsviz')
 
                 function selectplot_nD(data){
                     const dims = $scope.prop.mspec.fieldSet.map(d=>d.field);
+                    if (generalattr.pc2)
                     generalattr.pc2.svg.selectAll('.dimension')
                         .classed('hightlight',false)
                         .filter(f=>dims.find(d=>d===f)!==undefined)
@@ -287,7 +290,7 @@ angular.module('pcagnosticsviz')
                     generalattr.svg.attr('viewBox',[0,0,generalattr.width,generalattr.height].join(' '));
                     generalattr.g = d3v4.select('.thum').select('.oneDimentional');
                     generalattr.g.select('.twoDimentional').selectAll('*').remove();
-                    var colorArray = ["#9cb5a0","#aec7b2","#c5d6c6","#e6e6e6","#e6e6d8","#e6d49c","#e6b061","#e6a650","#e67532","#ED5F3B"];
+                    var colorArray = PCAplot.colorthem.rainbow;
                     var level= colorArray.length;
                     var domain = d3.range(level).map(function(d) {return d/(level-1)});
 
@@ -380,14 +383,6 @@ angular.module('pcagnosticsviz')
                     const r = PCAplot.orderVariables($scope.prop.type);
                     let domainByTrait = r.domainByTrait;
                     let traits = r.traits;
-
-                    // traits.forEach(function(trait) {
-                    //     trait.value = d3.sum($scope.prop.previewcharts.filter(pc=> pc.fieldSet.find(f=> f.field === trait.text) !== undefined ).map(d=>Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])));
-                    //     domainByTrait[trait] = [Dataset.schema.fieldSchema(trait.text).stats.min,Dataset.schema.fieldSchema(trait.text).stats.max];
-                    //
-                    // });
-                    //
-                    // traits.sort((a,b)=>b.value-a.value);
 
                     generalattr.xScale = d3v4.scaleBand().paddingInner(0.05).paddingOuter(0).range([0, generalattr.w()]).round(true).domain(traits.map(d=>d.text));
                     generalattr.yScale = d3v4.scaleBand().paddingInner(0.05).paddingOuter(0).range([0, generalattr.h()]).round(true).domain(traits.map(d=>d.text));
@@ -550,7 +545,7 @@ angular.module('pcagnosticsviz')
                         var fieldset = spec.fieldSet.map(function(d){return d.field});
                         fieldset.sort((a,b)=>traits.indexOf(traits.find(d=>d.text ===a))-traits.indexOf(traits.find(d=>d.text ===b)));
                         // check valid
-                        const fieldValue = fieldset.map(f=>Dataset.schema._fieldSchemaIndex[f]);
+                        const fieldValue = fieldset.map(f=>Dataset.schema._fieldSchemaIndex_selected[f]);
                         // if (fieldValue[0].stats.distinct<2||fieldValue[1].stats.distinct<2)
                         //     return [];
                         var points =  Dataset.data.map(function(d,i){
@@ -600,12 +595,6 @@ angular.module('pcagnosticsviz')
                             return binr;
                         }
                         return points;
-                    }
-
-                    function getIDfields (fields){
-                        let ff = fields.map(f=> {let d ={id:Object.keys (Dataset.schema._fieldSchemaIndex).indexOf(f),name:f}; return d});
-                        ff.sort((a,b)=>a.id-b.id);
-                        return ff.map(d=>d.name).join('|');
                     }
 
 
@@ -736,7 +725,7 @@ angular.module('pcagnosticsviz')
 
 
                     cubesData = [];
-                    $scope.prop.previewcharts.forEach(d=>{
+                    $scope.prop.previewcharts.filter((d,i)=>i<100).forEach((d,i)=>{
                         let pos = d.fieldSet.map(f=> Dataset.schema.fieldSchema(f.field).index);
                         pos.sort((a,b)=>a-b);
                         d.id = pos.join('|');
@@ -748,8 +737,10 @@ angular.module('pcagnosticsviz')
                         let h = generalattr.xScale.bandwidth();
                             var _cube = makeCube(pos[2].value,generalattr.yScale(pos[0].key), pos[1].value, h);
                         _cube.id = 'cube_' + d.id;
+                        _cube.order = i;
                         _cube.fields = pos;
                         _cube.height = h;
+                        _cube.value = d.vlSpec.config.typer.val[d.vlSpec.config.typer.type];
                         cubesData.push(_cube);
                     });
 
@@ -774,11 +765,11 @@ angular.module('pcagnosticsviz')
                             }
                             if (ai===1) { // y
                                 tick = [0,generalattr.yScale(t.text)-generalattr.xScale.bandwidth()/2,generalattr.xScale.bandwidth()];
-                                tick.text = i>1?t.text:'';
+                                tick.text = i===3?t.text:'';
                             }
                             if (ai===2){ // z
                                 tick = [generalattr.xScale.bandwidth()/2,generalattr.yScale(traits[1].text),generalattr.xScale(t.text)+generalattr.xScale.bandwidth()/2];
-                                tick.text = i>0?t.text:'';
+                                tick.text = i===1?t.text:'';
                             }
                             tick.index = t.value;
                             a[i] = tick;
@@ -807,13 +798,17 @@ angular.module('pcagnosticsviz')
                         let ce = cubes.enter().append("g")
                             .attr("class", "cube bigObject")
                             .attr('fill', function (d) {
-                                return maincolor(d[0].x/j);
+                                return generalattr.colorScale(d.value);
                             })
                             .attr('stroke', function (d) {
-                                return d3v4.color(maincolor(d[0].x/j)).darker(2);
+                                return d3v4.color(generalattr.colorScale(d.value)).darker(2);
                             })
                             .merge(cubes)
                             .sort(cubes3D.sort)
+                            .on('click', function (d,i){
+                                generalattr.g.selectAll('.active').classed('active',false);
+                                d3v4.select(this).classed('active',true);
+                                $scope.previewSlider(d.order)})
                             .on('mouseover',function(d){
                                 generalattr.tip.show(d.fields,this);
                             }).on('mouseleave',d=>generalattr.tip.hide());
@@ -1003,8 +998,8 @@ angular.module('pcagnosticsviz')
                         }
                         dimObj[t.text] = dimFormat;
                     });
-                    if (generalattr.pc2===undefined) {
-                        generalattr.pc2 = generalattr.pc2||ParCoords()('.nDimentional');
+                    if (generalattr.pc2===undefined||d3v4.select('.nDimentional canvas').emmpty()) {
+                        generalattr.pc2 = ParCoords()('.nDimentional');
                     generalattr.pc2
                         .mode("queue") // progressive rendering
                         .margin(generalattr.margin)
@@ -1018,14 +1013,13 @@ angular.module('pcagnosticsviz')
                             .dimensions(dimObj)
                             .render()
                             .reorderable()
-                            .brushMode("1D-axes");
+                            .brushMode("1D-axes")
+                        .interactive();
                         generalattr.pc2.svg.selectAll('.dimension').select('text.label').style('fill', 'black');
                         generalattr.pc2.svg.selectAll("text")
                             .style("font", "10px sans-serif");
                     }else{
-                        generalattr.pc2.dimension(dimObj)
-                            .render()
-                            .updateAxes();
+                        generalattr.pc2.dimensions(dimObj).updateAxes();
                     }
                 }
                 //TODO
@@ -1068,13 +1062,17 @@ angular.module('pcagnosticsviz')
             }
         }
     }])
-    .directive('foRepeatDirective', function() {
-        return function(scope, element, attrs) {
-
-            if (scope.$last){
-                // d3.select('.thum').select('.oneDimentional').selectAll('.active').classed('active',false);
-                // d3.select('.thum').select('.oneDimentional').selectAll('foreignObject').filter(d=>d.order==index).classed('active',true);
-                // window.alert("im the last!");
-            }
-        };
-    });
+    .directive('elementReady',['$timeout', '$rootScope', function($timeout, $rootScope) {
+            return {
+                restrict: 'A',
+                link: function (scope, element, attrs) {
+                    $timeout(() => {
+                        element.ready(() => {
+                            scope.$apply(() => {
+                                $rootScope.$broadcast(`${attrs.elementReady}:ready`);
+                            });
+                        });
+                    });
+                },
+            };
+    }]);

@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('pcagnosticsviz')
-    .factory('PCAplot', function($mdToast,ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,Alerts,Chart,Config,Schema,util,GuidePill, Webworker) {
+    .factory('PCAplot', function($timeout,$mdToast,ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,Alerts,Chart,Config,Schema,util, Webworker) {
         var keys =  _.keys(Schema.schema.definitions.Encoding.properties).concat([ANY+0]);
         var colordot = '#4682b4';
         var states = {IDLE:0,GENERATE_GUIDE:1,GENERATE_ALTERNATIVE:2,FREE:3, UPDATEPOSITION:4};
@@ -45,6 +45,9 @@ angular.module('pcagnosticsviz')
             calProcess: 0,
             calculateState: null
         };
+        PCAplot.colorthem = {
+            rainbow: ["#9cb5a0","#aec7b2","#c5d6c6","#e6e6e6","#e6e6d8","#e6d49c","#e6b061","#e6a650","#e67532","#ED5F3B"],
+        }
         PCAplot.mark2plot = mark2plot;
         var abtractionLevel =['Individual instances','Regular binning','Data-dependent binning','Abtracted'];
         var support =[{
@@ -81,14 +84,15 @@ angular.module('pcagnosticsviz')
             return d[f];
         }
         PCAplot.plot =function(dataor,dimension) {
+            PCAplot.error = {};
             if (!Object.keys(Config.data).length){return PCAplot;}
             if (!PCAplot.firstrun && (Dataset.currentDataset[Object.keys(Config.data)[0]]===Config.data[Object.keys(Config.data)[0]])) {return PCAplot;}
             PCAplot.firstrun = false;
 
             // Biplot.data;
             if (typeof dataor !=='undefined' ) {
-                PCAplot.data[0] = Dataset.schema.fieldSchemas;
-                PCAplot.data[1] =PCAplot.dataref;
+                PCAplot.data[0] = Dataset.schema._fieldSchemas_selected;
+                PCAplot.data[1] =PCAplot.dataref||[];
                 var biplotselect = $('svg.biplot');
                 var data = _.cloneDeep(dataor);
                 var margin = {top: 20, right: 20, bottom: 20, left: 20};
@@ -133,10 +137,10 @@ angular.module('pcagnosticsviz')
                 if (dimension<2) {
                     if (dimension === 0) {
 
-                        brand_names = Dataset.schema._fieldSchemas.filter(d => (d.type !== "temporal" && d.primitiveType !== "string")).map(d => d.field);
+                        brand_names = Dataset.schema._fieldSchemas_selected.filter(d => (d.type !== "temporal" && d.primitiveType !== "string")).map(d => d.field);
                         matrix = data2Num(data, brand_names);
 
-                        outlier = Dataset.schema._fieldSchemas.map(function (b, i) {
+                        outlier = Dataset.schema._fieldSchemas_selected.map(function (b, i) {
                             const d = b.field
 
                             if ((Dataset.schema.fieldSchema(d).type !== "quantitative") || (Dataset.schema.fieldSchema(d).primitiveType === "string")) {
@@ -155,8 +159,13 @@ angular.module('pcagnosticsviz')
                         data.forEach(function (d) {
 
                             if (d.scag.invalid !== 1) {
-                                idlabel.push([d.fieldDefs[0].field, d.fieldDefs[1].field]);
-                                newdata.push(d.scag);
+                                idlabel.push(d.label);
+                                let tempData = {};
+                                for (var v in d.scag){
+                                    tempData[v] = d.scag[v];
+                                }
+                                tempData.label = d.label||[d.fieldDefs[0].field, d.fieldDefs[1].field];
+                                newdata.push(tempData);
                             }
                         });
                         data = newdata
@@ -262,7 +271,7 @@ angular.module('pcagnosticsviz')
                         // console.log(brands);
 
 
-                        data.forEach(function (d, i) {
+                            data.forEach(function (d, i) {
                             var xy = rotate(d.pc1, d.pc2, angle);
                             d.pc1 = xy.x;
                             d.pc2 = xy.y;
@@ -606,7 +615,7 @@ angular.module('pcagnosticsviz')
                             })
                             .on("dragend", function (d) {
                                 var proIwant = d3.selectAll("schema-list-item")
-                                    .data(Dataset.schema.fieldSchemas)
+                                    .data(Dataset.schema._fieldSchemas_selected)
                                     .filter(function (it) {
                                         return it.field === d.brand;
                                     })
@@ -851,6 +860,9 @@ angular.module('pcagnosticsviz')
                         Alerts.add('Not enough dimension');
                     }
                 }else if (dimension >2){
+                    PCAplot.forcetsne = d3v4.forceSimulation()
+                        .alphaDecay(0)
+                        .alpha(0.1);
                     PCAplot.caltsne();
                 }
             }
@@ -929,7 +941,7 @@ angular.module('pcagnosticsviz')
             // choose main axis
             if (dim===0) {
                 PCAplot.charts.length=0;
-                Dataset.schema.fieldSchemas.forEach(function (d) {
+                Dataset.schema._fieldSchemas_selected.forEach(function (d) {
                     var pca = PCAresult.find(function (it) {
                         return (it['brand'] === d.field)
                     });
@@ -942,24 +954,23 @@ angular.module('pcagnosticsviz')
                 var recomen =[];
                 var results ={};
                 //variance
-                Dataset.schema.fieldSchemas.sort(function (a, b) { return Math.abs(a.stats.variance) > Math.abs(b.stats.variance) ? -1 : 1});
-                results.variance = Dataset.schema.fieldSchemas.find(function(d)  {
+                Dataset.schema._fieldSchemas_selected.sort(function (a, b) { return Math.abs(a.stats.variance) > Math.abs(b.stats.variance) ? -1 : 1});
+                results.variance = Dataset.schema._fieldSchemas_selected.find(function(d)  {
                     return (recomen.find(r=>r===d)=== undefined);
                 });
                 //multimodality
-                Dataset.schema.fieldSchemas.sort(function (a, b) { return Math.abs(a.stats.multimodality) > Math.abs(b.stats.multimodality) ? -1 : 1});
-                results.multimodality = Dataset.schema.fieldSchemas.find(function(d)  {
+                Dataset.schema._fieldSchemas_selected.sort(function (a, b) { return Math.abs(a.stats.multimodality) > Math.abs(b.stats.multimodality) ? -1 : 1});
+                results.multimodality = Dataset.schema._fieldSchemas_selected.find(function(d)  {
                     return (recomen.find(r=>r===d)=== undefined);
                 });
-                Dataset.schema.fieldSchemas.sort(function (a, b) { return Math.abs(a.stats.modeskew) > Math.abs(b.stats.modeskew) ? -1 : 1});
-                results.skewness = Dataset.schema.fieldSchemas.find(function(d)  {
+                Dataset.schema._fieldSchemas_selected.sort(function (a, b) { return Math.abs(a.stats.modeskew) > Math.abs(b.stats.modeskew) ? -1 : 1});
+                results.skewness = Dataset.schema._fieldSchemas_selected.find(function(d)  {
                     return (recomen.find(r=>r===d)=== undefined);
                 });
 
-                Dataset.schema.fieldSchemas.sort(function(a, b) {
+                Dataset.schema._fieldSchemas_selected.sort(function(a, b) {
                     return ((a.extrastat.outlier) <(b.extrastat.outlier)) ? 1 : -1});
-                // console.log(Dataset.schema.fieldSchemas);
-                results.outlier = Dataset.schema.fieldSchemas.find(function(d)  {
+                results.outlier = Dataset.schema._fieldSchemas_selected.find(function(d)  {
                     return (recomen.find(r=>r===d)=== undefined);
                 });
 
@@ -984,6 +995,7 @@ angular.module('pcagnosticsviz')
                         return a[type]<b[type]?1:-1;
                     });
                     var obj = {};
+                    console.log(dataref);
                     dataref.find ((topp)=>{
                         var topitem = topp.label;
                         if (objects[topitem[0]] === undefined || objects[topitem[0]][topitem[1]]=== undefined){
@@ -1009,7 +1021,7 @@ angular.module('pcagnosticsviz')
                 ran =0;
                 support[dim].types.filter((d,i)=>i<4).forEach((d)=>{
                     var  item = tops.find(t=>t.type==d);
-                    if(item)
+                    if(item && PCAplot.dim===1)
                         drawGuideplot(item.fields,item.type,PCAplot.dataref)});
 
             }
@@ -1059,7 +1071,7 @@ angular.module('pcagnosticsviz')
             PCAplot.marks = support[prop.dim].marks.map((m,i)=> {return {label:abtractionLevel[i], mark: m, level:i}});
             var axis = prop.fieldDefs.map(function(d){return d.field});
             // PCAplot.spec = mspec;
-            prop.charts = (prop.dim>4?[prop.fieldDefs]:(getData(prop.dim).sort(prop.ranking)))
+            prop.charts = (prop.dim>2?[prop.fieldDefs]:(getData(prop.dim).sort(prop.ranking)))
             .map(function(d){
                 var chart = prop.plot((d.fieldDefs||d ),prop.mark,prop.mspec);
                 chart.vlSpec.config.typer = {type: prop.type,val: (prop.dim>1?0:getTypeVal(undefined,d.fieldDefs||d))};
@@ -1100,6 +1112,15 @@ angular.module('pcagnosticsviz')
             PCAplot.updateguide(prop);
         };
         var getData = function (dim) {
+            if (PCAplot.dataref=== undefined||PCAplot.dataref.length ===0|| PCAplot.dataref== null){
+                PCAplot.calscagnotic(1);
+                Dataset.schema._fieldSchemas_selected.forEach(fd=>{
+                    go2Level(fd,PCAplot.data[1],1);
+                });
+                PCAplot.dataref = PCAplot.data[1];
+            }
+            // if (PCAplot.data[0]===undefined)
+            //     PCAplot.data[0] = Dataset.data;
             if (PCAplot.data[dim])
                 return PCAplot.data[dim];
             // if (dim<3) // use to 2
@@ -1148,7 +1169,7 @@ angular.module('pcagnosticsviz')
 
         function drawGuideplot (object,type,dataref) {
             if (dataref === undefined)
-                dataref = Dataset.schema.fieldSchemas;
+                dataref = Dataset.schema._fieldSchemas_selected;
             var spec = spec = _.cloneDeep(instantiate() || PCAplot.spec);
             //spec.data = Dataset.dataset;
             spec.type = type;
@@ -1216,7 +1237,7 @@ angular.module('pcagnosticsviz')
 
         PCAplot.orderVariables = function (type){
             let domainByTrait = {},
-                traits = Dataset.schema.fieldSchemas.map(d=>{return {text:d.field,value:0}});
+                traits = Dataset.schema._fieldSchemas_selected.map(d=>{return {text:d.field,value:0}});
 
             traits.forEach(function(trait) {
                 trait.value = d3.sum(getData(1).filter(pc=> pc.fieldDefs.find(f=> f.field === trait.text) !== undefined ).map(d=>d.scag[type]));
@@ -1286,11 +1307,11 @@ angular.module('pcagnosticsviz')
             return support[dim].marks.find(function(m){return m===mark})===undefined;
         }
         PCAplot.checkRender = function (spec,fields) { // convert spec to mpec
-            console.log(spec)
+            // console.log(spec)
             var typer = spec2typer(spec,fields);
             var type = type2type(typer.type,typer.dim,PCAplot.dim);
-            console.log(typer);
-            console.log(type);
+            // console.log(typer);
+            // console.log(type);
             if (PCAplot.prop!= null ) {
                 if ((typer.mark !== PCAplot.prop.mark) ||(PCAplot.dim !== PCAplot.prop.dim))
                 {
@@ -1328,7 +1349,7 @@ angular.module('pcagnosticsviz')
                             return;
                         }
                     }
-                        PCAplot.state = states.GENERATE_ALTERNATIVE;
+                    PCAplot.state = states.GENERATE_ALTERNATIVE;
                     PCAplot.prop.fieldDefs = typer.fieldDefs;
                 }
             }else if (fields.length){
@@ -1358,20 +1379,33 @@ angular.module('pcagnosticsviz')
                 return (countcheck > fields.length)||(countcheck === fields.length);
             });
         }
-        PCAplot.requestupdate = function (){
-            if (PCAplot.dataref.length ===0|| PCAplot.dataref== null){
-                Dataset.schema.fieldSchemas.forEach(fd=>{
-                    go2Level(fd,PCAplot.data[1],1);
-                });
-                PCAplot.dataref = PCAplot.data[1];
+        PCAplot.requestupdate = function (dim, forceupdat){
+            if (dim===undefined)
+                dim = PCAplot.dim;
+            if (PCAplot.dim !== dim || PCAplot.firstrun|| forceupdat) { // plot condition
+                PCAplot.dim = dim;
+                // var data;
+                // if (dim == 0 || dim > 2)
+                //     data = Dataset.data;
+                // if (dim == 1) {
+                //     //PCAplot.calscagnotic(fields);
+                //     data = getData(dim);
+                // }
+                // //if (PCAplot.mainfield != fields[0]){
+                // if (PCAplot.dim !== dim && dim != 2 || forceupdat) {
+                //     PCAplot.firstrun = true;
+                // }
+                // PCAplot.plot(data, dim);
+                handleScagnostic(dim);
             }
-            return PCAplot.data[1];
+            PCAplot.dim = dim;
+            return getData(dim);
         };
         PCAplot.alternativeupdate = function(mspec){
 
             mspec = _.cloneDeep(mspec || PCAplot.prop.mspec);
             if (PCAplot.dataref.length ===0|| PCAplot.dataref== null){
-                Dataset.schema.fieldSchemas.forEach(fd=>{
+                Dataset.schema._fieldSchemas_selected.forEach(fd=>{
                     go2Level(fd,PCAplot.data[1],1);
                 });
                 PCAplot.dataref = PCAplot.data[1];
@@ -1528,87 +1562,6 @@ angular.module('pcagnosticsviz')
                 else {
                     PCAplot.alternatives.length = 0;
                 }
-            // var possible = getData(fieldsets.length-1).filter(function (d){
-            //     var ff= false;
-            //     fieldsets.forEach(function(it){
-            //         var f=false;
-            //         d.fieldDefs.forEach(function(m){f=(f||(m.field===it)); });
-            //         ff=ff||f;});
-            //     return ff;});
-            //
-            // possible = possible.filter(function (d){
-            //     var ff= true;
-            //     fieldsets.forEach(function(it){
-            //         var f=false;
-            //         d.fieldDefs.forEach(function(m){f=(f||(m.field===it)); });
-            //         ff=ff&&f;});
-            //     return !ff;});
-            // var topitem = support[1].types.map(function (d) {
-            //     return possible.sort(function (a, b) {
-            //         return (a.scag[d] < b.scag[d]) ? 1 : -1;
-            //     })[0];
-            // });
-            // // FIX ME lack of relationship mapping here
-            // var unique = [];
-            // var uniquetype = [];
-            // topitem.forEach(function (d, i) {
-            //     if (unique.filter(function (u) {
-            //             return u.fieldDefs === d.fieldDefs;
-            //         }).length === 0) {
-            //         unique.push(JSON.parse(JSON.stringify(d)));
-            //         var currentsupport = support.getsupport(fieldsets.length-1);
-            //         var maxsupport = currentsupport.types.length;
-            //         uniquetype.push(currentsupport.types[i>maxsupport?(maxsupport-1):i]);
-            //     }
-            // });
-            // unique.forEach(function(d,i){
-            //     var label='';
-            //     var newf = fieldsets.map(function(f){
-            //         label=label+'-'+f;
-            //         return Dataset.schema.fieldSchema(f);});
-            //
-            //     Array.prototype.push.apply(newf,d.fieldDefs.filter(function(fe){
-            //         var ff = true;
-            //         fieldsets.forEach(function(fs){ff=ff&&(fs!==fe.field)});
-            //         if (ff) label=label+'-'+fe.field;
-            //         return ff;})
-            //     );
-            //     d.label = label;
-            //     d.type = uniquetype[i];
-            // d.fieldDefs=newf});
-            //     unique  = _.uniqBy(unique,'label');
-            //
-            // var charts = unique.map(function (d, i) {
-            //     return {v: d, type: d.type}
-            // })
-            //     .map(function (d) {
-            //         var spec = {};
-            //         spec.type = d.type;
-            //         spec.config = {
-            //
-            //             axis: {
-            //                 grid: false,
-            //                 ticks: false,
-            //                 titleOffset: 15
-            //             },
-            //             overlay: {line: true},
-            //             scale: {useRawDomain: true}
-            //         };
-            //         mark2plot(mark2mark(mspec.vlSpec.mark, PCAplot.dim), spec, d.v.fieldDefs);
-            //         var query = getQuery(spec,undefined,d.type);
-            //         var output = cql.query(query, Dataset.schema);
-            //         PCAplot.query = output.query;
-            //         var topItem = output.result.getTopSpecQueryModel();
-            //         var charttemp = Chart.getChart(topItem);
-            //         charttemp.query={
-            //             groupBy: 'encoding',
-            //             orderBy: ['feature'],
-            //             chooseBy: ['abstraction'],
-            //             //chooseBy: ['aggregationQuality', 'effectiveness'],
-            //         };
-            //         return charttemp;
-            //
-            //     });
             PCAplot.alternatives = [{'charts': charts}];
             }
 
@@ -1620,10 +1573,10 @@ angular.module('pcagnosticsviz')
             PCAplot.marks = support[prop.dim].marks.map((m,i)=> {return {label:abtractionLevel[i], mark: m, level:i}});
             var nprop = _.cloneDeep(prop);
             nprop.ranking = getranking(prop.type);
-            mark2plot (prop.mark,nprop.mspec,Dataset.schema.fieldSchemas.slice(0,prop.dim+1));
+            mark2plot (prop.mark,nprop.mspec,Dataset.schema._fieldSchemas_selected.slice(0,prop.dim+1));
             nprop.charts.length = 0;
 
-            var dataref = prop.dim>4?[prop.fieldDefs]:getData(nprop.dim);//?PCAplot.dataref:Dataset.schema.fieldSchemas;
+            var dataref = prop.dim>2?[prop.fieldDefs]:getData(nprop.dim);//?PCAplot.dataref:Dataset.schema.fieldSchemas;
             nprop.charts = dataref.sort(nprop.ranking)
                 .map(function(d) {
                     var chart = drawGuideexplore((d.fieldDefs||d),nprop.mark,nprop.mspec);
@@ -2060,32 +2013,36 @@ angular.module('pcagnosticsviz')
 
         }
         function caltsne (args) {
-            var distance = function (a, b) {
-                var dsum = 0;
-                a.forEach(function (d, i) {
-                    dsum += (d - b[i]) * (d - b[i])
-                });
-                return Math.sqrt(dsum);
-            };
-            if (this.scagnostics){
-                let bin = window.binnerN()
-                    .startBinGridSize(2)
-                    .isNormalized(false)
-                    .minNumOfBins(1)
-                    .maxNumOfBins(args.data.length)
-                    .data([]).updateRadius(true).binType("leader");
-                oncaltsne (args);
-            }else{
-                require(['https://idatavisualizationlab.github.io/binner/build/js/binnerN.min.js'],
-                    function () {
-                        let binF = window.binnerN()
-                            .startBinGridSize(2)
-                            .isNormalized(false)
-                            .minNumOfBins(1)
-                            .maxNumOfBins(args.data.length)
-                            .data([]).updateRadius(true).binType("leader");
-                        oncaltsne (args,binF);
-                });
+            let timeStart = performance.now();
+
+            require(['https://idatavisualizationlab.github.io/binner/build/js/binnerN.min.js'],
+                function () {
+                    let binF = window.binnerN()
+                        .startBinGridSize(2)
+                        .isNormalized(false)
+                        .minNumOfBins(1)
+                        .maxNumOfBins(20)
+                        .data([]).updateRadius(true).binType("leader");
+                    // oncalumap (args,binF);
+                    oncaltsne (args,binF);
+            });
+
+            function oncalumap (args,bin) {
+                let config = {
+                    dim: args.schema.length
+                };
+                try {
+                    const points = matrix(args.data,args.schema);
+                    console.log("Succes load UMAP");
+                    const umap = new window.UMAP();
+                    const nEpochs = umap.fit(points);
+                    const embedding = umap.getEmbedding();
+                    console.log(embedding)
+                    notify({data: embedding,config: config});
+                    console.log('-----UMAP TIME----- '+ (performance.now()-timeStart));
+                }catch(e){
+                    console.log('fail load umap');
+                }
             }
             function oncaltsne (args,bin){
                 let config = {
@@ -2097,40 +2054,68 @@ angular.module('pcagnosticsviz')
                 });
 
                 const points = matrix(args.data,args.schema);
+
+                //bin before tsne
                 bin.data([]).data(points)
                     .calculate();
-                const points_binned = bin.bins.map(b=>b.val);
+
+                config.radius = Math.min(bin.binRadius/2,1/Math.sqrt(bin.bins.length)/2);
+                let density_max = 0;
+
+                const points_binned = bin.bins.map(b=>b.val.slice());
+
+                const binout = bin.bins.map((d,i)=>{
+                    d.id = 'radar'+i;
+                    density_max = density_max>d.length?density_max:d.length;
+                    return d;
+                });
+                console.log('-----BIN TIME----- '+ (performance.now()-timeStart));
                 model.initDataRaw(points_binned);
 
                 var cost = 100,
                     cost0 = 0;
+                let dataout;
                 while (Math.abs(cost - cost0) > 1e-6) {
                     cost = cost0;
                     cost0 = cost * 0.9 + 0.1 * model.step();
                     let sol = model.getSolution();
-                    sol.forEach((d,i)=>{
-                        d.data = points[i];
-                    });
+                    // sol.forEach((d,i)=>{
+                    //     d.data = points[i];
+                    // });
                     // bin
-                    bin.data([]).data(sol)
-                        .calculate();
-                    let dataout = bin.bins;
-                    config.radius = bin.binRadius/2;
-                    let density_max = 0;
-                    dataout.forEach((d,i)=>{
-                        d.id = 'radar'+i;
-                        d.r = 0;
-                        d.forEach(function (p) {
-                            const dis= distance(d.val,p)*0.5;
-                            d.r = d.r>dis?d.r:dis;
-                        });
-                        density_max = density_max>d.length?density_max:d.length;
-                        d.val.data_scaled = d.val.data.map(e=> e/config.radius*d.r);//change radius
+                    // bin.data([]).data(sol)
+                    //     .calculate();
+                    // let dataout = bin.bins;
+                    // config.radius = bin.binRadius/2;
+                    // let density_max = 0;
+                    // dataout.forEach((d,i)=>{
+                    //     d.id = 'radar'+i;
+                    //     d.r = 0;
+                    //     d.forEach(function (p) {
+                    //         const dis= distance(d.val,p)*0.5;
+                    //         d.r = d.r>dis?d.r:dis;
+                    //     });
+                    //     density_max = density_max>d.length?density_max:d.length;
+                    //     d.val.data_scaled = d.val.data.map(e=> e/config.radius*d.r);//change radius
+                    // });
+                    let range = [sol[0][0],sol[0][0]];
+                    sol.forEach(d=>{
+                        range[0] = Math.min(range[0], Math.min(d[0],d[1] ));
+                        range[1] = Math.max(range[1], Math.max(d[0],d[1] ));
                     });
-
+                    const scale = function(d){
+                        return (d-range[0])/(range[1]-range[0]);
+                    };
+                    dataout = sol.map((d,i)=>{
+                        let item = d.map(p=> scale(p));
+                        item.id = binout[i].id;
+                        item.r = binout[i].length/density_max*config.radius;
+                        item.data_scaled = binout[i].val.map(e=>e/config.radius*item.r);
+                        return item
+                    });
                     notify({data: dataout,config: config});
                 }
-                return complete({status: 'done'});
+                return complete({data: dataout,config: config,status: 'done'});
             }
             function matrix (Arraydata,fieldValue) {
                 // check valid
@@ -2185,9 +2170,9 @@ angular.module('pcagnosticsviz')
             };
             const onScag = (maxCombine)=>{
                 //asume that _fieldSchemaIndex sorted and won't change over time
-                const  combination = k_combinations(Object.keys(dataschema._fieldSchemaIndex), maxCombine);
+                const  combination = k_combinations(Object.keys(dataschema._fieldSchemaIndex_selected), maxCombine);
                 combination.forEach((fields,index_progress)=>{
-                    let dest = dataschema._fieldSchemaIndex[fields[0]];
+                    let dest = dataschema._fieldSchemaIndex_selected[fields[0]];
                     let calKey = false; // should we calculate scag or not
                     let valid = true;
                     for (let i=1; i< maxCombine; i++){
@@ -2200,7 +2185,7 @@ angular.module('pcagnosticsviz')
                             calKey = true||calKey;
                             dest.scagStats[selectedfield] ={};
                         }
-                        valid = valid && checkValid(dataschema._fieldSchemaIndex[selectedfield]);
+                        valid = valid && checkValid(dataschema._fieldSchemaIndex_selected[selectedfield]);
                         dest = dest.scagStats[selectedfield];
                     }
                     if(calKey){
@@ -2309,7 +2294,11 @@ angular.module('pcagnosticsviz')
                         invalid: 1,
                     };
                     combination.forEach(c=>{
-                        const curretn_scag = (dataschema._fieldSchemaIndex[c[0]].scagStats[c[1]]||dataschema._fieldSchemaIndex[c[0]].scagStats[c[1]]).scag;
+                        // recalculate scag if needed
+
+                        let curretn_scag = (dataschema._fieldSchemaIndex_selected[c[0]].scagStats[c[1]]||{}).scag;
+                        if (curretn_scag === undefined)
+                            curretn_scag = dataschema._fieldSchemaIndex_selected[c[1]].scagStats[c[0]].scag;
                         results.outlying = Math.max(curretn_scag.outlying,results.outlying);
                         results.skewed = Math.max(curretn_scag.skewed,results.skewed);
                         results.sparse = Math.max(curretn_scag.sparse,results.sparse);
@@ -2422,12 +2411,13 @@ angular.module('pcagnosticsviz')
         // function collect all scag
         function go2Level (s,collection,level){
             if (level && s.scagStats !==undefined){
-                Object.keys(s.scagStats).forEach((subf)=>
+                _.intersection(Object.keys(s.scagStats) , Dataset.schema._fieldSchemas_selected.map(d=>d.field)).forEach((subf)=>
                     go2Level (s.scagStats[subf],collection,level-1));
             }else {
-                if (s.label) {
+                if (s.scag&&s.label&&s.label.filter(d=>d).length ===s.label.length) {
                     //reach to destination
                     collection.push({
+                        label: s.label,
                         fieldDefs: s.label.map(d => Dataset.schema.fieldSchema(d)),
                         scag: s.scag
                     });
@@ -2437,23 +2427,25 @@ angular.module('pcagnosticsviz')
 
         function handleScagnostic (index) {
             // Alerts.add('done with scagnostic calculation');
-            $mdToast.show(
-                $mdToast.simple()
-                    .textContent('Finish calculation for scatterplot matrix')
-                    .position('top right')
-                    .hideDelay(2000));
-            try {
-                PCAplot.data[index]=[];
-                Dataset.schema.fieldSchemas.sort((a,b)=>a.index-b.index);
-                Dataset.schema.fieldSchemas.forEach(fd=>{
-                    go2Level(fd,PCAplot.data[index],index);
-                });
-                // if (PCAplot.dim===index-1)
-                    update_dataref(index);
-            }catch(e){}
+
+                try {
+                    PCAplot.data[index?index:1] = [];
+                    Dataset.schema._fieldSchemas_selected.sort((a, b) => a.index - b.index);
+                    Dataset.schema._fieldSchemas_selected.forEach(fd => {
+                        go2Level(fd, PCAplot.data[index?index:1], index?index:1);
+                    });
+                    // if (PCAplot.dim===index-1)
+                    PCAplot.state = states.GENERATE_GUIDE;
+                    // PCAplot.state = states.GENERATE_ALTERNATIVE;
+                    if (index===0)
+                        PCAplot.data[0] = Dataset.schema._fieldSchemas_selected;
+                    update_dataref(index?index:1);
+                } catch (e) {
+                }
+
             if (PCAplot.dim===index) {
                 PCAplot.firstrun =true;
-                PCAplot.plot(PCAplot.data[index].map(d=>d), 1);
+                PCAplot.plot((index>0)?getData(1).map(d=>d):Dataset.data, index==2?1:index);
             }
             try {
                 PCAplot.updateSpec(PCAplot.prop);
@@ -2468,8 +2460,7 @@ angular.module('pcagnosticsviz')
         PCAplot.caltsne = onCal_tsne;
         PCAplot.drawtsne = onDraw_tsne;
         // PCAplot.Overviewcanvas = ('OffscreenCanvas' in window) ? $('canvas.biplot')[0].transferControlToOffscreen() : $('canvas.biplot')[0];
-
-        PCAplot.updateplot = function (dataor,dimension,config) { // support tsne only
+        PCAplot.updateplot = function (dataor,dimension,config,isdone) { // support tsne only
             const biplotselect = $('svg.biplot');
             // var data = _.cloneDeep(dataor);
             const margin = {top: 20, right: 20, bottom: 20, left: 20};
@@ -2488,32 +2479,55 @@ angular.module('pcagnosticsviz')
             const angleSlice = d3v4.scaleLinear()
                 .domain([0,1])
                 .range([0, Math.PI * 2 / config.dim]);
-            const radarcreate = d3v4.radialLine()
+            let radarcreate = d3v4.radialLine()
                 .curve(d3v4.curveCatmullRomClosed.alpha(0.5))
-                .radius(function(d) { return x(rScale(d)); })
                 .angle(function(_,i) {  return angleSlice(i); });
             if (dimension>2){
                 g.select('#bi-plot-axis').selectAll('*').remove();
-                let subgraph = g.select('#bi-plot-point').selectAll('g.subgraph').data(dataor,d=>d.id);
+                let subgraph = g.select('#bi-plot-point').selectAll('g.subgraph').data(dataor, d => d.id);
                 let nsub = subgraph.enter()
                     .append('g')
-                    .attr('class','subgraph');
+                    .attr('class', 'subgraph');
                 subgraph.exit().remove();
-                nsub.merge(subgraph).attr('transform',d=>'translate('+x(d.val[0])+','+y(d.val[1])+')');
+                nsub.merge(subgraph).transition().attr('transform', d => 'translate(' + x(d[0]) + ',' + y(d[1]) + ')');
                 let ncircle = nsub
                     .append('circle')
-                    .attr('class','cradar')
-                    .attr('fill','#d2d2d2')
-                    .attr('opacity',d=>opacityScale(d.length/(config.density_max-1)))
+                    .attr('class', 'cradar')
+                    .style('fill', 'rgb(205,205,205)')
+                    .style('stroke', 'rgb(205,205,205)')
+                    .style('stroke-width', 0.3)
+                    .style('stroke-opacity', 1)
+                    .style('fill-opacity', 0.1)
                     .merge(subgraph.select('circle.cradar'))
-                    .attr('r',d=>x(d.r||config.radius));
+                    .attr('r', p => Math.max(x(p.r || config.radius),10));
                 let nradar = nsub
                     .append('path')
-                    .attr('class','radar')
-                    .attr('fill','none')
-                    .attr('stroke','steelblue')
+                    .attr('class', 'radar')
+                    .attr('fill', 'none')
+                    .attr('stroke', 'steelblue')
                     .merge(subgraph.select('path.radar'))
-                    .attr('d',d=>radarcreate(d.val.data_scaled));
+                    .attr('d', p => {
+                        const fixedscale = Math.max(x(p.r || config.radius),10)/x(p.r || config.radius);
+                        return radarcreate.radius(function(d) { return x(rScale(d))*fixedscale; })(p.data_scaled)});
+                // if (isdone) {
+                    // Update and restart the simulation.
+                    let s = 1, c = 0;
+                    PCAplot.forcetsne.on('tick', function () {
+                        const rangex = d3.extent(nsub.merge(subgraph).data(),d=>d.x);
+                        const rangey = d3.extent(nsub.merge(subgraph).data(),d=>d.y);
+                        const range = [Math.min(rangex[0],rangey[0]),Math.max(rangex[1],rangey[1])];
+                        x.domain(range);
+                        y.domain(range);
+                        nsub.merge(subgraph).attr('transform', d => 'translate(' + x(d.x * s - d.y * c) + ',' + y(d.x * c + d.y * s) + ')');
+                    });
+                    PCAplot.forcetsne.nodes(g.select('#bi-plot-point').selectAll('g.subgraph').data()).force('tsne', function (alpha) {
+                        g.select('#bi-plot-point').selectAll('g.subgraph').data().forEach((d, i) => {
+                            d.x += alpha * (d[0]*10 - d.x);
+                            d.y += alpha * (d[1]*10 - d.y);
+                        });
+                    }) .force('collide', d3v4.forceCollide().radius(p => Math.max(x(p.r || config.radius),10)));
+                    PCAplot.forcetsne.alphaDecay(0.02);
+                // }
             }
         };
 
@@ -2541,44 +2555,134 @@ angular.module('pcagnosticsviz')
                 });
             }
         }
+        let computetime =[];
         function onCal_tsne (){
             if (!PCAplot.workerOjects['tsne']) {
+                computetime[0] =performance.now();
                 const currentcal = 'tsne';
                 PCAplot.calculateState.push(currentcal);
                 PCAplot.workerOjects[currentcal] = Webworker.create(caltsne, {async: true,
                     header: 'const window = {}\n' +
                         'importScripts("https://raw.githack.com/karpathy/tsnejs/master/tsne.js");\n' +
-                        'importScripts("https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.20/require.min.js");'});
-                PCAplot.workerOjects[currentcal].run({data: Dataset.data,schema:Dataset.schema.fieldSchemas,Perplexity:10}).then(function (result) {
+                        'importScripts("https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.20/require.min.js");\n' +
+                        'importScripts("https://raw.githack.com/Zipexpo/umap-js/master/lib/umap-js.min.js");'});
+                PCAplot.workerOjects[currentcal].run({data: Dataset.data,schema:Dataset.schema._fieldSchemas_selected,Perplexity:10}).then(function (result) {
                     console.log(result);
                     _.pull(PCAplot.calculateState,currentcal);
                     PCAplot.workerOjects[currentcal] = undefined;
-                    PCAplot.updateplot(progress.data,PCAplot.dim,progress.config);
+                    computetime[1] =performance.now();
+                    console.log('DONE TSNE IN: '+ (computetime[1]-computetime[0]));
+                    PCAplot.updateplot(result.data,PCAplot.dim,result.config,true);
                 }, null, function (progress) {
                     // Process results
-                    console.log(progress);
                     PCAplot.updateplot(progress.data,PCAplot.dim,progress.config);
                 }).catch(function (oError) {
                     PCAplot.workerOjects[currentcal] = undefined;
                 });
             }
         };
-        function onCal_scagnotic (index){
-            let count =0;
-            if (!PCAplot.workerOjects['Scag'+(index+1)]) {
+
+
+
+        let calculating = false;
+
+        var calculateQueue = new Heap(function(a, b){
+                return a.priority - b.priority;});
+
+
+
+
+        // TODO working with logic calculation
+        function oncalculate (name,workerFunc,arg,oncompleteFunc,onprogressFunc,onerror,iskeep){
+
+            function calculateQueueNext() {
+                // render next item in the queue
+                if (calculateQueue.size() > 0) {
+                    var next = calculateQueue.pop();
+                    next.parse();
+                } else {
+                    // or say that no one is calculating
+                    calculating = false;
+                }
+
+            }
+            function parseCal(){
+                if (!PCAplot.workerOjects[name]) {
+                    PCAplot.calProcess = 0;
+                    const currentcal = name;
+                    PCAplot.calculateState.push(currentcal);
+                    PCAplot.workerOjects[name] = Webworker.create(workerFunc, {async: true});
+
+                    let calculateQueueNextPromise = null;
+
+                    PCAplot.workerOjects[name].run(arg).then(function (result) {
+
+                        handleScagnostic(index);
+                        _.pull(PCAplot.calculateState,currentcal);
+                        PCAplot.workerOjects['Scagnostic'] = undefined;
+                        if (index===1)// auto trigger scagnostic calcualtion for 3D
+                            onCal_scagnotic (2);
+                        PCAplot.calProcess = 0;
+                        calculateQueueNextPromise = $timeout(calculateQueueNext, 1);
+                    }, null, function (progress) {
+                        PCAplot.calProcess = progress.progress*100;
+                        // Process results
+                        var label_stack = [progress.fields.shift()];
+                        var source = Dataset.schema._fieldSchemaIndex_selected[label_stack[0]];
+                        if (source.scagStats=== undefined) {
+                            source.scagStats = {};
+                        }
+                        source = source.scagStats;
+                        var source_scag = source;
+                        progress.fields.forEach(f=> {
+                            label_stack.push(f);
+                            if (source[f]=== undefined) {
+                                source[f] = {};
+                                source[f].label = label_stack.map(l=>l);
+                                source[f].scagStats = {};
+                            }
+                            source_scag = source[f];
+                            source = source[f].scagStats;
+                        });
+                        source_scag.scag = progress.value;
+                    }).catch(function (oError) {
+                        PCAplot.workerOjects[name] = undefined;
+                        calculateQueueNextPromise = $timeout(calculateQueueNext, 1);
+                    });
+                }
+            }
+            if (!calculating) { // if no instance is being render -- rendering now
+                calculating=true;
+                parseCal();
+
+            } else {
+                // otherwise queue it
+                calculateQueue.push({
+                    priority: scope.priority || 0,
+                    parse: parseCal
+                });
+            }
+        }
+
+        function onCal_scagnotic (index){ // should scag calculate for all Dim?
+            if (!PCAplot.workerOjects['Scagnostic']) {
                 PCAplot.calProcess = 0;
-                const currentcal = 'Scagnostic '+(index+1)+'D';
+                const currentcal = 'Scagnostic';
                 PCAplot.calculateState.push(currentcal);
-                PCAplot.workerOjects['Scag'+(index+1)] = Webworker.create(calscagnotic, {async: true});
-                PCAplot.workerOjects['Scag'+(index+1)].run(Dataset.schema, Dataset.data,index+1).then(function (result) {
+                PCAplot.workerOjects['Scagnostic'] = Webworker.create(calscagnotic, {async: true});
+                PCAplot.workerOjects['Scagnostic'].run(Dataset.schema, Dataset.data,index+1).then(function (result) {
+                    $mdToast.show(
+                        $mdToast.simple()
+                            .textContent('Finish calculation for scatterplot matrix')
+                            .position('top right')
+                            .hideDelay(2000));
                     handleScagnostic(index);
                     _.pull(PCAplot.calculateState,currentcal);
-                    PCAplot.workerOjects['Scag'+(index+1)] = undefined;
+                    PCAplot.workerOjects['Scagnostic'] = undefined;
                     if (index===1)// auto trigger scagnostic calcualtion for 3D
                         onCal_scagnotic (2);
                     PCAplot.calProcess = 0;
                 }, null, function (progress) {
-                    count++;
                     PCAplot.calProcess = progress.progress*100;
                     // Process results
                     var label_stack = [progress.fields.shift()];
@@ -2600,7 +2704,7 @@ angular.module('pcagnosticsviz')
                     });
                     source_scag.scag = progress.value;
                 }).catch(function (oError) {
-                    PCAplot.workerOjects['Scag'+(index+1)] = undefined;
+                    PCAplot.workerOjects['Scagnostic'] = undefined;
                 });
             }
 

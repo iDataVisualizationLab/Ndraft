@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('pcagnosticsviz')
-  .controller('MainCtrl', function($scope, $document, Spec, Dataset, Wildcards,  Config, consts, Chronicle, Logger, Bookmarks, Modals, FilterManager,NotifyingService,PCAplot) {
+  .controller('MainCtrl', function($scope, $document, Spec, Dataset, Wildcards,  Config, consts, Chronicle, Logger, Bookmarks, Modals, FilterManager,NotifyingService,PCAplot,Pills,$mdToast) {
     $scope.Spec = Spec;
     $scope.contain = {"bi-plot":'Overview',
         "div":[{key:'guideplot',val:'Exemplar'},
@@ -77,6 +77,35 @@ angular.module('pcagnosticsviz')
       $document.find('.vis-pane-container').scrollTop(0);
     };
 
+    $scope.toggleSelectFields = function ($event) {
+        switch($event.currentTarget.getAttribute('aria-checked')){
+            case 'true':
+                $mdToast.show(
+                    $mdToast.simple()
+                        .textContent('Keep a least 2 variable to avoid error!')
+                        .position('top right')
+                        .hideDelay(2000));
+                $event.currentTarget.setAttribute('aria-checked','false');
+                $scope.Dataset.schema._fieldSchemas_selected.forEach(f=>f.disable=true); // disabel all
+                // $scope.Dataset.schema._fieldSchemas_selected= $scope.Dataset.schema._fieldSchemas_selected.slice(0,2);
+                $scope.Dataset.schema._fieldSchemas_selected= [];
+                $scope.Dataset.schema._fieldSchemas_selected.forEach(f=>f.disable=false); // enable 2 for avoid error
+                $scope.Dataset.schema._fieldSchemaIndex_selected = {};
+                $scope.Dataset.schema._fieldSchemas_selected.forEach(d=>$scope.Dataset.schema._fieldSchemaIndex_selected[d.field]=d);
+                break;
+            case 'false':
+                $event.currentTarget.setAttribute('aria-checked','true');
+                $scope.Dataset.schema._fieldSchemas.forEach(f=>f.disable=false);
+                $scope.Dataset.schema._fieldSchemaIndex_selected = $scope.Dataset.schema._fieldSchemaIndex;
+                $scope.Dataset.schema._fieldSchemas_selected = $scope.Dataset.schema._fieldSchemas.slice();
+                $scope.Dataset.schema._fieldSchemas_selected.sort((a,b)=>a.index-b.index);
+                break;
+            default:
+                $event.currentTarget.setAttribute('aria-checked','true');
+        }
+        Pills.fieldchange();
+    };
+
     $scope.groupByChanged = function() {
       Logger.logInteraction(Logger.actions.GROUP_BY_CHANGED, Spec.spec.groupBy);
     };
@@ -94,12 +123,12 @@ angular.module('pcagnosticsviz')
       $scope.setAlternativeType(null, true);
     });
 
-      $scope.$watch(function(){
-          return PCAplot.mspec;
-      },function(newmspec){
-         console.log('logging....');
-         console.log(newmspec);
-      });
+      // $scope.$watch(function(){
+      //     return ((Dataset.schema||{})._fieldSchemas_selected||[]).map(d=>d.field);
+      // },function(newmspec){
+      //    console.log('chaging....');
+      //    console.log(newmspec);
+      // },true);
 
     // undo/redo support
     $scope.canUndo = false;

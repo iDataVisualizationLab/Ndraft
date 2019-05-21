@@ -8484,6 +8484,11 @@ var Schema = (function () {
             m[fieldSchema.field] = fieldSchema;
             return m;
         }, {});
+        this._fieldSchemas_selected = fieldSchemas.slice();
+        this._fieldSchemaIndex_selected = this._fieldSchemas_selected.reduce(function (m, fieldSchema) {
+            m[fieldSchema.field] = fieldSchema;
+            return m;
+        }, {});
     }
     /**
      * Build a Schema object.

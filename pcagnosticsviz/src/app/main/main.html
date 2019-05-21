@@ -86,18 +86,24 @@
                   style = "margin-top: 0px; margin-bottom: 3px;"
 
           ></vl-plot-group>
-          <div class=" hflex full-width">
-            <h3>Variables</h3>
-            <div class="header-drop active">
-              <i class="fa fa-caret-down droplist" ng-click=" fieldShow = !fieldShow"></i>
+          <div class=" hflex full-width" style="justify-content: space-between;align-items: baseline;">
+            <div>
+              <h3 style="display: inline-block" >Variables</h3>
+              <div class="header-drop active" style="display: inline-block">
+                <i class="fa fa-caret-down droplist" ng-click=" fieldShow = !fieldShow"></i>
+              </div>
+            </div>
+            <div class="fieldSelection right" aria-checked="true" role="checkbox" ng-click="toggleSelectFields($event)" ng-show="fieldShow">
+              <span></span><i class="fa"></i>
             </div>
           </div>
           <div ng-show="fieldShow">
             <schema-list field-defs="Dataset.schema.fieldSchemas"
               order-by="Dataset.fieldOrder"
-              show-count="true"
+              show-count="false"
+              show-remove="true"
               filter-manager="FilterManager"
-              show-add="true"
+              show-add="false"
             ></schema-list>
           </div>
           <!--<div class=" hflex full-width">-->

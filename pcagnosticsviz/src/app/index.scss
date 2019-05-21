@@ -488,3 +488,30 @@ md-progress-linear.md-default-theme.md-theme .md-bar  , md-progress-linear.md-th
     overflow-y: hidden;
   }
 }
+
+[role="checkbox"] {
+  padding:5px;
+  color: var(--fontColor)
+}
+
+[aria-checked="true"]{
+  span:before {
+    content: "Disable All ";
+  }
+  i:before{
+    content: '';
+  }
+}
+
+[aria-checked="false"] {
+  span:before {
+    content: "Enable All ";
+  }
+  i:before{
+    content: '';
+  }
+}
+.fieldSelection {
+  display: inline-block;
+  vertical-align: baseline;
+}

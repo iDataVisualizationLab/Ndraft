@@ -124,8 +124,6 @@ angular.module('pcagnosticsviz')
      */
     Spec.update = function(spec) {
         if (Spec.previewedSpec!=null && !Spec.isSelected) return Spec;
-        try {PCAplot.calscagnotic(1);}
-        catch(e){}
         var dim = 0;
         var fields = [];
         // const keys = Object.keys(vlSchema.definitions.UnitEncoding.properties).slice(0,4);
@@ -136,22 +134,9 @@ angular.module('pcagnosticsviz')
             }
         });
         dim = (dim<1)?0:(dim-1);
-        var data;
-        if (dim==0||dim>2)
-            data = Dataset.data;
-        if( dim==1) {
-            //PCAplot.calscagnotic(fields);
-            data = PCAplot.requestupdate();
-        }
-
-        //if (PCAplot.mainfield != fields[0]){
-        if (PCAplot.dim !== dim && dim != 2){
-            PCAplot.firstrun = true;
-        }
-        PCAplot.dim = dim;
-        PCAplot.plot(data,dim);
+        PCAplot.requestupdate(dim);
         if(fields.length)
-        spec = PCAplot.checkRender(spec,fields);
+          spec = PCAplot.checkRender(spec,fields);
         spec = _.cloneDeep(spec || Spec.spec);
 
 
@@ -605,6 +590,7 @@ angular.module('pcagnosticsviz')
       update: function(spec) {
         //spec = PCAplot.checksupport(spec,fields);
         //if (PCAplot.mspec!=null) PCAplot.alternativeupdate();
+          if (Dataset.schema)
         return Spec.update(spec);
       },
       reset: function() {
@@ -674,6 +660,10 @@ angular.module('pcagnosticsviz')
       addWildcardField: Wildcards.addField,
       removeWildcard: Wildcards.removeItem,
       removeWildcardField: Wildcards.removeField,
+      fieldchange: function () {
+        if(Dataset.schema)
+          PCAplot.requestupdate(undefined,true);
+      }
     };
 
     Spec.reset();

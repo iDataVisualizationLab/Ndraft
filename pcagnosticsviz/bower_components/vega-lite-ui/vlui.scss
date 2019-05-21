@@ -1294,7 +1294,16 @@ label.func-label.field-func.single-column {
   }
 }
 
+.fieldDisable{
+  opacity: 0.4;
+  pointer-events: none;
 
+
+  .remove i:before{
+    content: '';
+    pointer-events: all;
+  }
+}
 // ====== components/schemalist/schemalistitem.scss ====== 
 label {
   display: inline-block;
