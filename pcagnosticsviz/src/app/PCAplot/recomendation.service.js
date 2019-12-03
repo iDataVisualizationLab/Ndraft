@@ -20,7 +20,7 @@ angular.module('pcagnosticsviz')
         }
 
         function setAgent(jsondata){
-            agent.agent = LinUCB.createAgentFromData(jsondata);
+            agent.agent = LinUCB.createAgentFromJSONString(jsondata);
         }
 
         function recommend (armContexts, armsToRecommend){
@@ -29,6 +29,13 @@ angular.module('pcagnosticsviz')
 
         function update (armContexts, recommendedActions, rewards){
             agent.agent.include(armContexts, recommendedActions, rewards);
+            firebase.database().ref().child('RL').set(JSON.stringify(agent.getAgent()), function(error) {
+                if (error) {
+                    console.log(error)
+                } else {
+                    console.log('SUCCESS init agent data')
+                }
+            });
         }
         createAgent();
         return agent;

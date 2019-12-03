@@ -80,7 +80,7 @@ angular.module('pcagnosticsviz', [
       initialSpec: window.initialSpec || undefined,
       debugInList: false,
       logLevel: 'DEBUG',
-      logToWebSql: false, // log user interactions (for user study)
+      logToWebSql: true, // log user interactions (for user study)
       maxAnyShelf: 4
     });
   }])
@@ -2932,6 +2932,7 @@ angular.module('pcagnosticsviz')
         });
         dim = (dim<1)?0:(dim-1);
         PCAplot.requestupdate(dim,undefined,spec,fields);
+        PCAplot.timelog();
         if(fields.length)
           spec = PCAplot.checkRender(spec,fields);
         spec = _.cloneDeep(spec || Spec.spec);
@@ -3516,7 +3517,50 @@ angular.module('pcagnosticsviz')
 'use strict';
 
 angular.module('pcagnosticsviz')
-    .factory('PCAplot', ["$timeout", "$mdToast", "ANY", "Dataset", "_", "vg", "vl", "cql", "ZSchema", "Logger", "consts", "FilterManager", "Pills", "NotifyingService", "Alternatives", "Alerts", "Chart", "Config", "Schema", "util", "Webworker", "SpecProfile", function($timeout,$mdToast,ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,Alerts,Chart,Config,Schema,util, Webworker,SpecProfile) {
+    .factory('RECOMMENDATION', function(){
+        let agent ={
+            agent: undefined,
+            createAgent: createAgent,
+            getAgent: getAgent,
+            setAgent: setAgent,
+            recommend: recommend,
+            update: update,
+        };
+
+        function createAgent(){
+            agent.agent = new LinUCB(1, 36, 19);
+        }
+
+        function getAgent(){
+            return agent.agent.getAgentData();
+        }
+
+        function setAgent(jsondata){
+            agent.agent = LinUCB.createAgentFromJSONString(jsondata);
+        }
+
+        function recommend (armContexts, armsToRecommend){
+            return agent.agent.recommend(armContexts, armsToRecommend);
+        }
+
+        function update (armContexts, recommendedActions, rewards){
+            agent.agent.include(armContexts, recommendedActions, rewards);
+            firebase.database().ref().child('RL').set(JSON.stringify(agent.getAgent()), function(error) {
+                if (error) {
+                    console.log(error)
+                } else {
+                    console.log('SUCCESS init agent data')
+                }
+            });
+        }
+        createAgent();
+        return agent;
+
+    })
+'use strict';
+
+angular.module('pcagnosticsviz')
+    .factory('PCAplot', ["$timeout", "$mdToast", "ANY", "Dataset", "_", "vg", "vl", "cql", "ZSchema", "Logger", "consts", "FilterManager", "Pills", "NotifyingService", "Alternatives", "RECOMMENDATION", "Alerts", "Chart", "Config", "Schema", "util", "Webworker", "SpecProfile", function($timeout,$mdToast,ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,RECOMMENDATION,Alerts,Chart,Config,Schema,util, Webworker,SpecProfile) {
         var keys =  _.keys(Schema.schema.definitions.Encoding.properties).concat([ANY+0]);
         var colordot = '#4682b4';
         var states = {IDLE:0,GENERATE_GUIDE:1,GENERATE_ALTERNATIVE:2,FREE:3, UPDATEPOSITION:4};
@@ -3558,12 +3602,16 @@ angular.module('pcagnosticsviz')
             limitup: 0,
             state:states.IDLE,
             calProcess: 0,
-            calculateState: null
+            calculateState: null,
+            profile:{level:0,age:0,major:0},
         };
         PCAplot.colorthem = {
             rainbow: ["#9cb5a0","#aec7b2","#c5d6c6","#e6e6e6","#e6e6d8","#e6d49c","#e6b061","#e6a650","#e67532","#ED5F3B"],
         }
+        PCAplot.agent = RECOMMENDATION;
         PCAplot.mark2plot = mark2plot;
+        var MAXRECOMMENDATION_DIM = 6;
+        var MAXRECOMMENDATION_FEATURE = 9;
         var abtractionLevel =['Individual instances','Regular binning','Data-dependent binning','Abtracted'];
         var support =[{
             types : ['outlier','variance', 'multimodality', 'skewness'],
@@ -3642,7 +3690,8 @@ angular.module('pcagnosticsviz')
                 svg_main.select('.overlay')
                     .attr('width',width+margin.left+margin.right)
                     .attr('height',height+margin.top+margin.bottom)
-                    .style('fill','none');
+                    .style('fill','none')
+                    .style('display','none');
                 var g_axis = svg.select("#bi-plot-axis");
                 var g_point = svg.select("#bi-plot-point");
                 var idlabel = [],
@@ -4365,7 +4414,7 @@ angular.module('pcagnosticsviz')
                 else if (dimension === 2){
                     svg = d3v4.select(svg.node()).select('#bi-plot-point');
                     clearBiplot();
-                    d3v4.select('svg.biplot .overlay').call(d3v4.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd));
+                    d3v4.select('svg.biplot .overlay').style('display',undefined).call(d3v4.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd));
                     var newdata = [];
 
                     data.forEach(function (d) {
@@ -4796,9 +4845,32 @@ angular.module('pcagnosticsviz')
             return matrix;
             //return output.map(function(d){return Object.keys(d).map(function(i){return d[i]})});
         }
-
+        function dataType2Num (type){
+            switch(type){
+                case "quantitative":
+                    return 1;
+                case "nominal":
+                    return 2;
+                case "temporal":
+                    return 3;
+                default:
+                    return 0;
+            }
+        }
+        PCAplot.recommendObj={
+            collection :[], // for recomendation
+            collectionList:[],
+            reward:[0,0,0,0]
+        }; // for recomendation
         PCAplot.estimate = function(PCAresult,dim,dataref) {
             // choose main axis
+            if(PCAplot.recommendObj.target){
+                updateAgentReward();
+                if (PCAplot.recommendObj.startTime)
+                    PCAplot.agent.update(PCAplot.recommendObj.collection, PCAplot.recommendObj.recommended, PCAplot.recommendObj.reward);
+                PCAplot.recommendObj.target = undefined;
+                console.log("-----------------TRIAL END---------------------")
+            }
             if (dim===0) {
                 PCAplot.charts.length=0;
                 Dataset.schema._fieldSchemas_selected.forEach(function (d) {
@@ -4811,33 +4883,101 @@ angular.module('pcagnosticsviz')
                         outlier: (pca||{outlier:0}).outlier,
                     };
                 });
-                var recomen =[];
-                var results ={};
-                //variance
-                Dataset.schema._fieldSchemas_selected.sort(function (a, b) { return Math.abs(a.stats.variance) > Math.abs(b.stats.variance) ? -1 : 1});
-                results.variance = Dataset.schema._fieldSchemas_selected.find(function(d)  {
-                    return (recomen.find(r=>r===d)=== undefined);
-                });
-                //multimodality
-                Dataset.schema._fieldSchemas_selected.sort(function (a, b) { return Math.abs(a.stats.multimodality) > Math.abs(b.stats.multimodality) ? -1 : 1});
-                results.multimodality = Dataset.schema._fieldSchemas_selected.find(function(d)  {
-                    return (recomen.find(r=>r===d)=== undefined);
-                });
-                Dataset.schema._fieldSchemas_selected.sort(function (a, b) { return Math.abs(a.stats.modeskew) > Math.abs(b.stats.modeskew) ? -1 : 1});
-                results.skewness = Dataset.schema._fieldSchemas_selected.find(function(d)  {
-                    return (recomen.find(r=>r===d)=== undefined);
-                });
+                // var recomen =[];
+                // var results ={};
+                // //variance
+                // Dataset.schema._fieldSchemas_selected.sort(function (a, b) { return Math.abs(a.stats.variance) > Math.abs(b.stats.variance) ? -1 : 1});
+                // results.variance = Dataset.schema._fieldSchemas_selected.find(function(d)  {
+                //     return (recomen.find(r=>r===d)=== undefined);
+                // });
+                // //multimodality
+                // Dataset.schema._fieldSchemas_selected.sort(function (a, b) { return Math.abs(a.stats.multimodality) > Math.abs(b.stats.multimodality) ? -1 : 1});
+                // results.multimodality = Dataset.schema._fieldSchemas_selected.find(function(d)  {
+                //     return (recomen.find(r=>r===d)=== undefined);
+                // });
+                // Dataset.schema._fieldSchemas_selected.sort(function (a, b) { return Math.abs(a.stats.modeskew) > Math.abs(b.stats.modeskew) ? -1 : 1});
+                // results.skewness = Dataset.schema._fieldSchemas_selected.find(function(d)  {
+                //     return (recomen.find(r=>r===d)=== undefined);
+                // });
+                //
+                // Dataset.schema._fieldSchemas_selected.sort(function(a, b) {
+                //     return ((a.extrastat.outlier) <(b.extrastat.outlier)) ? 1 : -1});
+                // results.outlier = Dataset.schema._fieldSchemas_selected.find(function(d)  {
+                //     return (recomen.find(r=>r===d)=== undefined);
+                // });
 
-                Dataset.schema._fieldSchemas_selected.sort(function(a, b) {
-                    return ((a.extrastat.outlier) <(b.extrastat.outlier)) ? 1 : -1});
-                results.outlier = Dataset.schema._fieldSchemas_selected.find(function(d)  {
-                    return (recomen.find(r=>r===d)=== undefined);
-                });
+                // TODO: recomendation RL
+
+                // generate matrix
+                PCAplot.recommendObj.collection = [];
+                PCAplot.recommendObj.collectionList = [];
+                PCAplot.recommendObj.recommended = [];
+                PCAplot.recommendObj.recommended = [0,0,0,0];
+
 
                 support[dim].types.forEach((d)=>{
-                    if (results[d])
-                        drawGuideplot([results[d]], d);
+                    const vector_h = [PCAplot.profile.level,PCAplot.profile.age,PCAplot.profile.major];
+                    let rec = Dataset.schema._fieldSchemas_selected.sort(getranking(d))[0];
+                    let vec_m =[];
+                    for (let i=0;i<9;i++){
+                        let feature = support[dim].types[i];
+                        if(feature)
+                            vec_m.push(getTypeVal(feature,rec,true)[feature])
+                        else
+                            vec_m.push(0);
+                    }
+                    for (let i=0;i<=dim;i++) {
+                        vec_m.push(dataType2Num(rec.type));
+                    }
+                    for (let i=dim+1;i<MAXRECOMMENDATION_DIM;i++) {
+                        vec_m.push(0);
+                    }
+                    abtractionLevel.forEach((a,abstractLevel)=> {
+                        PCAplot.recommendObj.collection.push(_.flatten([vector_h,abstractLevel,vec_m]));
+                        PCAplot.recommendObj.collectionList.push({obj: rec, mainfeature: d});
+                    })
                 });
+                for (let i=support[dim].types.length;i<MAXRECOMMENDATION_FEATURE;i++) {
+                    const vector_h = [PCAplot.profile.level,PCAplot.profile.age,PCAplot.profile.major];
+                    let rec = _.sample(Dataset.schema._fieldSchemas_selected);
+                    let d = undefined;
+                    let d_max = 0;
+                    const vec_m = [];
+                    for (let i=0;i<9;i++){
+                        let feature = support[dim].types[i];
+                        if(!d)
+                            d = feature;
+                        if(feature) {
+                            const r = getTypeVal(feature, rec, true)[feature];
+                            vec_m.push(r);
+                            if (d_max < r)
+                            {
+                                d_max = r;
+                                d = feature;
+                            }
+                        }else
+                            vec_m.push(0);
+                    }
+                    for (let i=0;i<=dim;i++) {
+                        vec_m.push(dataType2Num(rec.type));
+                    }
+                    for (let i=dim+1;i<MAXRECOMMENDATION_DIM;i++) {
+                        vec_m.push(0);
+                    }
+                    abtractionLevel.forEach((a,abstractLevel)=> {
+                        PCAplot.recommendObj.collection.push(_.flatten([vector_h,abstractLevel,vec_m]));
+                        PCAplot.recommendObj.collectionList.push({obj: rec, mainfeature: d});
+                    })
+                }
+                PCAplot.recommendObj.recommended = PCAplot.agent.recommend(PCAplot.recommendObj.collection,4);
+                PCAplot.recommendObj.recommended.forEach((d,i)=>{
+                    const currentRec = PCAplot.recommendObj.collectionList[d];
+                    drawGuideplot([currentRec.obj],currentRec.mainfeature,undefined,i);
+                })
+                // support[dim].types.forEach((d)=>{
+                //     if (results[d])
+                //         drawGuideplot([results[d]], d);
+                // });
                 // drawGuideplot([variancemost], 'variance');
                 // drawGuideplot([multimodalitymost], 'multimodality');
                 // // drawGuideplot([object2], 'PC2');
@@ -4888,6 +5028,24 @@ angular.module('pcagnosticsviz')
 
             }
         };
+        PCAplot.timelog = function(prop){
+            if(prop) {
+                if (PCAplot.recommendObj.trigger){
+                    updateAgentReward()
+                }
+                PCAplot.recommendObj.startTime = +new Date();
+                PCAplot.recommendObj.target = prop.recomendID;
+                PCAplot.recommendObj.trigger = true;
+            }else if(!PCAplot.recommendObj.trigger && PCAplot.recommendObj.startTime){
+                PCAplot.recommendObj.trigger = false;
+                updateAgentReward()
+                PCAplot.recommendObj.startTime = undefined;
+            }
+        };
+        function updateAgentReward(){
+            PCAplot.recommendObj.reward[PCAplot.recommendObj.target] += (+new Date()-PCAplot.recommendObj.startTime)/1000/60;
+            PCAplot.recommendObj.reward[PCAplot.recommendObj.target] = Math.min(20,PCAplot.recommendObj.reward[PCAplot.recommendObj.target]);
+        }
         function mark2plot (mark,spec,object){
             switch (mark) {
                 case 'bar': barplot(spec, object); break;
@@ -5029,7 +5187,7 @@ angular.module('pcagnosticsviz')
         //     return data;
         // }
 
-        function drawGuideplot (object,type,dataref) {
+        function drawGuideplot (object,type,dataref,recomendID) {
             if (dataref === undefined)
                 dataref = Dataset.schema._fieldSchemas_selected;
             var spec = spec = _.cloneDeep(instantiate() || PCAplot.spec);
@@ -5071,6 +5229,7 @@ angular.module('pcagnosticsviz')
                 ranking: getranking(type),
                 plot: drawGuideexplore,
                 dim: PCAplot.dim,
+                recomendID:recomendID, //new atrribute
                 fieldDefs: object,};
             PCAplot.chart.guideon = guideon;
                 PCAplot.charts.push(PCAplot.chart);
@@ -6651,7 +6810,7 @@ angular.module('pcagnosticsviz')
 'use strict';
 
 angular.module('pcagnosticsviz')
-  .controller('MainCtrl', ["$scope", "$document", "Spec", "Dataset", "$location", "Wildcards", "Config", "consts", "Chronicle", "Logger", "Bookmarks", "Modals", "FilterManager", "NotifyingService", "PCAplot", "Pills", "SpecProfile", "$mdToast", "$firebaseArray", "Auth", function($scope, $document, Spec, Dataset,$location, Wildcards, Config, consts, Chronicle, Logger, Bookmarks, Modals, FilterManager,NotifyingService,PCAplot,Pills,SpecProfile,$mdToast,$firebaseArray,Auth) {
+  .controller('MainCtrl', ["$scope", "$document", "Spec", "Dataset", "$location", "Wildcards", "Config", "consts", "Chronicle", "Logger", "Bookmarks", "Modals", "FilterManager", "NotifyingService", "PCAplot", "RECOMMENDATION", "Pills", "SpecProfile", "$mdToast", "$firebaseArray", "Auth", function($scope, $document, Spec, Dataset,$location, Wildcards, Config, consts, Chronicle, Logger, Bookmarks, Modals, FilterManager,NotifyingService,PCAplot,RECOMMENDATION,Pills,SpecProfile,$mdToast,$firebaseArray,Auth) {
     $scope.Spec = Spec;
     $scope.contain = {"bi-plot":'Overview',
         "div":[{key:'guideplot',val:'Exemplar'},
@@ -6675,6 +6834,7 @@ angular.module('pcagnosticsviz')
     $scope.fieldShow = true;
     $scope.WildcardsShow = false;
     $scope.PCAplot= PCAplot;
+    $scope.recommendation= RECOMMENDATION;
     $scope.SpecProfile= SpecProfile;
     $scope.showEncoding = false;
     $scope.showExtraGuide = false;
@@ -6709,24 +6869,32 @@ angular.module('pcagnosticsviz')
       // // database for preset
       // var auth = $firebaseAuth();
       //
-      $scope.signIn = function() {
-          $scope.firebaseUser = null;
-          $scope.error = null;
-
-          $scope.auth.$signInAnonymously().then(function(firebaseUser) {
-              $scope.firebaseUser = firebaseUser;
-          }).catch(function(error) {
-              $scope.error = error;
-          });
-      };
+      $scope.islogin =false;
       // any time auth state changes, add the user data to scope
-      $scope.auth.$onAuthStateChanged(function(firebaseUser) {
+      $scope.auth.firebaseAuthObject.$onAuthStateChanged(function(firebaseUser) {
+          // console.log(firebaseUser)
+          $scope.islogin = firebaseUser!==null;
           $scope.firebaseUser = firebaseUser;
       });
       //</editor-fold>
 
       //
-      // const ref = firebase.database().ref().child('meta');
+      const ref = firebase.database().ref().child('RL');
+      ref.on('value', function(snapshot) {
+          console.log('LOADED AGENT')
+          if(snapshot.val()===null) {
+              $scope.recommendation.createAgent()
+              ref.set(JSON.stringify($scope.recommendation.getAgent()), function(error) {
+                  if (error) {
+                      console.log(error)
+                  } else {
+                      console.log('SUCCESS init agent data')
+                  }
+              });
+          }else{
+              $scope.recommendation.setAgent(snapshot.val());
+          }
+      });
       // ref.orderByChild("id").limitToLast(25);
       // let preset = new $firebaseArray(ref);
       // preset.$loaded().then(function(){
@@ -6734,7 +6902,7 @@ angular.module('pcagnosticsviz')
       // });
 
       // asume we load the profile from linkn
-      $scope.profile = undefined;
+      $scope.profile = {level:0,age:0,major:0};
 
     // log event
   $scope.onMouseOverLog = function ($event) {
@@ -6941,8 +7109,40 @@ angular.module('pcagnosticsviz')
   }]);
 
 angular.module('pcagnosticsviz').factory("Auth", ["$firebaseAuth",
-    function($firebaseAuth) {
-        return $firebaseAuth();
+    function($firebaseAuth,firebaseDataService) {
+        var firebaseAuthObject = $firebaseAuth();
+        var service = {
+            firebaseAuthObject: firebaseAuthObject,
+            register: register,
+            login: login,
+            loginAnonymous: loginAnonymous,
+            logout: logout,
+            isLoggedIn: isLoggedIn,
+            sendWelcomeEmail: sendWelcomeEmail
+        };
+        return service;
+        ////////////
+        function register(user) {
+            return firebaseAuthObject.$createUserWithEmailAndPassword(user.email, user.password);
+        }
+        function login(user) {
+            return firebaseAuthObject.$signInWithEmailAndPassword(user.email, user.password);
+        }
+        function loginAnonymous(user) {
+            return firebaseAuthObject.$signInAnonymously();
+        }
+        function logout() {
+            firebaseAuthObject.$signOut();
+        }
+        function isLoggedIn() {
+            return firebaseAuthObject.$getAuth();
+        }
+        function sendWelcomeEmail(emailAddress) {
+            firebaseDataService.emails.push({
+                emailAddress: emailAddress
+            });
+        }
+        // return $firebaseAuth();
     }
 ]);
 
@@ -7297,7 +7497,127 @@ angular.module('pcagnosticsviz')
     return Alternatives;
   }]);
 
-angular.module("pcagnosticsviz").run(["$templateCache", function($templateCache) {$templateCache.put("app/main/main.html","<div ng-controller=\"MainCtrl\" ng-class=\"{light: themeDrak}\" class=\"flex-root vflex full-width full-height\" ng-mousedown=\"onMouseDownLog($event)\" ng-mouseenter=\"onMouseEnterLog($event)\" ng-mouseover=\"onMouseOverLog($event)\"><div class=\"full-width no-shrink shadow\"><div class=\"card top-card no-right-margin no-top-margin\"><div class=\"hflex\" style=\"justify-content: space-between;\"><div class=\"pane\" style=\"display: inline-flex;\"><div id=\"logo\"></div></div><div class=\"pane\"><div class=\"controls\"><a class=\"command\" ng-click=\"chron.undo()\" ng-class=\"{disabled: !canUndo}\"><i class=\"fa fa-undo\"></i> Undo</a> <a class=\"command\" ng-click=\"chron.redo()\" ng-class=\"{disabled: !canRedo}\"><i class=\"fa fa-repeat\"></i> Redo</a> <a class=\"command\" ng-click=\"getURL()\"><i class=\"fa fa-share\"></i> Share</a></div></div><div class=\"pane\" style=\"display: inline-flex;\"><div id=\"processDisplay\" ng-hide=\"PCAplot.calProcess==0\"><h4>Calculating {{PCAplot.calculateState}}....</h4><md-progress-linear class=\"md-theme\" md-mode=\"determinate\" value=\"{{PCAplot.calProcess}}\"></md-progress-linear></div><div class=\"controls\"><a class=\"command\" ng-if=\"themeDrak\" ng-click=\"changetheme()\"><i class=\"fa fa-moon-o\"></i> Dark</a> <a class=\"command\" ng-if=\"!themeDrak\" ng-click=\"changetheme()\"><i class=\"fa fa-sun-o\"></i> Light</a></div></div></div></div><alert-messages></alert-messages></div><div class=\"hflex full-width main-panel grow-1\"><div class=\"pane data-pane noselect\"><div class=\"card no-top-margin data-card abs-100 modifedside\"><div class=\"sidebar-header\" ng-if=\"!embedded\"><dataset-selector class=\"right\"></dataset-selector><div class=\"current-dataset\" title=\"{{Dataset.currentDataset.name}}\"><h2 style=\"display:inline-block; margin:0;\">Data</h2><i class=\"fa fa-database\"></i> <span class=\"dataset-name\">{{Dataset.currentDataset.name}}</span></div><div style=\"color:var(--fontColor);\"><span class=\"dataset-info\">Data contains <strong>{{Dataset.data.length}}</strong> instances and <strong>{{Dataset.schema.fieldSchemas.length}}</strong> variables</span></div></div><h3>Overview</h3><bi-plot error=\"PCAplot.error.code==2\" hidesvg=\"false\" <!--hidecanvas=\"PCAplot.dim<3\" --=\"\">></bi-plot><h3>Exemplar plots</h3><div class=\"scroll-y-nox scroll-y\"><vl-plot-group ng-class=\"{square: PCAplot.dim}\" ng-if=\"PCAplot.chart\" class=\"main-vl-plot-group card no-shrink guideplot\" ng-repeat=\"chart in PCAplot.charts\" ng-click=\"PCAplot.prop2spec(chart.prop)\" chart=\"chart\" show-bookmark=\"false\" show-debug=\"false\" show-select=\"true\" show-axis-prop=\"false\" show-sort=\"false\" show-transpose=\"false\" enable-pills-preview=\"true\" always-scrollable=\"false\" overflow=\"false\" show-label=\"false\" tooltip=\"true\" toggle-shelf=\"false\" style=\"margin-top: 0px; margin-bottom: 3px;\"></vl-plot-group><div class=\"hflex full-width\" style=\"justify-content: space-between;align-items: baseline;\"><div><h3 style=\"display: inline-block\">Variables</h3><div class=\"header-drop active\" style=\"display: inline-block\"><i class=\"fa fa-caret-down droplist\" ng-click=\"fieldShow = !fieldShow\"></i></div></div><div class=\"fieldSelection right\" aria-checked=\"true\" role=\"checkbox\" ng-click=\"toggleSelectFields($event)\" ng-show=\"fieldShow\"><span></span><i class=\"fa\"></i></div></div><div ng-show=\"fieldShow\"><schema-list field-defs=\"Dataset.schema.fieldSchemas\" order-by=\"Dataset.fieldOrder\" show-count=\"false\" show-remove=\"false\" show-add=\"true\" filter-manager=\"FilterManager\" show-disable=\"true\"></schema-list></div><div ng-show=\"WildcardsShow\"><schema-list field-defs=\"Wildcards.list\" show-add=\"true\" show-drop=\"true\"></schema-list></div></div></div>Ma</div><div class=\"pane vis-pane\"><div class=\"vis-pane-container abs-100\" ng-class=\"{\'scroll-y\': !hideExplore || !Spec.isSpecific, \'no-scroll-y\': hideExplore && Spec.isSpecific}\"><div class=\"mainareacustom full-width\"><div class=\"pane encoding-pane\" style=\"min-height: 200px;\"><shelves spec=\"Spec.spec\" filter-manager=\"FilterManager\" preview=\"false\" support-any=\"true\" ng-class=\"shelvescustom\" prop=\"PCAplot.prop\" custommarks=\"PCAplot.marks\" props=\"PCAplot.types\" updatefunc=\"PCAplot.updateSpec\" hidecustom=\"PCAplot.prop&&Spec.isSpecific && !Spec.isEmptyPlot\"></shelves><shelves class=\"preview\" ng-show=\"Spec.previewedSpec\" spec=\"Spec.previewedSpec || Spec.emptySpec\" preview=\"true\" support-any=\"true\"></shelves></div><slide-graph ng-if=\"PCAplot.prop.charts && Spec.isSpecific && !Spec.isEmptyPlot\" charts=\"PCAplot.prop.charts\" pos=\"PCAplot.prop.pos\" limitup=\"PCAplot.limitup\" limit=\"PCAplot.limit\"></slide-graph></div><div class=\"alternatives-pane card navigation\" ng-class=\"{collapse: hideExplore}\" ng-if=\"PCAplot.prop&&Spec.isSpecific && !Spec.isEmptyPlot\" style=\"margin-top: 0px;\"><guide-menu prop=\"PCAplot.prop\" priority=\"10\" marks=\"PCAplot.marks\" props=\"PCAplot.types\" limitup=\"PCAplot.limitup\" limit=\"PCAplot.limit\"></guide-menu></div></div></div><div class=\"pane guidemenu grow-1\" ng-if=\"showExtraGuide||PCAplot.prop\"><div class=\"alternatives-pane card\" ng-class=\"{collapse: hideExplore}\" ng-if=\"Spec.isSpecific && !Spec.isEmptyPlot\"><div class=\"alternatives-header\"><div class=\"right alternatives-jump\"><a class=\"toggle-hide-explore\" ng-click=\"toggleHideExplore()\"><span ng-show=\"hideExplore\">Show <i class=\"fa fa-toggle-up\"></i></span> <span ng-show=\"!hideExplore\">Hide <i class=\"fa fa-toggle-down\"></i></span></a></div><h2>Expanded views</h2></div><div class=\"alternatives-content scroll-y\" ng-if=\"!hideExplore\"><vl-plot-group-list ng-repeat=\"alternative in PCAplot.alternatives\" ng-if=\"alternative.charts.length > 0 && (!$parent.alternativeType || $parent.alternativeType === alternative.type)\" id=\"alternatives-{{alternative.type}}\" list-title=\"alternative.title\" charts=\"alternative.charts\" enable-pills-preview=\"true\" priority=\"$index * 2000\" initial-limit=\"alternative.limit || null\" post-select-action=\"$parent.scrollToTop()\" show-query-select=\"true\" query=\"alternative.query\" show-bookmark=\"false\" <!--ng-click=\"choseByClick($event)\" --=\"\">></vl-plot-group-list></div></div></div></div><div class=\"hflex full-width dev-panel\" ng-if=\"showDevPanel\"><div class=\"pane\" ng-show=\"consts.logToWebSql\"><div class=\"card\"><div>userid: {{Logger.userid}}</div><button ng-click=\"Logger.clear()\">Clear logs</button><br><button ng-click=\"Logger.export()\">Download logs</button></div></div><div class=\"pane config-pane\"><div class=\"card scroll-y abs-100\"><configuration-editor></configuration-editor></div></div><div class=\"pane vl-pane\"><cql-query-editor></cql-query-editor></div><div class=\"pane vg-pane\"><vg-spec-editor></vg-spec-editor></div></div><bookmark-list highlighted=\"Fields.highlighted\" post-select-action=\"scrollToTop\"></bookmark-list><dataset-modal></dataset-modal></div>");
+// let userprofile = {level: 1,age:20,major:1};
+// let recordSection = 2000;
+// let maxdim = 6;
+// let maxfeature = 9;
+// function generateCollection(userprofile,dimension){
+//     let r = [];
+//     for (let f = 0; f<maxfeature; f++){
+//         let temp_f = [];
+//         for (let fs = 0; fs<maxfeature; fs++) {
+//             temp_f[fs] = Math.random();
+//         }
+//         temp_f[f] = 1-Math.random()*0.2;
+//         let temp_dim = [];
+//         for (let ds = 0; ds<maxdim; ds++) {
+//             if (ds<dimension)
+//                 temp_dim[ds] = Math.round(Math.random()*2+1);
+//             else
+//                 temp_dim[ds] = 0
+//         }
+//         for (let l = 0; l<4; l++){
+//             let temparr =  [userprofile.level,userprofile.age,userprofile.major,l];
+//             for (let fs = 0; fs<maxfeature; fs++) {
+//                 temparr.push(temp_f[fs]);
+//             }
+//             for (let ds = 0; ds<maxdim; ds++) {
+//                 temparr.push(temp_dim[ds]);
+//             }
+//             r.push(temparr);
+//         }
+//     }
+//     return r;
+// }
+// function normalize (l){
+//     return l.map(f=>f.map((e,i)=>{
+//         if (i<=3||(i>=(4+maxfeature)&&i<=(4+maxfeature+maxdim)))
+//             return e/3;
+//         else if(i===1)
+//             return e/100;
+//         else
+//             return e;
+//     }))
+// }
+// function getRecomendation(){ // replace this with function in Vung lib
+//     let selection = [];
+//     do{
+//         let randNum = Math.round(Math.random()*35);
+//         if (selection.indexOf(randNum)===-1)
+//             selection.push(randNum);
+//     }while(selection.length<4);
+//     return selection;
+// }
+// function updateRecmendation(matrix, selection,collection){
+//     return matrix.map((m,mi)=>collection[mi]===selection.choice?Math.min(m+selection.reward,20):m);
+// }
+//
+// function user_simulation (selection,favorite){
+//     for (let si in selection){
+//         let s = selection[si];
+//         if(favorite.indexOf(s)===-1) // not in favorite list
+//         {
+//             if (Math.random()>0.9)
+//                 return {choice:s, reward: Math.random()};
+//         }else{
+//             if (Math.random()>0.1)
+//                 return {choice:s, reward: Math.random()*5+0.5};
+//         }
+//     }
+//     return undefined;
+// }
+//
+// function getRecomendationAlltime(userprofile){
+//     let temp =[];
+//     for (let ds = 1; ds<(maxdim+1); ds++) {
+//         temp.push(generateCollection(userprofile,ds));
+//     }
+//     return temp
+// }
+// function main(){
+//     let log =[];
+//     let log_rec =[];
+//     let log_rew =[];
+//     let recommenArr = getRecomendationAlltime(userprofile);
+//     for (let i = 0 ; i<recordSection; i++) {
+//         let currentMatrix = recommenArr[Math.round(Math.random()*(maxdim-1))];
+//         let currentRecommend = getRecomendation();
+//         let currentReward = [0,0,0,0];
+//         let recordTrial = Math.round(Math.random()*20)+1;
+//         for (let t = 0; t<recordTrial; t++){
+//             let userChoice = user_simulation (currentRecommend,[1,4,6,9,22]);
+//             if(userChoice)
+//                 currentReward = updateRecmendation(currentReward,userChoice,currentRecommend);
+//         }
+//         log.push(currentMatrix);
+//         log_rec.push(currentRecommend);
+//         log_rew.push(currentReward);
+//     }
+//
+//     download_json(log,'2000_userstudy_record_trial');
+//     download_json(log_rec,'2000_userstudy_record_selection');
+//     download_json(log_rew,'2000_userstudy_record_reward');
+//     download_json(log.map(l=>normalize(l)),'2000_userstudy_record_trial_normalize');
+//     download_json(log_rec,'2000_userstudy_record_selection_normalize');
+//     download_json(log_rew.map(l=>l.map(e=>e/20)),'2000_userstudy_record_reward_normalize');
+// }
+// function download_json(data,filename) {
+//     var str = JSON.stringify(data);
+//     var file = new Blob([str], {type: '.json'});
+//     var a = document.createElement("a"),
+//         url = URL.createObjectURL(file);
+//     a.href = url;
+//     a.download = filename+'.json';
+//     document.body.appendChild(a);
+//     a.click();
+//     setTimeout(function() {
+//         document.body.removeChild(a);
+//         window.URL.revokeObjectURL(url);
+//     }, 0);
+// }
+//
+// main();
+angular.module("pcagnosticsviz").run(["$templateCache", function($templateCache) {$templateCache.put("app/main/main.html","<div ng-controller=\"MainCtrl\" ng-class=\"{light: themeDrak}\" class=\"flex-root vflex full-width full-height\" ng-mousedown=\"onMouseDownLog($event)\" ng-mouseenter=\"onMouseEnterLog($event)\" ng-mouseover=\"onMouseOverLog($event)\"><div class=\"full-width no-shrink shadow\"><div class=\"card top-card no-right-margin no-top-margin\"><div class=\"hflex\" style=\"justify-content: space-between;\"><div class=\"pane\" style=\"display: inline-flex;\"><div id=\"logo\" ng-click=\"Logger.export()\"></div></div><div class=\"pane\"><div class=\"controls\"><a class=\"command\" ng-click=\"chron.undo()\" ng-class=\"{disabled: !canUndo}\"><i class=\"fa fa-undo\"></i> Undo</a> <a class=\"command\" ng-click=\"chron.redo()\" ng-class=\"{disabled: !canRedo}\"><i class=\"fa fa-repeat\"></i> Redo</a> <a class=\"command\" ng-click=\"getURL()\"><i class=\"fa fa-share\"></i> Share</a></div></div><div class=\"pane\" style=\"display: inline-flex;\"><div id=\"processDisplay\" ng-hide=\"PCAplot.calProcess==0\"><h4>Calculating {{PCAplot.calculateState}}....</h4><md-progress-linear class=\"md-theme\" md-mode=\"determinate\" value=\"{{PCAplot.calProcess}}\"></md-progress-linear></div><div class=\"controls\"><a class=\"command\" ng-class=\"{hide: islogin}\" ng-click=\"auth.loginAnonymous()\">Login anonymourly</a> <a class=\"command\" ng-class=\"{hide: !islogin}\" ng-click=\"auth.logout()\">Logout</a></div><div class=\"controls\"><a class=\"command\" ng-if=\"themeDrak\" ng-click=\"changetheme()\"><i class=\"fa fa-moon-o\"></i> Dark</a> <a class=\"command\" ng-if=\"!themeDrak\" ng-click=\"changetheme()\"><i class=\"fa fa-sun-o\"></i> Light</a></div></div></div></div><alert-messages></alert-messages></div><div class=\"hflex full-width main-panel grow-1\"><div class=\"pane data-pane noselect\"><div class=\"card no-ctop-margin data-card abs-100 modifedside\"><div class=\"sidebar-header\" ng-if=\"!embedded\"><dataset-selector class=\"right\"></dataset-selector><div class=\"current-dataset\" title=\"{{Dataset.currentDataset.name}}\"><h2 style=\"display:inline-block; margin:0;\">Data</h2><i class=\"fa fa-database\"></i> <span class=\"dataset-name\">{{Dataset.currentDataset.name}}</span></div><div style=\"color:var(--fontColor);\"><span class=\"dataset-info\">Data contains <strong>{{Dataset.data.length}}</strong> instances and <strong>{{Dataset.schema.fieldSchemas.length}}</strong> variables</span></div></div><h3>Overview</h3><bi-plot error=\"PCAplot.error.code==2\" hidesvg=\"false\" <!--hidecanvas=\"PCAplot.dim<3\" --=\"\">></bi-plot><h3>Exemplar plots</h3><div class=\"scroll-y-nox scroll-y\"><vl-plot-group ng-class=\"{square: PCAplot.dim}\" ng-if=\"PCAplot.chart\" class=\"main-vl-plot-group card no-shrink guideplot\" ng-repeat=\"chart in PCAplot.charts\" ng-click=\"PCAplot.prop2spec(chart.prop);PCAplot.timelog(chart.prop);\" chart=\"chart\" show-bookmark=\"false\" show-debug=\"false\" show-select=\"true\" show-axis-prop=\"false\" show-sort=\"false\" show-transpose=\"false\" enable-pills-preview=\"true\" always-scrollable=\"false\" overflow=\"false\" show-label=\"false\" tooltip=\"true\" toggle-shelf=\"false\" style=\"margin-top: 0px; margin-bottom: 3px;\"></vl-plot-group><div class=\"hflex full-width\" style=\"justify-content: space-between;align-items: baseline;\"><div><h3 style=\"display: inline-block\">Variables</h3><div class=\"header-drop active\" style=\"display: inline-block\"><i class=\"fa fa-caret-down droplist\" ng-click=\"fieldShow = !fieldShow\"></i></div></div><div class=\"fieldSelection right\" aria-checked=\"true\" role=\"checkbox\" ng-click=\"toggleSelectFields($event)\" ng-show=\"fieldShow\"><span></span><i class=\"fa\"></i></div></div><div ng-show=\"fieldShow\"><schema-list field-defs=\"Dataset.schema.fieldSchemas\" order-by=\"Dataset.fieldOrder\" show-count=\"false\" show-remove=\"false\" show-add=\"true\" filter-manager=\"FilterManager\" show-disable=\"true\"></schema-list></div><div ng-show=\"WildcardsShow\"><schema-list field-defs=\"Wildcards.list\" show-add=\"true\" show-drop=\"true\"></schema-list></div></div></div>Ma</div><div class=\"pane vis-pane\"><div class=\"vis-pane-container abs-100\" ng-class=\"{\'scroll-y\': !hideExplore || !Spec.isSpecific, \'no-scroll-y\': hideExplore && Spec.isSpecific}\"><div class=\"mainareacustom full-width\"><div class=\"pane encoding-pane\" style=\"min-height: 200px;\"><shelves spec=\"Spec.spec\" filter-manager=\"FilterManager\" preview=\"false\" support-any=\"true\" ng-class=\"shelvescustom\" prop=\"PCAplot.prop\" custommarks=\"PCAplot.marks\" props=\"PCAplot.types\" updatefunc=\"PCAplot.updateSpec\" hidecustom=\"PCAplot.prop&&Spec.isSpecific && !Spec.isEmptyPlot\"></shelves><shelves class=\"preview\" ng-show=\"Spec.previewedSpec\" spec=\"Spec.previewedSpec || Spec.emptySpec\" preview=\"true\" support-any=\"true\"></shelves></div><slide-graph ng-if=\"PCAplot.prop.charts && Spec.isSpecific && !Spec.isEmptyPlot\" charts=\"PCAplot.prop.charts\" pos=\"PCAplot.prop.pos\" limitup=\"PCAplot.limitup\" limit=\"PCAplot.limit\"></slide-graph></div><div class=\"alternatives-pane card navigation\" ng-class=\"{collapse: hideExplore}\" ng-if=\"PCAplot.prop&&Spec.isSpecific && !Spec.isEmptyPlot\" style=\"margin-top: 0px;\"><guide-menu prop=\"PCAplot.prop\" priority=\"10\" marks=\"PCAplot.marks\" props=\"PCAplot.types\" limitup=\"PCAplot.limitup\" limit=\"PCAplot.limit\"></guide-menu></div></div></div><div class=\"pane guidemenu grow-1\" ng-if=\"showExtraGuide||PCAplot.prop\"><div class=\"alternatives-pane card\" ng-class=\"{collapse: hideExplore}\" ng-if=\"Spec.isSpecific && !Spec.isEmptyPlot\"><div class=\"alternatives-header\"><div class=\"right alternatives-jump\"><a class=\"toggle-hide-explore\" ng-click=\"toggleHideExplore()\"><span ng-show=\"hideExplore\">Show <i class=\"fa fa-toggle-up\"></i></span> <span ng-show=\"!hideExplore\">Hide <i class=\"fa fa-toggle-down\"></i></span></a></div><h2>Expanded views</h2></div><div class=\"alternatives-content scroll-y\" ng-if=\"!hideExplore\"><vl-plot-group-list ng-repeat=\"alternative in PCAplot.alternatives\" ng-if=\"alternative.charts.length > 0 && (!$parent.alternativeType || $parent.alternativeType === alternative.type)\" id=\"alternatives-{{alternative.type}}\" list-title=\"alternative.title\" charts=\"alternative.charts\" enable-pills-preview=\"true\" priority=\"$index * 2000\" initial-limit=\"alternative.limit || null\" post-select-action=\"$parent.scrollToTop()\" show-query-select=\"true\" query=\"alternative.query\" show-bookmark=\"false\" <!--ng-click=\"choseByClick($event)\" --=\"\">></vl-plot-group-list></div></div></div></div><div class=\"hflex full-width dev-panel\" ng-if=\"showDevPanel\"><div class=\"pane\" ng-show=\"consts.logToWebSql\"><div class=\"card\"><div>userid: {{Logger.userid}}</div><button ng-click=\"Logger.clear()\">Clear logs</button><br><button ng-click=\"Logger.export()\">Download logs</button></div></div><div class=\"pane config-pane\"><div class=\"card scroll-y abs-100\"><configuration-editor></configuration-editor></div></div><div class=\"pane vl-pane\"><cql-query-editor></cql-query-editor></div><div class=\"pane vg-pane\"><vg-spec-editor></vg-spec-editor></div></div><bookmark-list highlighted=\"Fields.highlighted\" post-select-action=\"scrollToTop\"></bookmark-list><dataset-modal></dataset-modal></div>");
 $templateCache.put("components/configurationeditor/configurationeditor.html","<form><pre>{{ Config.config | compactJSON }}</pre></form>");
 $templateCache.put("components/cqlQueryEditor/cqlQueryEditor.html","<div class=\"card scroll-y abs-100 vflex\"><div><div class=\"right command\"><a ui-zeroclip=\"\" zeroclip-model=\"Spec.query | compactJSON\">Copy</a></div><h3>CompassQL Query</h3></div><textarea class=\"cqlquery flex-grow-1 full-height\" json-input=\"\" type=\"text\" ng-model=\"Spec.cleanQuery\"></textarea></div>");
 $templateCache.put("components/d3-biplot/bi-plot.html","<h4 style=\"position: absolute; color: black; width: 100%; text-align: center;\" ng-if=\"error\">Can\'t display the corresponding bi-plot</h4><svg id=\"bi-plot\" width=\"100%\" class=\"biplot\" ng-hide=\"hideSvg\"><g id=\"bi-plot2\"></g><g id=\"bi-plot-g\"><g id=\"bi-plot-axis\"></g><g id=\"bi-plot-point\"></g></g><rect class=\"overlay\"></rect></svg>");

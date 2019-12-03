@@ -56,7 +56,7 @@
           <entry key="HTML" value="3342" />
           <entry key="JSHint" value="4" />
           <entry key="JSON" value="89" />
-          <entry key="JavaScript" value="56946" />
+          <entry key="JavaScript" value="56969" />
           <entry key="PLAIN_TEXT" value="46" />
           <entry key="SCSS" value="2580" />
           <entry key="TypeScript" value="31" />
@@ -85,8 +85,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="169">
-              <caret line="1310" column="20" selection-start-line="1310" selection-start-column="20" selection-end-line="1310" selection-end-column="20" />
+            <state relative-caret-position="247">
+              <caret line="1434" column="27" selection-start-line="1434" selection-start-column="27" selection-end-line="1434" selection-end-column="27" />
             </state>
           </provider>
         </entry>
@@ -103,17 +103,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/app/PCAplot/recomendation.service.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="490">
-              <caret line="29" column="66" selection-start-line="29" selection-start-column="24" selection-end-line="29" selection-end-column="66" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/app/userStudy.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="34">
-              <caret line="2" column="18" selection-start-line="2" selection-start-column="3" selection-end-line="2" selection-end-column="18" />
+            <state relative-caret-position="510">
+              <caret line="30" column="23" lean-forward="true" selection-start-line="30" selection-start-column="12" selection-end-line="30" selection-end-column="23" />
             </state>
           </provider>
         </entry>
@@ -128,19 +119,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/app/spec/spec.service.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="261">
-              <caret line="136" column="27" selection-start-line="136" selection-start-column="27" selection-end-line="136" selection-end-column="27" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/app/main/main.controller.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="189">
-              <caret line="168" column="31" selection-start-line="168" selection-start-column="31" selection-end-line="168" selection-end-column="31" />
+            <state relative-caret-position="377">
+              <caret line="83" column="17" lean-forward="true" selection-start-line="77" selection-start-column="14" selection-end-line="83" selection-end-column="17" />
             </state>
           </provider>
         </entry>
@@ -156,8 +138,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>MAXRECOMMENDATION_DIM</find>
-      <find>profile</find>
       <find>Alternatives</find>
       <find>RECOM</find>
       <find>recommendation</find>
@@ -179,12 +159,14 @@
       <find>Pill</find>
       <find>timelog</find>
       <find>PCAplot.recommendObj.startTime</find>
-      <find>update:</find>
       <find>recom</find>
       <find>---------</find>
       <find>PCAplot.recommendObj.recommended</find>
-      <find>RECOMMENDATION</find>
       <find>PCAplot</find>
+      <find>RECOMMENDATION</find>
+      <find>update:</find>
+      <find>fire</find>
+      <find>agent</find>
       <find>CAplot.recommendObj.target</find>
     </findStrings>
     <replaceStrings>
@@ -262,11 +244,11 @@
         <option value="$PROJECT_DIR$/src/lib/contextualbandits.min.js" />
         <option value="$PROJECT_DIR$/src/index.html" />
         <option value="$PROJECT_DIR$/src/app/userStudy.js" />
-        <option value="$PROJECT_DIR$/src/app/main/main.controller.js" />
-        <option value="$PROJECT_DIR$/src/app/PCAplot/recomendation.service.js" />
         <option value="$PROJECT_DIR$/src/app/spec/spec.service.js" />
         <option value="$PROJECT_DIR$/src/app/main/main.html" />
         <option value="$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js" />
+        <option value="$PROJECT_DIR$/src/app/main/main.controller.js" />
+        <option value="$PROJECT_DIR$/src/app/PCAplot/recomendation.service.js" />
       </list>
     </option>
   </component>
@@ -911,7 +893,7 @@
       <workItem from="1568590779331" duration="598000" />
       <workItem from="1568661112442" duration="605000" />
       <workItem from="1572372906142" duration="900000" />
-      <workItem from="1575328825460" duration="21845000" />
+      <workItem from="1575328825460" duration="25379000" />
     </task>
     <servers />
   </component>
@@ -924,13 +906,12 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2284573000" />
+    <option name="totallyTimeSpent" value="2288107000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="0" width="1612" height="867" extended-state="0" />
-    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.83931625" weight="0.3125" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.83931625" visible="true" weight="0.37822166" />
       <window_info id="Structure" order="1" weight="0.25" />
       <window_info id="Gulp" order="2" sideWeight="0.16068377" side_tool="true" weight="0.3125" />
       <window_info id="npm" order="3" sideWeight="0.5005171" side_tool="true" weight="0.20119047" />
@@ -1153,6 +1134,12 @@
           <line>1476</line>
           <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="1455" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/recomendation.service.js</url>
+          <line>30</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1457" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
@@ -1379,13 +1366,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1150">
-          <caret line="91" column="40" selection-start-line="91" selection-start-column="40" selection-end-line="91" selection-end-column="40" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/app/userStudy.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="34">
@@ -1428,27 +1408,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/spec/spec.service.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="261">
-          <caret line="136" column="27" selection-start-line="136" selection-start-column="27" selection-end-line="136" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/PCAplot/recomendation.service.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="490">
-          <caret line="29" column="66" selection-start-line="29" selection-start-column="24" selection-end-line="29" selection-end-column="66" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/main/main.controller.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="189">
-          <caret line="168" column="31" selection-start-line="168" selection-start-column="31" selection-end-line="168" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/app/main/main.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="391">
@@ -1459,10 +1418,38 @@
     <entry file="http://localhost:3000/app/PCAplot/PCAplot.service.js">
       <provider selected="true" editor-type-id="httpFileEditor" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/spec/spec.service.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="261">
+          <caret line="136" column="27" selection-start-line="136" selection-start-column="27" selection-end-line="136" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1150">
+          <caret line="91" column="40" selection-start-line="91" selection-start-column="40" selection-end-line="91" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/main/main.controller.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="377">
+          <caret line="83" column="17" lean-forward="true" selection-start-line="77" selection-start-column="14" selection-end-line="83" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/PCAplot/recomendation.service.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="510">
+          <caret line="30" column="23" lean-forward="true" selection-start-line="30" selection-start-column="12" selection-end-line="30" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="169">
-          <caret line="1310" column="20" selection-start-line="1310" selection-start-column="20" selection-end-line="1310" selection-end-column="20" />
+        <state relative-caret-position="247">
+          <caret line="1434" column="27" selection-start-line="1434" selection-start-column="27" selection-end-line="1434" selection-end-column="27" />
         </state>
       </provider>
     </entry>

@@ -83,7 +83,7 @@ angular.module('pcagnosticsviz')
                   }
               });
           }else{
-              $scope.recommendation.setAgent(JSON.parse(snapshot.val()));
+              $scope.recommendation.setAgent(snapshot.val());
           }
       });
       // ref.orderByChild("id").limitToLast(25);
