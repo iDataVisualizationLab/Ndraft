@@ -1294,15 +1294,42 @@ label.func-label.field-func.single-column {
   }
 }
 
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform:translateY(-5px);
+    color: #080;
+  }
+  60% {
+    transform:translateY(-2px);
+    color: #080;
+  }
+}
+
+.toggleDisable i {
+  color: #080;
+}
 .fieldDisable{
   opacity: 0.4;
   pointer-events: none;
-
-
-  .remove i:before{
-    content: '';
+  i {
+    color: #b7b7b7;
+  }
+  .toggleDisable i{
     pointer-events: all;
   }
+  :hover{
+    .toggleDisable i {
+      animation: 2s linear bounce;
+      animation-iteration-count: infinite;
+    }
+  }
+  //.remove i:before{
+  //  content: '';
+  //  pointer-events: all;
+  //}
 }
 // ====== components/schemalist/schemalistitem.scss ====== 
 label {

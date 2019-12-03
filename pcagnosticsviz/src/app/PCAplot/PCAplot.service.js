@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('pcagnosticsviz')
-    .factory('PCAplot', function($timeout,$mdToast,ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,Alerts,Chart,Config,Schema,util, Webworker) {
+    .factory('PCAplot', function($timeout,$mdToast,ANY,Dataset,_, vg, vl, cql, ZSchema,Logger, consts,FilterManager ,Pills,NotifyingService,Alternatives,RECOMMENDATION,Alerts,Chart,Config,Schema,util, Webworker,SpecProfile) {
         var keys =  _.keys(Schema.schema.definitions.Encoding.properties).concat([ANY+0]);
         var colordot = '#4682b4';
         var states = {IDLE:0,GENERATE_GUIDE:1,GENERATE_ALTERNATIVE:2,FREE:3, UPDATEPOSITION:4};
@@ -43,12 +43,16 @@ angular.module('pcagnosticsviz')
             limitup: 0,
             state:states.IDLE,
             calProcess: 0,
-            calculateState: null
+            calculateState: null,
+            profile:{level:0,age:0,major:0},
         };
         PCAplot.colorthem = {
             rainbow: ["#9cb5a0","#aec7b2","#c5d6c6","#e6e6e6","#e6e6d8","#e6d49c","#e6b061","#e6a650","#e67532","#ED5F3B"],
         }
+        PCAplot.agent = RECOMMENDATION;
         PCAplot.mark2plot = mark2plot;
+        var MAXRECOMMENDATION_DIM = 6;
+        var MAXRECOMMENDATION_FEATURE = 9;
         var abtractionLevel =['Individual instances','Regular binning','Data-dependent binning','Abtracted'];
         var support =[{
             types : ['outlier','variance', 'multimodality', 'skewness'],
@@ -91,6 +95,7 @@ angular.module('pcagnosticsviz')
 
             // Biplot.data;
             if (typeof dataor !=='undefined' ) {
+                clearBiplot();
                 PCAplot.data[0] = Dataset.schema._fieldSchemas_selected;
                 PCAplot.data[1] =PCAplot.dataref||[];
                 var biplotselect = $('svg.biplot');
@@ -126,7 +131,8 @@ angular.module('pcagnosticsviz')
                 svg_main.select('.overlay')
                     .attr('width',width+margin.left+margin.right)
                     .attr('height',height+margin.top+margin.bottom)
-                    .style('fill','none');
+                    .style('fill','none')
+                    .style('display','none');
                 var g_axis = svg.select("#bi-plot-axis");
                 var g_point = svg.select("#bi-plot-point");
                 var idlabel = [],
@@ -181,21 +187,6 @@ angular.module('pcagnosticsviz')
                         matrix = data.map(function (d) {
                             return brand_names.map(b => d[b])
                         });
-                        //console.log(data);
-                        // if (brand_names < 9) {
-                        //     data.forEach(function (d, i) {
-                        //         d.label = idlabel[i];
-                        //         d.pc1 = 0;
-                        //         d.pc2 = 0;
-                        //     });
-                        //     dataref = _.cloneDeep(data);
-                        //     var brands = brand_names
-                        //         .map(function (key, i) {
-                        //             return {brand: key, pc1: 0, pc2: 0}
-                        //         });
-                        //     PCAplot.estimate(brands, dimension, dataref);
-                        // }
-
                     }
                     try {
                         var pca = new PCA();
@@ -245,19 +236,26 @@ angular.module('pcagnosticsviz')
                         maxxyall = maxxyall.map(function (d, i) {
                             return Math.max(Math.abs(minxy[i]), Math.abs(maxxy[i]));
                         });
-                        // var maxxy = d3.max(maxxyall);
-                        //     maxxyall[0] = maxxy;
-                        //     maxxyall[1] = maxxy;
-                        // x.domain([-maxxyall]).nice();
-                        // y.domain([minxy[1],maxxy[1]]).nice();
-                        x.domain([-maxxyall[0], maxxyall[0]]).nice();
-                        y.domain([-maxxyall[1], maxxyall[1]]).nice();
+
+                        // x.domain([-maxxyall[0], maxxyall[0]]).nice();
+                        // y.domain([-maxxyall[1], maxxyall[1]]).nice();
+
+                        var maxall = d3.max(maxxyall);
+                        x.domain([-maxall, maxall]).nice();
+                        y.domain([-maxall, maxall]).nice();
                         var scale_axis = 0;
                         B.forEach(function (i) {
                             scale_axis = Math.max(scale_axis, Math.sqrt(i[0] * i[0] + i[1] * i[1]))
                         });
-                        var scale_axisx = maxxyall[0] / scale_axis;
-                        var scale_axisy = maxxyall[1] / scale_axis;
+                        var scale_axisx = maxall / scale_axis;
+                        var scale_axisy = maxall / scale_axis;
+
+                        // var scale_axis = 0;
+                        // B.forEach(function (i) {
+                        //     scale_axis = Math.max(scale_axis, Math.sqrt(i[0] * i[0] + i[1] * i[1]))
+                        // });
+                        // var scale_axisx = maxxyall[0] / scale_axis;
+                        // var scale_axisy = maxxyall[1] / scale_axis;
                         var brands = brand_names
                             .map(function (key, i) {
                                 return {
@@ -268,8 +266,6 @@ angular.module('pcagnosticsviz')
                                     load_pc2: B[i][chosenPC[1]],
                                 }
                             });
-                        // console.log(brands);
-
 
                             data.forEach(function (d, i) {
                             var xy = rotate(d.pc1, d.pc2, angle);
@@ -597,11 +593,6 @@ angular.module('pcagnosticsviz')
                                 d3.selectAll('.field-drop')
                                     .attr("class", "field-drop ng-pristine ng-untouched ng-valid ui-droppable ng-not-empty ui-dropable-active drop-active ");
                                 NotifyingService.notify();
-                                // NotifyingService.notify();
-                                //console.log($(proIwant[0]));
-                                //$(proIwant[0]).trigger("mousedown");
-                                //$(proIwant[0]).trigger('DOMContentLoaded');
-                                //$(proIwant[0]).trigger('blur');
                             })
                             .on("drag", function (d) {
                                 temp_drag
@@ -673,7 +664,7 @@ angular.module('pcagnosticsviz')
                             .style("stroke-width", '1px')
                             .on('mouseover', onMouseOverBrand)
                             .on('mouseleave', onMouseLeave);
-                        if (dimension == 0) {
+                        if (dimension === 0) {
                             listitem
                                 .on("dblclick", function (d) {
                                     var proIwant = d3.selectAll($("[id='" + d.brand + "']"))
@@ -855,11 +846,364 @@ angular.module('pcagnosticsviz')
                                     brand: key,
                                 }
                             });
-                        PCAplot.estimate(brands, dimension, data);
+                        clearBiplot();
                         PCAplot.error = {code: 1};
                         Alerts.add('Not enough dimension');
+                        PCAplot.estimate(brands, dimension, data);
                     }
-                }else if (dimension >2){
+                }
+                else if (dimension === 2){
+                    svg = d3v4.select(svg.node()).select('#bi-plot-point');
+                    clearBiplot();
+                    d3v4.select('svg.biplot .overlay').style('display',undefined).call(d3v4.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd));
+                    var newdata = [];
+
+                    data.forEach(function (d) {
+                        if (d.scag.invalid !== 1) {
+                            idlabel.push(d.label);
+                            let tempData = {};
+                            for (var v in d.scag){
+                                tempData[v] = d.scag[v];
+                            }
+                            tempData.label = d.label||[d.fieldDefs[0].field, d.fieldDefs[1].field];
+                            newdata.push(tempData);
+                        }
+                    });
+                    data = newdata
+                        .filter(function (d) {
+                            return !d.invalid // FIX ME
+                        }); // for overview 2D
+
+                    brand_names = Object.keys(data[0]).filter(function (d) {
+                        return d !== "label";
+                    });
+                    // data = d3.values(data);
+                    matrix = data.map(function (d) {
+                        return brand_names.map(b => d[b])
+                    });
+
+                    var pca = new PCA();
+                    // console.log(brand_names);
+                    matrix = pca.scale(matrix, true, true);
+
+                    var pc = pca.pca(matrix, 3);
+
+                    var A = pc[0];  // this is the U matrix from SVD
+                    var B = pc[1];  // this is the dV matrix from SVD
+                    var chosenPC = pc[2];   // this is the most value of PCA
+                    data.forEach(function (d, i) {
+                        d.label = idlabel[i]
+                        d.pc1 = A[i][chosenPC[0]];
+                        d.pc2 = A[i][chosenPC[1]];
+                        d.pc3 = A[i][chosenPC[2]];
+                    });
+
+                    dataref = data;
+                    data = brand_names.map(function (d) {
+                        var top = data.sort(function (a, b) {
+                            return a[d] < b[d] ? 1 : -1;
+                        })[0];
+                        if (top[d] > 0.65) {
+                            top.feature = d;
+                            return top;
+                        }
+                    }).filter(function (d) {
+                        return d !== undefined;
+                    });
+
+                    var z = d3.scale.linear().range([0, height]);
+
+                    var maxxy = [-Infinity, -Infinity];
+                    var minxy = [Infinity, Infinity];
+
+                    maxxy = maxxy.map(function (d, i) {
+                        return d3.max(data.map(function (e) {
+                            return e['pc' + (i + 1)];
+                        }));
+                    });
+                    minxy = minxy.map(function (d, i) {
+                        return d3.min(data.map(function (e) {
+                            return e['pc' + (i + 1)];
+                        }));
+                    });
+                    var maxxyall = [0, 0, 0];
+                    maxxyall = maxxyall.map(function (d, i) {
+                        return Math.max(Math.abs(minxy[i]), Math.abs(maxxy[i]));
+                    });
+
+                    // x.domain([-maxxyall[0], maxxyall[0]]).nice();
+                    // y.domain([-maxxyall[1], maxxyall[1]]).nice();
+
+                    var maxall = d3.max(maxxyall);
+                    x.domain([0, maxall]).nice();
+                    y.domain([maxall,0]).nice();
+                    z.domain([0, maxall]).nice();
+                    var scale_axis = 0;
+                    B.forEach(function (i) {
+                        scale_axis = Math.max(scale_axis, Math.sqrt(i[0] * i[0] + i[1] * i[1]+ i[2] * i[2]))
+                    });
+                    var scale_axisall = maxall / scale_axis;
+
+                    var brands = brand_names
+                        .map(function (key, i) {
+                            return {
+                                brand: key,
+                                pc1: B[i][chosenPC[0]] * scale_axisall,
+                                pc2: B[i][chosenPC[1]] * scale_axisall,
+                                pc3: B[i][chosenPC[2]] * scale_axisall,
+                                load_pc1: B[i][chosenPC[0]],
+                                load_pc2: B[i][chosenPC[1]],
+                                load_pc3: B[i][chosenPC[2]],
+                            }
+                        });
+
+                    data.forEach(function (d, i) {
+                        // var xy = rotate(d.pc1, d.pc2, angle);
+                        // d.pc1 = xy.x;
+                        // d.pc2 = xy.y;
+                        d.vector = matrix[i];
+                    });
+                    //update to calculate
+                    setTimeout(function(){
+                        PCAplot.estimate(brands, dimension, getData(dimension));
+                    },100);
+                    var origin = [height/2, height/2], j = height, scale = 0.5, scatter = [], yLine = [], xGrid = [], beta = 0, alpha = 0, key = function(d){ return d.id; }, startAngle = Math.PI/6, mx,my,mouseX,mouseY;
+
+                    var yScale3d = d3v4._3d()
+                        .shape('LINE_STRIP')
+                        .origin(origin)
+                        .rotateY( startAngle)
+                        .rotateX(-startAngle)
+                        .scale(scale);
+
+                    var group3d = d3v4._3d()
+                        .shape('CUBE')
+                        .x(function(d){ return  d.x; })
+                        .y(function(d){ return d.y; })
+                        .z(function(d){ return d.z; })
+                        .origin(origin)
+                        .rotateY( startAngle)
+                        .rotateX(-startAngle)
+                        .scale(scale);
+                    var point3d = d3v4._3d()
+                        .x(function(d){ return d[0]; })
+                        .y(function(d){ return d[1]; })
+                        .z(function(d){ return d[2]; })
+                        .origin(origin)
+                        .rotateY( startAngle)
+                        .rotateX(-startAngle)
+                        .scale(scale);
+                    var processData = function(data, tt){
+
+                        /* ----------- GRID ----------- */
+
+                        // var xGrid = svg.selectAll('path.grid').data(data[0], key);
+                        //
+                        // xGrid
+                        //     .enter()
+                        //     .append('path')
+                        //     .attr('class', '_3d grid')
+                        //     .merge(xGrid)
+                        //     .attr('stroke', 'black')
+                        //     .attr('stroke-width', 0.3)
+                        //     .attr('fill', function(d){ return d.ccw ? 'lightgrey' : '#717171'; })
+                        //     .attr('fill-opacity', 0.9)
+                        //     .attr('d', grid3d.draw);
+                        //
+                        // xGrid.exit().remove();
+
+                        /* --------- CUBES ---------*/
+                        let cubes = svg.selectAll("g.cube")
+                            .data(data[1], d => d.id);
+                        let ce = cubes.enter().append("g")
+                            .attr("class", "cube bigObject")
+                            .merge(cubes)
+                            .attr('fill', '#fff')
+                            .attr('stroke', '#000')
+                            .on('mouseover',function(d){console.log(d)})
+                            .sort(group3d.sort);
+                        cubes.exit().remove();
+
+                        /* --------- FACES ---------*/
+
+                        var faces = cubes.merge(ce).selectAll('path.face').data(function (d) {
+                            return d.faces;
+                        }, function (d) {
+                            return d.face;
+                        });
+
+                        faces.enter()
+                            .append('path')
+                            .attr('class', 'face')
+                            .attr('fill-opacity', 0.3)
+                            .classed('_3d', true)
+                            .merge(faces)
+                            .transition().duration(tt)
+                            .attr('d', group3d.draw);
+
+                        faces.exit().remove();
+
+                        /* ----------- POINTS ----------- */
+
+                        var points = cubes.merge(ce).selectAll('circle').data(function(d){
+                            return point3d.rotateY(beta + startAngle).rotateX(alpha - startAngle) (d.datapoints);
+                        },function(d,i){
+                            return i;
+                        });
+
+                        points
+                            .enter()
+                            .append('circle')
+                            .attr('class', '_3d')
+                            .attr('opacity', 0)
+                            .attr('cx', posPointX)
+                            .attr('cy', posPointY)
+                            .merge(points)
+                            .transition().duration(tt)
+                            .attr('r', 1)
+                            .attr('stroke', 'none')
+                            .attr('fill', function(d){ return 'steelBlue'; })
+                            .attr('opacity', 1)
+                            .attr('cx', posPointX)
+                            .attr('cy', posPointY);
+
+                        points.exit().remove();
+
+                        ce.selectAll('._3d').sort(d3v4._3d().sort);
+
+                        /* ----------- y-Scale ----------- */
+
+                        var yScale = svg.selectAll('path.yScale').data(data[2]);
+
+                        yScale
+                            .enter()
+                            .append('path')
+                            .attr('class', '_3d yScale bigObject')
+                            .merge(yScale)
+                            .attr('stroke', 'black')
+                            .attr('stroke-width', .5)
+                            .attr('d', yScale3d.draw);
+
+                        yScale.exit().remove();
+
+                        // /* ----------- y-Scale Text ----------- */
+
+                        var yText = svg.selectAll('text.yText').data(data[2]);
+
+                        yText
+                            .enter()
+                            .append('text')
+                            .attr('class', '_3d yText bigObject')
+                            .attr('dx', '.3em')
+                            .merge(yText)
+                            .each(function(d){
+                                d.centroid = {x: d[1].rotated.x, y: d[1].rotated.y, z: d[1].rotated.z};
+                            })
+                            .attr('x', function(d){ return d[1].projected.x; })
+                            .attr('y', function(d){ return d[1].projected.y; })
+                            .text(function(d){ return d.id; });
+
+                        yText.exit().remove();
+
+                        svg.selectAll('.bigObject').sort(d3v4._3d().sort);
+                        function posPointX(d){
+                            return d.projected.x;
+                        }
+
+                        function posPointY(d){
+                            return d.projected.y;
+                        }
+                    };
+                    var makeCube = function (x,y,z,size){
+                        return [
+                            {x: x - size/2, y: y - size/2, z: z + size/2}, // FRONT TOP LEFT
+                            {x: x - size/2, y: y + size/2, z: z + size/2}, // FRONT BOTTOM LEFT
+                            {x: x + size/2, y: y + size/2, z: z + size/2}, // FRONT BOTTOM RIGHT
+                            {x: x + size/2, y: y - size/2, z: z + size/2}, // FRONT TOP RIGHT
+                            {x: x - size/2, y: y - size/2, z: z - size/2}, // BACK  TOP LEFT
+                            {x: x - size/2, y: y + size/2, z: z - size/2}, // BACK  BOTTOM LEFT
+                            {x: x + size/2, y: y + size/2, z: z - size/2}, // BACK  BOTTOM RIGHT
+                            {x: x + size/2, y: y - size/2, z: z - size/2}, // BACK  TOP RIGHT
+                        ];
+                    };
+                    var brandLine = brands.map(b=>{
+                        let val =  [[x(0),y(0),z(0)],[x(b.pc1),y(b.pc2),z(b.pc3)]];
+                        val.id = b.brand;
+                        return val;
+                    });
+                    var cubesData = [];
+                    var sh = 80;
+                    data.forEach((d,i)=>{
+                        d.id = d.label.join('|');
+                        let h = sh;
+                        var _cube = makeCube(x(d.pc1),y(d.pc2), z(d.pc3), h);
+                        _cube.id = 'cube_' + d.id;
+                        _cube.fields = d.label;
+                        _cube.height = h;
+                        _cube.value = d;
+                        _cube.datapoints = getdata (d.label).map(p=>
+                            [x(d.pc1+p[0])-h/2,y(d.pc2+p[1])-h/2,z(d.pc3+p[2])-h/2]);
+                        cubesData.push(_cube);
+                    });
+                    var dataDraw = [
+                        undefined,
+                        group3d(cubesData),
+                        yScale3d(brandLine)
+                    ];
+                    processData(dataDraw, 1000);
+
+                    function dragStart(){
+                        mx = d3v4.event.x;
+                        my = d3v4.event.y;
+                    }
+
+                    function dragged(){
+                        mouseX = mouseX || 0;
+                        mouseY = mouseY || 0;
+                        beta   = (d3v4.event.x - mx + mouseX) * Math.PI / 230 ;
+                        alpha  = (d3v4.event.y - my + mouseY) * Math.PI / 230  * (-1);
+                        dataDraw = [
+                            undefined,
+                            group3d.rotateY(beta + startAngle).rotateX(alpha - startAngle)(cubesData),
+                            yScale3d.rotateY(beta + startAngle).rotateX(alpha - startAngle)(brandLine)
+                        ];
+                        processData(dataDraw, 100);
+                    }
+
+                    function dragEnd(){
+                        mouseX = d3v4.event.x - mx + mouseX;
+                        mouseY = d3v4.event.y - my + mouseY;
+                    }
+
+                    function getdata (fieldset) {
+                        // check valid
+                        const fieldValue = fieldset.map(f=>Dataset.schema._fieldSchemaIndex_selected[f]);
+                        // if (fieldValue[0].stats.distinct<2||fieldValue[1].stats.distinct<2)
+                        //     return [];
+                        var points =  Dataset.data.map(function(d,i){
+                            var point = fieldset.map(
+                                (f,i) =>{
+                                    if (fieldValue[i].primitiveType === 'string') {
+                                        const maxv = fieldValue[i].stats.distinct-1;
+                                        return Object.keys(fieldValue[i].stats.unique).indexOf(d[f])/maxv;
+                                    }
+                                    // var rangec = d3.extent(d3.keys(fieldValue.stats.unique).map(d=>+d));
+                                    var rangec =   [fieldValue[i].stats.min,fieldValue[i].stats.max];
+                                    var scaledval = (d[f]-rangec[0])/(rangec[1]-rangec[0]);
+
+                                    return isNaN(scaledval)?0.5:scaledval;
+                                });
+                            if (point.filter(p=> (p===undefined||p<0)).length)
+                                return false;
+                            point.data={key: i, value: d};
+                            return point;
+                        }).filter(d=>d);
+                        // configuration bin
+
+                        return points;
+                    }
+                }
+                else if (dimension >2){
                     PCAplot.forcetsne = d3v4.forceSimulation()
                         .alphaDecay(0)
                         .alpha(0.1);
@@ -868,6 +1212,12 @@ angular.module('pcagnosticsviz')
             }
             return PCAplot;
         };
+        function clearBiplot(){
+            d3v4.select('svg.biplot .overlay').on(".drag", null);
+            d3.select('#bi-plot').select('#bi-plot-axis').selectAll('*').remove();
+            d3.select('#bi-plot').select('#bi-plot-point').selectAll('*').remove();
+            d3.select('#bi-plot').selectAll('.bigObject').remove();
+        }
         function getSpPoint(A,B,C){
             var x1=A.x, y1=A.y, x2=B.x, y2=B.y, x3=C.x, y3=C.y;
             var px = x2-x1, py = y2-y1, dAB = px*px + py*py;
@@ -936,7 +1286,20 @@ angular.module('pcagnosticsviz')
             return matrix;
             //return output.map(function(d){return Object.keys(d).map(function(i){return d[i]})});
         }
-
+        function dataType2Num (type){
+            switch(type){
+                case "quantitative":
+                    return 1;
+                case "nominal":
+                    return 2;
+                case "temporal":
+                    return 3;
+                default:
+                    return 0;
+            }
+        }
+        PCAplot.collection =[]; // for recomendation
+        PCAplot.collectionList =[]; // for recomendation
         PCAplot.estimate = function(PCAresult,dim,dataref) {
             // choose main axis
             if (dim===0) {
@@ -951,30 +1314,100 @@ angular.module('pcagnosticsviz')
                         outlier: (pca||{outlier:0}).outlier,
                     };
                 });
-                var recomen =[];
-                var results ={};
-                //variance
-                Dataset.schema._fieldSchemas_selected.sort(function (a, b) { return Math.abs(a.stats.variance) > Math.abs(b.stats.variance) ? -1 : 1});
-                results.variance = Dataset.schema._fieldSchemas_selected.find(function(d)  {
-                    return (recomen.find(r=>r===d)=== undefined);
-                });
-                //multimodality
-                Dataset.schema._fieldSchemas_selected.sort(function (a, b) { return Math.abs(a.stats.multimodality) > Math.abs(b.stats.multimodality) ? -1 : 1});
-                results.multimodality = Dataset.schema._fieldSchemas_selected.find(function(d)  {
-                    return (recomen.find(r=>r===d)=== undefined);
-                });
-                Dataset.schema._fieldSchemas_selected.sort(function (a, b) { return Math.abs(a.stats.modeskew) > Math.abs(b.stats.modeskew) ? -1 : 1});
-                results.skewness = Dataset.schema._fieldSchemas_selected.find(function(d)  {
-                    return (recomen.find(r=>r===d)=== undefined);
-                });
+                // var recomen =[];
+                // var results ={};
+                // //variance
+                // Dataset.schema._fieldSchemas_selected.sort(function (a, b) { return Math.abs(a.stats.variance) > Math.abs(b.stats.variance) ? -1 : 1});
+                // results.variance = Dataset.schema._fieldSchemas_selected.find(function(d)  {
+                //     return (recomen.find(r=>r===d)=== undefined);
+                // });
+                // //multimodality
+                // Dataset.schema._fieldSchemas_selected.sort(function (a, b) { return Math.abs(a.stats.multimodality) > Math.abs(b.stats.multimodality) ? -1 : 1});
+                // results.multimodality = Dataset.schema._fieldSchemas_selected.find(function(d)  {
+                //     return (recomen.find(r=>r===d)=== undefined);
+                // });
+                // Dataset.schema._fieldSchemas_selected.sort(function (a, b) { return Math.abs(a.stats.modeskew) > Math.abs(b.stats.modeskew) ? -1 : 1});
+                // results.skewness = Dataset.schema._fieldSchemas_selected.find(function(d)  {
+                //     return (recomen.find(r=>r===d)=== undefined);
+                // });
+                //
+                // Dataset.schema._fieldSchemas_selected.sort(function(a, b) {
+                //     return ((a.extrastat.outlier) <(b.extrastat.outlier)) ? 1 : -1});
+                // results.outlier = Dataset.schema._fieldSchemas_selected.find(function(d)  {
+                //     return (recomen.find(r=>r===d)=== undefined);
+                // });
 
-                Dataset.schema._fieldSchemas_selected.sort(function(a, b) {
-                    return ((a.extrastat.outlier) <(b.extrastat.outlier)) ? 1 : -1});
-                results.outlier = Dataset.schema._fieldSchemas_selected.find(function(d)  {
-                    return (recomen.find(r=>r===d)=== undefined);
-                });
+                // TODO: recomendation RL
 
-                support[dim].types.forEach((d)=>drawGuideplot([results[d]], d));
+                // generate matrix
+                PCAplot.collection = [];
+                PCAplot.collectionList = [];
+                PCAplot.recommended = [];
+
+
+                support[dim].types.forEach((d)=>{
+                    const vector_h = [PCAplot.profile.level,PCAplot.profile.age,PCAplot.profile.major];
+                    let rec = Dataset.schema._fieldSchemas_selected.sort(getranking(d))[0];
+                    let vec_m =[];
+                    for (let i=0;i<9;i++){
+                        let feature = support[dim].types[i];
+                        if(feature)
+                            vec_m.push(getTypeVal(feature,rec,true)[feature])
+                        else
+                            vec_m.push(0);
+                    }
+                    for (let i=0;i<=dim;i++) {
+                        vec_m.push(dataType2Num(rec.type));
+                    }
+                    for (let i=dim+1;i<MAXRECOMMENDATION_DIM;i++) {
+                        vec_m.push(0);
+                    }
+                    abtractionLevel.forEach((a,abstractLevel)=> {
+                        PCAplot.collection.push(_.flatten([vector_h,abstractLevel,vec_m]));
+                        PCAplot.collectionList.push({obj: rec, mainfeature: d});
+                    })
+                });
+                for (let i=support[dim].types.length;i<MAXRECOMMENDATION_FEATURE;i++) {
+                    const vector_h = [PCAplot.profile.level,PCAplot.profile.age,PCAplot.profile.major];
+                    let rec = _.sample(Dataset.schema._fieldSchemas_selected);
+                    let d = undefined;
+                    let d_max = 0;
+                    const vec_m = [];
+                    for (let i=0;i<9;i++){
+                        let feature = support[dim].types[i];
+                        if(!d)
+                            d = feature;
+                        if(feature) {
+                            const r = getTypeVal(feature, rec, true)[feature];
+                            vec_m.push(r);
+                            if (d_max < r)
+                            {
+                                d_max = r;
+                                d = feature;
+                            }
+                        }else
+                            vec_m.push(0);
+                    }
+                    for (let i=0;i<=dim;i++) {
+                        vec_m.push(dataType2Num(rec.type));
+                    }
+                    for (let i=dim+1;i<MAXRECOMMENDATION_DIM;i++) {
+                        vec_m.push(0);
+                    }
+                    abtractionLevel.forEach((a,abstractLevel)=> {
+                        PCAplot.collection.push(_.flatten([vector_h,abstractLevel,vec_m]));
+                        PCAplot.collectionList.push({obj: rec, mainfeature: d});
+                    })
+                }
+                PCAplot.recommended = PCAplot.agent.recommend(PCAplot.collection,4);
+                PCAplot.recommended.forEach(d=>{
+                    const currentRec = PCAplot.collectionList[d];
+                    drawGuideplot([currentRec.obj],currentRec.mainfeature);
+                })
+                // support[dim].types.forEach((d)=>{
+                //     if (results[d])
+                //         drawGuideplot([results[d]], d);
+                // });
                 // drawGuideplot([variancemost], 'variance');
                 // drawGuideplot([multimodalitymost], 'multimodality');
                 // // drawGuideplot([object2], 'PC2');
@@ -995,18 +1428,17 @@ angular.module('pcagnosticsviz')
                         return a[type]<b[type]?1:-1;
                     });
                     var obj = {};
-                    console.log(dataref);
                     dataref.find ((topp)=>{
                         var topitem = topp.label;
                         if (objects[topitem[0]] === undefined || objects[topitem[0]][topitem[1]]=== undefined){
                             objects[topitem[0]] = {}||objects[topitem[0]];
                             var newobs =  {
                                 type: type,
-                                fieldDefs:[Dataset.schema.fieldSchema(topitem[0]),Dataset.schema.fieldSchema(topitem[1])],};
+                                fieldDefs:topitem.map(t=>Dataset.schema.fieldSchema(t)),};
                             objects[topitem[0]][topitem[1]] = newobs;
                             obj = {fields: newobs.fieldDefs,
                                 type: type,
-                                dataref: PCAplot.dataref,
+                                dataref: dataref,
                                 score: dataref[0][type]};
                             return true;
                         }
@@ -1021,8 +1453,8 @@ angular.module('pcagnosticsviz')
                 ran =0;
                 support[dim].types.filter((d,i)=>i<4).forEach((d)=>{
                     var  item = tops.find(t=>t.type==d);
-                    if(item && PCAplot.dim===1)
-                        drawGuideplot(item.fields,item.type,PCAplot.dataref)});
+                    if(item && PCAplot.dim<2)
+                        drawGuideplot(item.fields,item.type,dataref)});
 
             }
         };
@@ -1074,7 +1506,7 @@ angular.module('pcagnosticsviz')
             prop.charts = (prop.dim>2?[prop.fieldDefs]:(getData(prop.dim).sort(prop.ranking)))
             .map(function(d){
                 var chart = prop.plot((d.fieldDefs||d ),prop.mark,prop.mspec);
-                chart.vlSpec.config.typer = {type: prop.type,val: (prop.dim>1?0:getTypeVal(undefined,d.fieldDefs||d))};
+                chart.vlSpec.config.typer = {type: prop.type,val: (d.scag||getTypeVal(undefined,d.fieldDefs||d))}
                 return chart;});
 
             prop.previewcharts = prop.charts.map(function (d,i) {
@@ -1306,7 +1738,8 @@ angular.module('pcagnosticsviz')
         function wrongMarkDim(mark,dim){
             return support[dim].marks.find(function(m){return m===mark})===undefined;
         }
-        PCAplot.checkRender = function (spec,fields) { // convert spec to mpec
+        // convert spec to mpec
+        PCAplot.checkRender = function (spec,fields) {
             // console.log(spec)
             var typer = spec2typer(spec,fields);
             var type = type2type(typer.type,typer.dim,PCAplot.dim);
@@ -1318,6 +1751,8 @@ angular.module('pcagnosticsviz')
                     PCAplot.state = states.GENERATE_GUIDE;
                     if ((PCAplot.dim !== PCAplot.prop.dim)||(typer.mark==='__ANY__')){
                         if (wrongMarkDim(typer.mark,PCAplot.dim)) {
+                            if (PCAplot.dim<2)
+                                delete spec.config.extraconfig;
                             if (typer.mark)
                                 spec.mark = mark2mark(spec.mark,PCAplot.prop.dim, PCAplot.dim);
                             else
@@ -1379,10 +1814,14 @@ angular.module('pcagnosticsviz')
                 return (countcheck > fields.length)||(countcheck === fields.length);
             });
         }
-        PCAplot.requestupdate = function (dim, forceupdat){
+        PCAplot.requestupdate = function (dim, forceupdat,spec,fields){
             if (dim===undefined)
                 dim = PCAplot.dim;
+            if (forceupdat){
+                onCal_scagnotic(dim);
+            }
             if (PCAplot.dim !== dim || PCAplot.firstrun|| forceupdat) { // plot condition
+                PCAplot.checkRender(spec,fields);
                 PCAplot.dim = dim;
                 // var data;
                 // if (dim == 0 || dim > 2)
@@ -1396,6 +1835,7 @@ angular.module('pcagnosticsviz')
                 //     PCAplot.firstrun = true;
                 // }
                 // PCAplot.plot(data, dim);
+                PCAplot.prop.mspec =
                 handleScagnostic(dim);
             }
             PCAplot.dim = dim;
@@ -1423,7 +1863,7 @@ angular.module('pcagnosticsviz')
                 return;
             }
             if (fieldsets.length<2) { // use to 2
-                var possible = getData(1).filter(function (d) {
+                var possible = getData(PCAplot.dim + 1).filter(function (d) {
                     var ff = true;
                     fieldsets.forEach(function (it) {
                         var f = false;
@@ -1435,11 +1875,16 @@ angular.module('pcagnosticsviz')
                     return ff;
                 }).filter(d=> !d.scag.invalid);
                 if (possible.length !== 0) {
-                    var topitem = support[PCAplot.dim + 1].types.map(function (d) {
-                        return possible.sort(function (a, b) {
-                            return (a.scag[d] < b.scag[d]) ? 1 : -1;
-                        })[0];
-                    });
+                    // get top item
+                    // var topitem = support[PCAplot.dim + 1].types.map(function (d) {
+                    //     return possible.sort(function (a, b) {
+                    //         return (a.scag[d] < b.scag[d]) ? 1 : -1;
+                    //     })[0];
+                    // });
+                    var newtype = type2type(PCAplot.prop.type,PCAplot.prop.dim, PCAplot.prop.dim+1);
+                    var topitem = possible.sort(function (a, b) {
+                                return (a.scag[newtype] < b.scag[newtype]) ? 1 : -1;
+                            });
                     var unique = [];
                     var uniquetype = [];
                     topitem.forEach(function (d, i) {
@@ -1447,7 +1892,8 @@ angular.module('pcagnosticsviz')
                                 return u === d;
                             }).length === 0) {
                             unique.push(d);
-                            uniquetype.push(support[PCAplot.dim + 1].types[i]);
+                            uniquetype.push(newtype );
+                            // uniquetype.push(support[PCAplot.dim + 1].types[i]);
                         }
                     });
                     var charts = uniquetype.map(function (d, i) {
@@ -1468,7 +1914,10 @@ angular.module('pcagnosticsviz')
                                 overlay: {line: true},
                                 scale: {useRawDomain: true}
                             };
-                            mark2plot(mark2mark(mspec.vlSpec.mark, PCAplot.dim), spec, d.v.fieldDefs);
+                            spec.config.typer = {type: d.type, val: d.v.scag[d.type] };
+                            var extra = mspec.vlSpec.config.extraconfig;
+                            var mmark = extra ? mspec.vlSpec.mark + "-" + extra : mspec.vlSpec.mark;
+                            mark2plot(mark2mark(mmark, PCAplot.dim), spec, d.v.fieldDefs);
                             var query = getQuery(spec,undefined,d.type);
                             var output = cql.query(query, Dataset.schema);
                             PCAplot.query = output.query;
@@ -1580,7 +2029,7 @@ angular.module('pcagnosticsviz')
             nprop.charts = dataref.sort(nprop.ranking)
                 .map(function(d) {
                     var chart = drawGuideexplore((d.fieldDefs||d),nprop.mark,nprop.mspec);
-                    chart.vlSpec.config.typer = {type: prop.type,val: getTypeVal(undefined,d.fieldDefs||d)};
+                    chart.vlSpec.config.typer = {type: prop.type,val: d.scag||(getTypeVal(undefined,d.fieldDefs||d))};
                     return chart; });
             //while (nprop[nprop.length-1])
             nprop.previewcharts = nprop.charts.map(function(d,i) {
@@ -1757,6 +2206,7 @@ angular.module('pcagnosticsviz')
                 x: {field: object.field, type: object.type},
                 y: {aggregate: "count", field: "*"}
             };
+            delete spec.config.extraconfig;
             if (object.type==="quantitative"){
                 spec.encoding.x.bin ={};
                 spec.encoding.y.type = object.type;
@@ -1768,7 +2218,7 @@ angular.module('pcagnosticsviz')
                 spec.encoding.x.timeUnit = "year";
                 spec.encoding.y.type = "quantitative";
             }
-
+            if (spec.config&&spec.config.extraconfig) delete spec.config.extraconfig;
         }
 
         function dashplot(spec,objectin,mark) {
@@ -1777,6 +2227,7 @@ angular.module('pcagnosticsviz')
             spec.encoding = {
                 x: {field: object.field, type: object.type}
             };
+            if (spec.config&&spec.config.extraconfig) delete spec.config.extraconfig;
         }
 
         function areaplot(spec,objectin) {
@@ -1793,6 +2244,7 @@ angular.module('pcagnosticsviz')
                 spec.encoding.y.type = "quantitative";
             }
             spec.config.opacity = 1;
+            if (spec.config&&spec.config.extraconfig) delete spec.config.extraconfig;
         }
         function boxplot(spec,objectin) {
             var object = objectin[0]||objectin;
@@ -1800,6 +2252,7 @@ angular.module('pcagnosticsviz')
             spec.encoding = {
                 x: { field: object.field, type: object.type}
             };
+            if (spec.config&&spec.config.extraconfig) delete spec.config.extraconfig;
         }
 
         function pointplot(spec,objects,extramark) {
@@ -1810,6 +2263,7 @@ angular.module('pcagnosticsviz')
             };
             spec.config = spec.config||{};
             spec.config.mark= {"filled": true, "opacity":1};
+            if (spec.config&&spec.config.extraconfig) delete spec.config.extraconfig;
         }
 
         function scatterplot(spec,objects,option){
@@ -1969,16 +2423,7 @@ angular.module('pcagnosticsviz')
             PCAplot.limitup = (PCAplot.prop.pos > (PCAplot.limit-1))? (PCAplot.prop.pos-2) : 0;
             PCAplot.mspec = prop.mspec;
         };
-        // const collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
-        // Array.prototype.naturalSort= function(_){
-        //     if (arguments.length) {
-        //         return this.sort(function (as, bs) {
-        //             return collator.compare(as[_],bs[_]);
-        //         });
-        //     }else {
-        //         return this.sort(collator.compare);
-        //     }
-        // };
+
         function combineName (flieds){
             return flieds.map(d=>d.replace(/-/g,'')).naturalSort().join('-');
         }
@@ -2168,20 +2613,24 @@ angular.module('pcagnosticsviz')
 
                 return combs
             };
+            function isEmpty(obj) {
+                return !obj || Object.keys(obj).length === 0;
+            }
             const onScag = (maxCombine)=>{
+                dataschema._fieldSchemas_selected.sort((a,b)=>a.index-b.index);
                 //asume that _fieldSchemaIndex sorted and won't change over time
-                const  combination = k_combinations(Object.keys(dataschema._fieldSchemaIndex_selected), maxCombine);
+                const  combination = k_combinations(dataschema._fieldSchemas_selected.map(d=>d.field), maxCombine);
                 combination.forEach((fields,index_progress)=>{
                     let dest = dataschema._fieldSchemaIndex_selected[fields[0]];
                     let calKey = false; // should we calculate scag or not
                     let valid = true;
                     for (let i=1; i< maxCombine; i++){
                         const selectedfield = fields[i];
-                        if(dest.scagStats===undefined){
+                        if(isEmpty(dest.scagStats)){
                             calKey = true||calKey;
                             dest.scagStats ={};
                             dest.scagStats[selectedfield] = {};
-                        }else if(dest.scagStats[selectedfield]===undefined){
+                        }else if(isEmpty(dest.scagStats[selectedfield])){
                             calKey = true||calKey;
                             dest.scagStats[selectedfield] ={};
                         }
@@ -2294,21 +2743,25 @@ angular.module('pcagnosticsviz')
                         invalid: 1,
                     };
                     combination.forEach(c=>{
+                        // debugger
                         // recalculate scag if needed
-
-                        let curretn_scag = (dataschema._fieldSchemaIndex_selected[c[0]].scagStats[c[1]]||{}).scag;
-                        if (curretn_scag === undefined)
-                            curretn_scag = dataschema._fieldSchemaIndex_selected[c[1]].scagStats[c[0]].scag;
-                        results.outlying = Math.max(curretn_scag.outlying,results.outlying);
-                        results.skewed = Math.max(curretn_scag.skewed,results.skewed);
-                        results.sparse = Math.max(curretn_scag.sparse,results.sparse);
-                        results.clumpy = Math.max(curretn_scag.clumpy,results.clumpy);
-                        results.striated = Math.max(curretn_scag.striated,results.striated);
-                        results.convex = Math.max(curretn_scag.convex,results.convex);
-                        results.skinny = Math.max(curretn_scag.skinny,results.skinny);
-                        results.stringy = Math.max(curretn_scag.stringy,results.stringy);
-                        results.monotonic = Math.max(curretn_scag.monotonic,results.monotonic);
-                        results.invalid = curretn_scag.invalid && results.invalid;
+                        try {
+                            let curretn_scag = (dataschema._fieldSchemaIndex_selected[c[0]].scagStats[c[1]] || {}).scag;
+                            if (curretn_scag === undefined)
+                                curretn_scag = dataschema._fieldSchemaIndex_selected[c[1]].scagStats[c[0]].scag;
+                            results.outlying = Math.max(curretn_scag.outlying, results.outlying);
+                            results.skewed = Math.max(curretn_scag.skewed, results.skewed);
+                            results.sparse = Math.max(curretn_scag.sparse, results.sparse);
+                            results.clumpy = Math.max(curretn_scag.clumpy, results.clumpy);
+                            results.striated = Math.max(curretn_scag.striated, results.striated);
+                            results.convex = Math.max(curretn_scag.convex, results.convex);
+                            results.skinny = Math.max(curretn_scag.skinny, results.skinny);
+                            results.stringy = Math.max(curretn_scag.stringy, results.stringy);
+                            results.monotonic = Math.max(curretn_scag.monotonic, results.monotonic);
+                            results.invalid = curretn_scag.invalid && results.invalid;
+                        }catch (e) {
+                            debugger
+                        }
                     });
                     if (results.invalid)
                         results.invalid = 1;
@@ -2445,7 +2898,8 @@ angular.module('pcagnosticsviz')
 
             if (PCAplot.dim===index) {
                 PCAplot.firstrun =true;
-                PCAplot.plot((index>0)?getData(1).map(d=>d):Dataset.data, index==2?1:index);
+                // PCAplot.plot((index>0)?getData(1).map(d=>d):Dataset.data, index==2?1:index);
+                PCAplot.plot((index>0)?getData(index).map(d=>d):Dataset.data, index);
             }
             try {
                 PCAplot.updateSpec(PCAplot.prop);
@@ -2670,6 +3124,7 @@ angular.module('pcagnosticsviz')
                 const currentcal = 'Scagnostic';
                 PCAplot.calculateState.push(currentcal);
                 PCAplot.workerOjects['Scagnostic'] = Webworker.create(calscagnotic, {async: true});
+                console.log(Dataset.schema)
                 PCAplot.workerOjects['Scagnostic'].run(Dataset.schema, Dataset.data,index+1).then(function (result) {
                     $mdToast.show(
                         $mdToast.simple()
@@ -2678,9 +3133,9 @@ angular.module('pcagnosticsviz')
                             .hideDelay(2000));
                     handleScagnostic(index);
                     _.pull(PCAplot.calculateState,currentcal);
-                    PCAplot.workerOjects['Scagnostic'] = undefined;
-                    if (index===1)// auto trigger scagnostic calcualtion for 3D
-                        onCal_scagnotic (2);
+                    delete PCAplot.workerOjects['Scagnostic'];
+                    // if (index===1)// auto trigger scagnostic calcualtion for 3D
+                    //     onCal_scagnotic (2);
                     PCAplot.calProcess = 0;
                 }, null, function (progress) {
                     PCAplot.calProcess = progress.progress*100;
@@ -2726,6 +3181,10 @@ angular.module('pcagnosticsviz')
             fieldSet[1].channel = 'y';
             spec.fieldSet = fieldSet;
         }
+
+        PCAplot.getURL = function(){
+            return SpecProfile.getUrlbyProp(PCAplot.prop);
+        };
 
         PCAplot.mark2mark = mark2mark;
         PCAplot.reset = function(hard) {

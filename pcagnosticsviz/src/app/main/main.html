@@ -9,7 +9,8 @@
       <div class="hflex" style="justify-content: space-between;">
         <!--<div id="logo" ng-click="Logger.export()"></div>-->
         <div class="pane" style="display: inline-flex;">
-            <div id="logo"></div>
+            <div id="logo" ng-click="Logger.export()"></div>
+            <!--<md-button id="shareProfile" class="md-raised md-primary headerBtn" ng-click="getURL()"><h3>Share</h3></md-button>-->
             <!--<md-button id="video" class="md-raised md-primary" ng-click="showvideo=!showvideo"><i class="fa fa-video-camera"></i><h3>Video</h3></md-button>-->
         </div>
         <div class="pane">
@@ -20,6 +21,7 @@
             <!--</a>-->
             <a class="command" ng-click="chron.undo()" ng-class="{disabled: !canUndo}"><i class="fa fa-undo"></i> Undo</a>
             <a class="command" ng-click="chron.redo()" ng-class="{disabled: !canRedo}"><i class="fa fa-repeat"></i> Redo</a>
+            <a class="command" ng-click="getURL()"><i class="fa fa-share"></i> Share</a>
           </div>
         </div>
         <div class="pane" style="display: inline-flex;">
@@ -29,6 +31,10 @@
             <md-progress-linear class='md-theme' md-mode="determinate" value="{{PCAplot.calProcess}}" ></md-progress-linear>
           </div>
 
+          <div class="controls">
+            <a class="command" ng-class="{hide: islogin}" ng-click="auth.loginAnonymous()">Login anonymourly</a>
+            <a class="command" ng-class="{hide: !islogin}" ng-click="auth.logout()">Logout</a>
+          </div>
           <div class="controls">
             <a class="command" ng-if = "themeDrak"  ng-click="changetheme()" >
               <i class="fa fa-moon-o"></i> Dark</a>
@@ -58,7 +64,7 @@
         </div>
         <h3>Overview</h3>
         <bi-plot
-                error = "PCAplot.error.code==1"
+                error = "PCAplot.error.code==2"
                 hideSvg = "false"
                 <!--hideCanvas = "PCAplot.dim<3"-->
         ></bi-plot>
@@ -101,9 +107,10 @@
             <schema-list field-defs="Dataset.schema.fieldSchemas"
               order-by="Dataset.fieldOrder"
               show-count="false"
-              show-remove="true"
+              show-remove="false"
+              show-add="true"
               filter-manager="FilterManager"
-              show-add="false"
+              show-disable="true"
             ></schema-list>
           </div>
           <!--<div class=" hflex full-width">-->

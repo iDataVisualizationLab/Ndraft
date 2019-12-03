@@ -1,6 +1,6 @@
 'use strict';
 angular.module('pcagnosticsviz')
-    .directive('guideMenu',['Heap','$timeout', function(Heap,$timeout){
+    .directive('guideMenu',['Heap','$timeout','NotifyingService', function(Heap,$timeout,NotifyingService){
         //template: "<svg id =\'bi-plot\' width=\'100%\' class=\"\"></svg>",
         let renderQueue = new Heap(function(a, b){
                 return a.priority - b.priority;
@@ -84,6 +84,7 @@ angular.module('pcagnosticsviz')
                     Logger.logInteraction(Logger.actions.FEATURE_QUICKNAVIGATION,index, {
                         val:{PS:tolog,spec:this.vlSpec,query:this.query},
                         time:new Date().getTime()});
+                    NotifyingService.notify();
                     //console.log($scope.prop.pos);
                 };
                 var renderQueueNextPromise = null;
@@ -288,6 +289,7 @@ angular.module('pcagnosticsviz')
                     generalattr.margin= {left:20, top: 75, bottom:20    , right:20};
                     generalattr.height = Math.max(800,generalattr.sh*$scope.prop.previewcharts.length/4);
                     generalattr.svg.attr('viewBox',[0,0,generalattr.width,generalattr.height].join(' '));
+                    generalattr.svg.call(d3v4.drag().on('drag', null).on('start', null).on('end', null));
                     generalattr.g = d3v4.select('.thum').select('.oneDimentional');
                     generalattr.g.select('.twoDimentional').selectAll('*').remove();
                     var colorArray = PCAplot.colorthem.rainbow;
@@ -309,6 +311,17 @@ angular.module('pcagnosticsviz')
                             .append('stop')
                             .attr('offset',(d,i)=> (i / (level - 1) * 100) + '%')
                             .attr('stop-color',(d)=>d);
+                        generalattr.g.append("defs").append("marker")
+                            .attr("id", "triangle")
+                            .attr("refX", 6)
+                            .attr("refY", 6)
+                            .attr("markerWidth", 30)
+                            .attr("markerHeight", 30)
+                            .attr("markerUnits","userSpaceOnUse")
+                            .attr("orient", "auto")
+                            .append("path")
+                            .attr("d", "M 0 0 12 6 0 12 3 6")
+                            .style("fill", "black");
                     }
 
                     makeLegend();
@@ -347,7 +360,11 @@ angular.module('pcagnosticsviz')
                     generalattr.yScale.domain([0,1]);
                     generalattr.force.nodes($scope.prop.previewcharts).alpha(0.3).restart();
                     // fixedSizeForeignObjects(d3v4.select(".thum").selectAll('foreignObject').nodes());
-
+                    generalattr.g.select('line.direction')
+                        .attr("x1",  generalattr.xRescale(0)+generalattr.sw/2)
+                        .attr("y1", generalattr.yScale(0))
+                        .attr("x2", generalattr.xRescale(0)+generalattr.sw/2)
+                        .attr("y2", generalattr.yScale(1));
                 }
 
                 function selectplot_1D (index) {
@@ -373,6 +390,7 @@ angular.module('pcagnosticsviz')
                     generalattr.canvas.attr('width',generalattr.width)
                         .attr('height',generalattr.height);
                     generalattr.g = d3v4.select('.thum').select('.twoDimentional');
+                    generalattr.svg.call(d3v4.drag().on('drag', null).on('start', null).on('end', null));
 
                     makeLegend(undefined,75);
                     let sizescale = d3v4.scaleLinear()
@@ -384,10 +402,15 @@ angular.module('pcagnosticsviz')
                     let domainByTrait = r.domainByTrait;
                     let traits = r.traits;
 
-                    generalattr.xScale = d3v4.scaleBand().paddingInner(0.05).paddingOuter(0).range([0, generalattr.w()]).round(true).domain(traits.map(d=>d.text));
+                    let limitedscale = traits.length*100;
+
+                    generalattr.xScale = d3v4.scaleBand().paddingInner(0.05).paddingOuter(0).range([0, Math.min(limitedscale,generalattr.w())]).round(true).domain(traits.map(d=>d.text));
                     generalattr.yScale = d3v4.scaleBand().paddingInner(0.05).paddingOuter(0).range([0, generalattr.h()]).round(true).domain(traits.map(d=>d.text));
                     const xScales = d3v4.scaleLinear().range([generalattr.xScale.bandwidth()*0.15,generalattr.xScale.bandwidth()*0.85]).domain([0,1]);
                     const yScales = d3v4.scaleLinear().range([generalattr.xScale.bandwidth()*0.85,generalattr.xScale.bandwidth()*0.15]).domain([0,1]);
+                    let x2y = function (x){
+                        return x- generalattr.xScale.bandwidth()+30;
+                    } ;
                     let level= 7;
                     let maincolor = d3v4.scaleSequential(d3v4.interpolateViridis);
                     var emptycolor = "#ffffff";
@@ -407,6 +430,11 @@ angular.module('pcagnosticsviz')
                         d.id = pos.join('|');
                     });
 
+                    // set min radius for point
+                    let radius = (xScales(0.02)-xScales(0));
+                    console.log(radius)
+                    radius = radius<1?1:radius;
+                    console.log(radius)
                     let labels = generalattr.g.selectAll(".mlabel")
                         .data(traits,d=>d.text);
                     labels.transition().duration(generalattr.w()).delay(function(d, i) { return generalattr.xScale(d.text); }).call(updateLabel);
@@ -482,6 +510,7 @@ angular.module('pcagnosticsviz')
                                 if (pos[0]>pos[1])
                                     PCAplot.transpose(d.order);
                                 pos.sort((a,b)=>a-b);
+                                pos[1]=x2y(pos[1]);
                                     drawCanvas (d,pos);
                                 return "translate(" + pos[0] + "," + pos[1] + ")"; })
                             .on('click', function (d,i){
@@ -494,17 +523,6 @@ angular.module('pcagnosticsviz')
                             .style("fill",d=>generalattr.colorScale(Math.abs(d.vlSpec.config.typer.val[d.vlSpec.config.typer.type])))
                             .attr("width", d => generalattr.xScale.bandwidth())
                             .attr("height",d => generalattr.xScale.bandwidth());
-                        // svg
-                        // draw scatterplot
-                        // let subg_c = subg.selectAll('.cpoint')
-                        //     .data(d=>getdata(d));
-                        // subg_c.exit().remove();
-                        // subg_c.enter().append('circle')
-                        //     .attr('r',2)
-                        //     .call(create_circle);
-                        // subg_c.transition().duration(100).call(create_circle);
-
-                        // canvas
 
                         return  subg;
 
@@ -561,7 +579,7 @@ angular.module('pcagnosticsviz')
 
                                     return isNaN(scaledval)?0.5:scaledval;
                                 });
-                            if (point.filter(p=> (p===undefined)).length)
+                            if (point.filter(p=> (p===undefined||p<0)).length)
                                 return false;
                             point.data={key: i, value: d};
                             return point;
@@ -598,13 +616,13 @@ angular.module('pcagnosticsviz')
                     }
 
 
-                    function plotminisummary (data) {
+                    function plotminisummary () {
                         let conf ={};
                         let finalDecision = checkAvailability(1);
                         switch(finalDecision){
                             case 0:
                                 conf.mark = 'point';
-                                conf.radius = 1;
+                                conf.radius = radius;
                                 break;
                             case 1:
                                 conf.mark = 'hexagon';
@@ -630,10 +648,11 @@ angular.module('pcagnosticsviz')
                             if (pos[0]>pos[1])
                                 PCAplot.transpose(d.order);
                             pos.sort((a,b)=>a-b);
-                            return "translate(" + pos[0] + "," + pos[1] + ")"; })
+                            return "translate(" + pos[0] + "," + x2y(pos[1]) + ")"; })
                             .on('end',d=>{
                                 const pos = [generalattr.xScale(d.fieldSet[0].field),generalattr.xScale(d.fieldSet[1].field)];
                                 pos.sort((a,b)=>a-b);
+                                pos[1]=x2y(pos[1]);
                                 drawCanvas (d,pos);
                             });
                         return p
@@ -651,7 +670,7 @@ angular.module('pcagnosticsviz')
                             .attr("class", "mlabel")
                             .attr("transform", function(d) {
                                 const pos = [generalattr.xScale(d.text),generalattr.xScale(d.text)+generalattr.xScale.bandwidth()];
-                                return "translate(" + pos[0] + "," + pos[1] + ")"; })
+                                return "translate(" + pos[0] + "," + x2y(pos[1]) + ")"; })
                             .append("text")
                             .attr("class", "mlabeltext")
                             .attr('dy','-0.5em')
@@ -661,7 +680,7 @@ angular.module('pcagnosticsviz')
                     function updateLabel(p) {
                         return p.attr("transform", function(d) {
                             const pos = [generalattr.xScale(d.text),generalattr.xScale(d.text)+generalattr.xScale.bandwidth()];
-                            return "translate(" + pos[0] + "," + pos[1] + ")"; });
+                            return "translate(" + pos[0] + "," + x2y(pos[1]) + ")"; });
                     }
 
                 }
@@ -761,11 +780,11 @@ angular.module('pcagnosticsviz')
                             let tick ;
                             if (ai===0) { // x
                                 tick = [generalattr.xScale(t.text)+generalattr.xScale.bandwidth()/2,generalattr.yScale(traits[1].text),generalattr.xScale.bandwidth()];
-                                tick.text = t.text;
+                                tick.text = i===0?t.text:'';
                             }
                             if (ai===1) { // y
                                 tick = [0,generalattr.yScale(t.text)-generalattr.xScale.bandwidth()/2,generalattr.xScale.bandwidth()];
-                                tick.text = i===3?t.text:'';
+                                tick.text = i>1?t.text:'';
                             }
                             if (ai===2){ // z
                                 tick = [generalattr.xScale.bandwidth()/2,generalattr.yScale(traits[1].text),generalattr.xScale(t.text)+generalattr.xScale.bandwidth()/2];
@@ -785,7 +804,7 @@ angular.module('pcagnosticsviz')
                     // axis[2][0][2] = generalattr.xScale(temp);
                     // axis[2][0][1] = axis[1][0][1]-generalattr.xScale.bandwidth()/2;
                     // make floor
-                    let floor = makeFloor(0,-generalattr.xScale.bandwidth(),0,j);
+                    let floor = makeFloor(-20,-generalattr.xScale.bandwidth()+1,0,j);
                     floor.id = 'floor';
 
 
@@ -797,13 +816,13 @@ angular.module('pcagnosticsviz')
                             .data(data, d => d.id);
                         let ce = cubes.enter().append("g")
                             .attr("class", "cube bigObject")
+                            .merge(cubes)
                             .attr('fill', function (d) {
                                 return generalattr.colorScale(d.value);
                             })
                             .attr('stroke', function (d) {
                                 return d3v4.color(generalattr.colorScale(d.value)).darker(2);
                             })
-                            .merge(cubes)
                             .sort(cubes3D.sort)
                             .on('click', function (d,i){
                                 generalattr.g.selectAll('.active').classed('active',false);
@@ -850,7 +869,7 @@ angular.module('pcagnosticsviz')
                             .attr('d', floor3D.draw);
                         floorInstance.exit().remove();
 
-                        d3.selectAll('.bigObject').sort(d3v4._3d().sort);
+                        generalattr.g.selectAll('.bigObject').sort(d3v4._3d().sort);
                     }
 
                     function legend(data,tt) {

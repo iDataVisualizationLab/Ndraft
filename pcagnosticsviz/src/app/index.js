@@ -32,6 +32,18 @@
 
 'use strict';
 /* globals window */
+// Your web app's Firebase configuration
+var firebaseConfig = {
+    apiKey: "AIzaSyDL4xbG2r6g6IcRlTDghhp2FPWXFfuj3As",
+    authDomain: "hmaviz.firebaseapp.com",
+    databaseURL: "https://hmaviz.firebaseio.com",
+    projectId: "hmaviz",
+    storageBucket: "hmaviz.appspot.com",
+    messagingSenderId: "244530346338",
+    appId: "1:244530346338:web:35ac3f20063be76f"
+};
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
 
 angular.module('pcagnosticsviz', [
     'vlui',
@@ -47,7 +59,8 @@ angular.module('pcagnosticsviz', [
     'ngWebworker',
     'ngAnimate',
     'ngAria',
-    'ngMaterial'])
+    'ngMaterial',
+    'firebase'])
   .constant('_', window._)
   .constant('vg', window.vg)
   .constant('cql', window.cql)
@@ -67,7 +80,7 @@ angular.module('pcagnosticsviz', [
       initialSpec: window.initialSpec || undefined,
       debugInList: false,
       logLevel: 'DEBUG',
-      logToWebSql: false, // log user interactions (for user study)
+      logToWebSql: true, // log user interactions (for user study)
       maxAnyShelf: 4
     });
   })
@@ -87,5 +100,6 @@ angular.module('pcagnosticsviz', [
     if (consts.embeddedData) return;
     AnalyticsProvider
       .setAccount({ tracker: 'UA-44428446-4', name: 'pcagnosticsviz', trackEvent: false });
-  }).config(function($mdThemingProvider) {
-});
+    }).config(function($mdThemingProvider) {
+
+    });

@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('pcagnosticsviz')
-  .controller('MainCtrl', function($scope, $document, Spec, Dataset, Wildcards,  Config, consts, Chronicle, Logger, Bookmarks, Modals, FilterManager,NotifyingService,PCAplot,Pills,$mdToast) {
+  .controller('MainCtrl', function($scope, $document, Spec, Dataset,$location, Wildcards, Config, consts, Chronicle, Logger, Bookmarks, Modals, FilterManager,NotifyingService,PCAplot,RECOMMENDATION,Pills,SpecProfile,$mdToast,$firebaseArray,Auth) {
     $scope.Spec = Spec;
     $scope.contain = {"bi-plot":'Overview',
         "div":[{key:'guideplot',val:'Exemplar'},
@@ -25,6 +25,8 @@ angular.module('pcagnosticsviz')
     $scope.fieldShow = true;
     $scope.WildcardsShow = false;
     $scope.PCAplot= PCAplot;
+    $scope.recommendation= RECOMMENDATION;
+    $scope.SpecProfile= SpecProfile;
     $scope.showEncoding = false;
     $scope.showExtraGuide = false;
     $scope.themeDrak = false;
@@ -53,6 +55,45 @@ angular.module('pcagnosticsviz')
       }
     };
 
+    //<editor-fold desc=User manager>
+      $scope.auth = Auth;
+      // // database for preset
+      // var auth = $firebaseAuth();
+      //
+      $scope.islogin =false;
+      // any time auth state changes, add the user data to scope
+      $scope.auth.firebaseAuthObject.$onAuthStateChanged(function(firebaseUser) {
+          // console.log(firebaseUser)
+          $scope.islogin = firebaseUser!==null;
+          $scope.firebaseUser = firebaseUser;
+      });
+      //</editor-fold>
+
+      //
+      const ref = firebase.database().ref().child('RL');
+      ref.on('value', function(snapshot) {
+          console.log('LOADED AGENT')
+          if(snapshot.val()===null) {
+              $scope.recommendation.createAgent()
+              ref.set(JSON.stringify($scope.recommendation.getAgent()), function(error) {
+                  if (error) {
+                      console.log(error)
+                  } else {
+                      console.log('SUCCESS init agent data')
+                  }
+              });
+          }else{
+              $scope.recommendation.setAgent(JSON.parse(snapshot.val()));
+          }
+      });
+      // ref.orderByChild("id").limitToLast(25);
+      // let preset = new $firebaseArray(ref);
+      // preset.$loaded().then(function(){
+      //     $scope.profile = preset.$value;
+      // });
+
+      // asume we load the profile from linkn
+      $scope.profile = {level:0,age:0,major:0};
 
     // log event
   $scope.onMouseOverLog = function ($event) {
@@ -122,6 +163,95 @@ angular.module('pcagnosticsviz')
       // at this point we don't have the suggestion type available, thus reset
       $scope.setAlternativeType(null, true);
     });
+    console.log($location.search());
+
+    function initwithURL(urlObject){
+        let dataID = urlObject.data;
+        if (dataID) {
+            try {
+                Dataset.dataset = Dataset.datasets.find(d => d.id === dataID)||Dataset.dataset;
+            }catch(e){
+                $mdToast.show(
+                    $mdToast.simple()
+                        .textContent("Request data fail, use profile link instead of direct link!")
+                        .position('top right')
+                        .hideDelay(2000));
+            }
+        }
+        Dataset.invalidList = {'':null,'null':null,'undefined':null,'empty':null,' ':null};
+        Dataset.update(Dataset.dataset).then(function() {
+            Config.updateDataset(Dataset.dataset);
+            if (consts.initialSpec) {
+                Spec.parseSpec(consts.initialSpec);
+                PCAplot.parseSpec(consts.initialSpec);
+            }
+            // PCAplot.plot(Dataset.data);
+            //Biplot.data = Dataset.data;
+            $scope.chron = Chronicle.record('Spec.spec', $scope, true,
+                ['Dataset.dataset', 'Config.config', 'FilterManager.filterIndex','PCAplot.prop.fieldDefs','PCAplot.prop.pos','PCAplot.prop.dim','PCAplot.prop.type','PCAplot.prop.mark']);
+            // $scope.chron = Chronicle.record(['PCAplot.prop.mspec','PCAplot.prop.type','PCAplot.prop.dim','PCAplot.prop.pos'], $scope, true,
+            //      ['Dataset.dataset', 'Config.config', 'FilterManager.filterIndex','Spec.spec']);
+            $scope.canUndoRedo = function() {
+                $scope.canUndo = $scope.chron.canUndo();
+                $scope.canRedo = $scope.chron.canRedo();
+            };
+            $scope.chron.addOnAdjustFunction($scope.canUndoRedo);
+            $scope.chron.addOnUndoFunction($scope.canUndoRedo);
+            $scope.chron.addOnRedoFunction($scope.canUndoRedo);
+
+            $scope.chron.addOnUndoFunction(function() {
+                Logger.logInteraction(Logger.actions.UNDO);
+                PCAplot.updateSpec(PCAplot.prop);
+            });
+            $scope.chron.addOnRedoFunction(function() {
+                Logger.logInteraction(Logger.actions.REDO);
+                PCAplot.updateSpec(PCAplot.prop);
+            });
+
+            $scope.choseByClick = function ($event) {
+                d3v4.select($event.currentTarget).select('.command.select.ng-scope').dispatch('click');
+                // d3v4.select(this).select('.command.select.ng-scope').dispatch('click');
+            };
+            angular.element($document).on('keydown', function(e) {
+                if (e.keyCode === 'Z'.charCodeAt(0) && (e.ctrlKey || e.metaKey) && !e.shiftKey) {
+                    $scope.chron.undo();
+                    $scope.$digest();
+                    return false;
+                } else if (e.keyCode === 'Y'.charCodeAt(0) && (e.ctrlKey || e.metaKey)) {
+                    $scope.chron.redo();
+                    $scope.$digest();
+                    return false;
+                } else if (e.keyCode === 'Z'.charCodeAt(0) && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+                    $scope.chron.redo();
+                    $scope.$digest();
+                    return false;
+                }
+            });
+        });
+    }
+
+
+    $scope.getURL = function(){
+        /* Get the text field */
+        var copyText = $scope.PCAplot.getURL();
+
+        const el = document.createElement('textarea');
+        el.value = copyText;
+        el.setAttribute('readonly', '');
+        el.style.position = 'absolute';
+        el.style.left = '-9999px';
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+
+        /* Alert the copied text */
+        $mdToast.show(
+            $mdToast.simple()
+                .textContent("Copied the url: " + copyText)
+                .position('top right')
+                .hideDelay(1000));
+    }
 
       // $scope.$watch(function(){
       //     return ((Dataset.schema||{})._fieldSchemas_selected||[]).map(d=>d.field);
@@ -165,53 +295,6 @@ angular.module('pcagnosticsviz')
       });
 
     // initialize undo after we have a dataset
-    Dataset.update(Dataset.dataset).then(function() {
-      Config.updateDataset(Dataset.dataset);
-      if (consts.initialSpec) {
-          Spec.parseSpec(consts.initialSpec);
-          PCAplot.parseSpec(consts.initialSpec);
-      }
-      // PCAplot.plot(Dataset.data);
-      //Biplot.data = Dataset.data;
-      $scope.chron = Chronicle.record('Spec.spec', $scope, true,
-        ['Dataset.dataset', 'Config.config', 'FilterManager.filterIndex','PCAplot.prop.fieldDefs','PCAplot.prop.pos','PCAplot.prop.dim','PCAplot.prop.type','PCAplot.prop.mark']);
-      // $scope.chron = Chronicle.record(['PCAplot.prop.mspec','PCAplot.prop.type','PCAplot.prop.dim','PCAplot.prop.pos'], $scope, true,
-      //      ['Dataset.dataset', 'Config.config', 'FilterManager.filterIndex','Spec.spec']);
-      $scope.canUndoRedo = function() {
-        $scope.canUndo = $scope.chron.canUndo();
-        $scope.canRedo = $scope.chron.canRedo();
-      };
-      $scope.chron.addOnAdjustFunction($scope.canUndoRedo);
-      $scope.chron.addOnUndoFunction($scope.canUndoRedo);
-      $scope.chron.addOnRedoFunction($scope.canUndoRedo);
 
-      $scope.chron.addOnUndoFunction(function() {
-        Logger.logInteraction(Logger.actions.UNDO);
-        PCAplot.updateSpec(PCAplot.prop);
-      });
-      $scope.chron.addOnRedoFunction(function() {
-        Logger.logInteraction(Logger.actions.REDO);
-          PCAplot.updateSpec(PCAplot.prop);
-      });
-
-      $scope.choseByClick = function ($event) {
-          d3v4.select($event.currentTarget).select('.command.select.ng-scope').dispatch('click');
-          // d3v4.select(this).select('.command.select.ng-scope').dispatch('click');
-      };
-      angular.element($document).on('keydown', function(e) {
-        if (e.keyCode === 'Z'.charCodeAt(0) && (e.ctrlKey || e.metaKey) && !e.shiftKey) {
-          $scope.chron.undo();
-          $scope.$digest();
-          return false;
-        } else if (e.keyCode === 'Y'.charCodeAt(0) && (e.ctrlKey || e.metaKey)) {
-          $scope.chron.redo();
-          $scope.$digest();
-          return false;
-        } else if (e.keyCode === 'Z'.charCodeAt(0) && (e.ctrlKey || e.metaKey) && e.shiftKey) {
-          $scope.chron.redo();
-          $scope.$digest();
-          return false;
-        }
-      });
-    });
+      initwithURL($location.search())
   });

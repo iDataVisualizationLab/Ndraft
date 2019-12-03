@@ -1400,7 +1400,7 @@ stats.mutual.dist = function(values, a, b, counts) {
 };
 
 // Compute a profile of summary statistics for a variable.
-        stats.profile = function(values, f) {
+        stats.profile = function(values, f, invalidList) {
             var mean = 0,
                 valid = 0,
                 missing = 0,
@@ -1419,10 +1419,14 @@ stats.mutual.dist = function(values, a, b, counts) {
             for (i=0; i<values.length; ++i) {
                 v = f ? f(values[i]) : values[i];
 
+                // clean data
+                if (v in invalidList)
+                    v = invalidList[v];
                 // update unique values
                 u[v] = (v in u) ? u[v] + 1 : (distinct += 1, 1);
 
                 if (v == null) {
+                  v = null;
                     ++missing;
                 } else if (util.isValid(v)) {
                     // update stats
@@ -1496,7 +1500,7 @@ stats.mutual.dist = function(values, a, b, counts) {
                 multimodality: multimodality
             };
         };
-        stats.profileNumber = function(values, f,fn) {
+        stats.profileNumber = function(values, f,fn, invalidList) {
             var mean = 0,
                 valid = 0,
                 missing = 0,
@@ -1514,11 +1518,13 @@ stats.mutual.dist = function(values, a, b, counts) {
             // compute summary stats
             for (i=0; i<values.length; ++i) {
                 v = f ? f(values[i]) : values[i];
-
+                if (v in invalidList)
+                  v = invalidList[v];
                 // update unique values
                 u[v] = (v in u) ? u[v] + 1 : (distinct += 1, 1);
 
                 if (v == null) {
+                    v = null;
                     ++missing;
                 } else if (util.isValid(v)) {
                     // update stats
@@ -1662,18 +1668,18 @@ stats.mutual.dist = function(values, a, b, counts) {
             return newvals;
         }
 // Compute profiles for all variables in a data set.
-        stats.summary = function(data, fields) {
+        stats.summary = function(data, fields, invalidList) {
             fields = fields || util.keys(data[0]);
             var s = fields.map(function(f) {
-                var p = stats.profile(data, util.$(f));
+                var p = stats.profile(data, util.$(f),invalidList);
                 return (p.field = f, p);
             });
             return (s.__summary__ = true, s);
         };
 
 
-        stats.convert2Number = function(data, f) {
-            var p = stats.profileNumber(data, util.$(f),f);
+        stats.convert2Number = function(data, f,invalidList) {
+            var p = stats.profileNumber(data, util.$(f),f,invalidList);
             return (p.field = f, p);
         };
 
@@ -3979,6 +3985,7 @@ exports.DEFAULT_QUERY_CONFIG = {
         overlay: { line: true },
         scale: { useRawDomain: true }
     },
+    invalidList: ['','null','undefined',null,'empty',' '],
     propertyPrecedence: property_1.DEFAULT_PROPERTY_PRECEDENCE,
     marks: [mark_1.Mark.POINT, mark_1.Mark.BAR, mark_1.Mark.LINE, mark_1.Mark.AREA, mark_1.Mark.TICK],
     channels: [channel_1.X, channel_1.Y, channel_1.ROW, channel_1.COLUMN, channel_1.SIZE, channel_1.COLOR],
@@ -8500,7 +8507,7 @@ var Schema = (function () {
         if (opt === void 0) { opt = {}; }
         opt = util_1.extend({}, config_1.DEFAULT_QUERY_CONFIG, opt);
         // create profiles for each variable
-        var summaries = stats_1.summary(data);
+        var summaries = stats_1.summary(data,undefined,opt.invalidList);
         var types = type_2.inferAll(data); // inferAll does stronger type inference than summary
         var fieldSchemas = summaries.map(function (summary) {
             var field = summary.field;
@@ -8510,7 +8517,7 @@ var Schema = (function () {
             if (primitiveType === PrimitiveType.NUMBER) {
                 type = type_1.Type.QUANTITATIVE;
                 if (summary.type==="string")
-                    summary = stats_1.convert2Number(data,field);
+                    summary = stats_1.convert2Number(data,field,opt.invalidList);
             }
             else if (primitiveType === PrimitiveType.INTEGER) {
                 // use ordinal or nominal when cardinality of integer type is relatively low and the distinct values are less than an amount specified in options
@@ -8520,7 +8527,7 @@ var Schema = (function () {
                 else {
                     type = type_1.Type.QUANTITATIVE;
                     if (summary.type==="string")
-                        summary = stats_1.convert2Number(data,field);
+                        summary = stats_1.convert2Number(data,field,opt.invalidList);
                 }
             }
             else if (primitiveType === PrimitiveType.DATE) {

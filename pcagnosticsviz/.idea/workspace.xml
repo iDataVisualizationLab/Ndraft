@@ -19,41 +19,46 @@
     <session id="372811648">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="22" />
-          <entry key="project.open.time.1" value="7" />
-          <entry key="project.open.time.10" value="2" />
-          <entry key="project.open.time.11" value="1" />
-          <entry key="project.open.time.13" value="2" />
-          <entry key="project.open.time.14" value="1" />
-          <entry key="project.open.time.2" value="8" />
-          <entry key="project.open.time.3" value="2" />
-          <entry key="project.open.time.7" value="4" />
-          <entry key="project.open.time.8" value="7" />
-          <entry key="project.opened" value="34" />
+          <entry key="project.closed" value="30" />
+          <entry key="project.open.time.1" value="9" />
+          <entry key="project.open.time.10" value="3" />
+          <entry key="project.open.time.11" value="2" />
+          <entry key="project.open.time.13" value="3" />
+          <entry key="project.open.time.14" value="2" />
+          <entry key="project.open.time.15" value="1" />
+          <entry key="project.open.time.2" value="10" />
+          <entry key="project.open.time.3" value="4" />
+          <entry key="project.open.time.37" value="1" />
+          <entry key="project.open.time.4" value="1" />
+          <entry key="project.open.time.6" value="1" />
+          <entry key="project.open.time.7" value="5" />
+          <entry key="project.open.time.8" value="10" />
+          <entry key="project.open.time.9" value="1" />
+          <entry key="project.opened" value="53" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="CSS" value="3" />
-          <entry key="HTML" value="175" />
+          <entry key="HTML" value="190" />
           <entry key="JSHint" value="1" />
-          <entry key="JSON" value="66" />
-          <entry key="JavaScript" value="675" />
-          <entry key="PLAIN_TEXT" value="8" />
-          <entry key="SCSS" value="69" />
+          <entry key="JSON" value="76" />
+          <entry key="JavaScript" value="733" />
+          <entry key="PLAIN_TEXT" value="10" />
+          <entry key="SCSS" value="73" />
           <entry key="SourceMap" value="4" />
-          <entry key="TypeScript" value="26" />
+          <entry key="TypeScript" value="28" />
           <entry key="tsconfig" value="3" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="HTML" value="3175" />
+          <entry key="HTML" value="3333" />
           <entry key="JSHint" value="4" />
-          <entry key="JSON" value="84" />
-          <entry key="JavaScript" value="50514" />
+          <entry key="JSON" value="89" />
+          <entry key="JavaScript" value="56306" />
           <entry key="PLAIN_TEXT" value="46" />
-          <entry key="SCSS" value="2459" />
+          <entry key="SCSS" value="2580" />
           <entry key="TypeScript" value="31" />
           <entry key="tsconfig" value="5" />
         </counts>
@@ -61,7 +66,7 @@
       <usages-collector id="statistics.js.language.service.starts">
         <counts>
           <entry key="Angular2LanguageService" value="1" />
-          <entry key="TypeScriptServerServiceImpl" value="14" />
+          <entry key="TypeScriptServerServiceImpl" value="15" />
         </counts>
       </usages-collector>
     </session>
@@ -69,83 +74,37 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/index.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="510">
+              <caret line="39" column="68" selection-start-line="39" selection-start-column="68" selection-end-line="39" selection-end-column="68" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="26673">
-              <caret line="1569" column="26" selection-start-line="1569" selection-start-column="16" selection-end-line="1569" selection-end-column="26" />
+            <state relative-caret-position="-173">
+              <caret line="134" column="44" lean-forward="true" selection-start-line="134" selection-start-column="44" selection-end-line="134" selection-end-column="44" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/app/main/main.html">
+        <entry file="file://$PROJECT_DIR$/src/app/PCAplot/recomendation.service.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1020">
-              <caret line="60" column="21" selection-start-line="60" selection-start-column="16" selection-end-line="60" selection-end-column="21" />
-              <folding>
-                <element signature="n#style#0;n#div#0;n#div#1;n#div#0;n#div#0;n#div#1;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#h3#0;n#div#0;n#div#0;n#div#1;n#div#0;n#div#0;n#div#1;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#div#0;n#div#0;n#div#0;n#div#1;n#div#0;n#div#0;n#div#1;n#div#0;n#!!top" expanded="true" />
-              </folding>
+            <state relative-caret-position="150">
+              <caret line="9" column="21" selection-start-line="9" selection-start-column="12" selection-end-line="9" selection-end-column="21" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guideMenu.html">
+        <entry file="file://$PROJECT_DIR$/src/app/userStudy.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="85">
-              <caret line="88" column="93" selection-start-line="88" selection-start-column="93" selection-end-line="88" selection-end-column="93" />
-              <folding>
-                <element signature="n#div#1;n#div#0;n#!!top" />
-                <element signature="n#g#0;n#svg#0;n#div#1;n#div#0;n#!!top" />
-                <element signature="n#style#0;n#div#2;n#div#0;n#!!top" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-9">
-              <caret line="246" column="64" selection-start-line="246" selection-start-column="64" selection-end-line="246" selection-end-column="64" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="91">
-              <caret line="8876" column="58" selection-start-line="8876" selection-start-column="52" selection-end-line="8876" selection-end-column="58" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/dist/index.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="51">
-              <caret line="3" column="52" selection-end-line="3" selection-end-column="344" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/app/main/main.controller.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="51">
-              <caret line="3" column="111" lean-forward="true" selection-start-line="3" selection-start-column="111" selection-end-line="3" selection-end-column="111" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/src/services/logger/logger.service.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="442">
-              <caret line="92" column="57" selection-start-line="92" selection-start-column="41" selection-end-line="92" selection-end-column="57" />
+            <state relative-caret-position="34">
+              <caret line="2" column="18" selection-start-line="2" selection-start-column="3" selection-end-line="2" selection-end-column="18" />
             </state>
           </provider>
         </entry>
@@ -153,8 +112,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/app/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="258">
-              <caret line="53" column="32" lean-forward="true" selection-start-line="53" selection-start-column="30" selection-end-line="53" selection-end-column="37" />
+            <state relative-caret-position="1150">
+              <caret line="91" column="40" selection-start-line="91" selection-start-column="40" selection-end-line="91" selection-end-column="40" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/app/main/main.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="248">
+              <caret line="77" column="26" lean-forward="true" selection-start-line="77" selection-start-column="18" selection-end-line="77" selection-end-column="26" />
             </state>
           </provider>
         </entry>
@@ -162,8 +130,26 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/app/spec/spec.service.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2312">
-              <caret line="136" column="23" selection-start-line="136" selection-start-column="23" selection-end-line="136" selection-end-column="23" />
+            <state relative-caret-position="189">
+              <caret line="200" column="25" selection-start-line="200" selection-start-column="13" selection-end-line="200" selection-end-column="25" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/app/main/main.controller.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="189">
+              <caret line="168" column="31" selection-start-line="168" selection-start-column="31" selection-end-line="168" selection-end-column="31" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/app/auth/auth.service.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="136">
+              <caret line="8" column="18" selection-start-line="8" selection-start-column="12" selection-end-line="8" selection-end-column="18" />
             </state>
           </provider>
         </entry>
@@ -179,36 +165,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>var colorArray = [&quot;#9cb5a0&quot;,&quot;#aec7b2&quot;,&quot;#c5d6c6&quot;,&quot;#e6e6e6&quot;,&quot;#e6e6d8&quot;,&quot;#e6d49c&quot;,&quot;#e6b061&quot;,&quot;#e6a650&quot;,&quot;#e67532&quot;,&quot;#ED5F3B&quot;];</find>
-      <find>colorArray</find>
-      <find>generalattr.colorScale</find>
-      <find>scag</find>
-      <find>plot.plot(</find>
-      <find>scagnoticscore_simulation</find>
-      <find>fields</find>
-      <find>_selected</find>
-      <find>handleS</find>
+      <find>firebas</find>
+      <find>firebaseUser</find>
+      <find>fir</find>
+      <find>$scope.auth</find>
+      <find>share</find>
+      <find>fire</find>
+      <find>spec</find>
+      <find>$firebaseArray</find>
       <find>drawGuideplot</find>
-      <find>error =</find>
-      <find>#############</find>
-      <find>error</find>
-      <find>_nD</find>
-      <find>destroy</find>
-      <find>link</find>
-      <find>_selec</find>
-      <find>_cube</find>
-      <find>PCAplot.updateguide</find>
-      <find>FEATURE_QUICKNAVIGATION</find>
-      <find>getData</find>
-      <find>_3d</find>
-      <find>GENERATE_ALTERNATIVE</find>
-      <find>madeprop</find>
-      <find>getData(1)</find>
-      <find>updatespec</find>
-      <find>select</find>
-      <find>previewSlider</find>
-      <find>user</find>
-      <find>use</find>
+      <find>modeskew</find>
+      <find>PCAplot.collection</find>
+      <find>multimodality</find>
+      <find>getTypeVal</find>
+      <find>dataType2Num</find>
+      <find>MAXRECOMMENDATION_DIM</find>
+      <find>profile</find>
+      <find>Alternatives</find>
+      <find>RECOM</find>
+      <find>recommendation</find>
+      <find>initwithURL</find>
+      <find>RECOMM</find>
+      <find>PCAplot.agent</find>
+      <find>PCAplot.collectionList</find>
+      <find>vector</find>
+      <find>RECOMMENDATION</find>
+      <find>PCAplot.estimate</find>
+      <find>mouseover</find>
+      <find>overlay</find>
+      <find>.overlay</find>
+      <find>PCAplot</find>
     </findStrings>
     <replaceStrings>
       <replace>AE43AF</replace>
@@ -239,12 +225,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/data/HPCC_26_September_2018_1pm.json" />
-        <option value="$PROJECT_DIR$/src/data/HPCC_26_September_2018_3pm.json" />
-        <option value="$PROJECT_DIR$/src/data/HPCC_26_September_2018_12am.json" />
-        <option value="$PROJECT_DIR$/src/data/NRC.json" />
-        <option value="$PROJECT_DIR$/src/data/alibaba60s.json" />
-        <option value="$PROJECT_DIR$/src/data/alibabashort.json" />
         <option value="$PROJECT_DIR$/src/components/d3-biplot/d3-tip.js" />
         <option value="$PROJECT_DIR$/src/data/soil_2.json" />
         <option value="$PROJECT_DIR$/src/components/d3-guideplot/guide-plot.scss" />
@@ -255,9 +235,7 @@
         <option value="$PROJECT_DIR$/src/components/d3-slidegraph/slide-graph.scss" />
         <option value="$PROJECT_DIR$/bower_components/chronicle/chronicle.js" />
         <option value="$PROJECT_DIR$/bower_components/vega-lite-ui/src/components/vlplotgrouplist/vlplotgrouplist.html" />
-        <option value="$PROJECT_DIR$/src/app/index.js" />
         <option value="$PROJECT_DIR$/gulp/watch.js" />
-        <option value="$PROJECT_DIR$/bower.json" />
         <option value="$PROJECT_DIR$/package.json" />
         <option value="$PROJECT_DIR$/src/lib/simple-statistics.min.js" />
         <option value="$PROJECT_DIR$/src/lib/d3.min.js" />
@@ -270,25 +248,33 @@
         <option value="$PROJECT_DIR$/gulp/build.js" />
         <option value="$PROJECT_DIR$/src/lib/d3-3d.js" />
         <option value="$PROJECT_DIR$/dist/lib/d3.min.js" />
-        <option value="$PROJECT_DIR$/src/index.html" />
         <option value="$PROJECT_DIR$/bower_components/vega/vega.js" />
         <option value="$PROJECT_DIR$/dist/lib/parcoords.standalone.js" />
         <option value="$PROJECT_DIR$/src/lib/tf.min.js" />
         <option value="$PROJECT_DIR$/bower_components/ng-webworker/src/ng-webworker.js" />
         <option value="$PROJECT_DIR$/src/components/d3-biplot/bi-plot.js" />
-        <option value="$PROJECT_DIR$/src/components/d3-biplot/bi-plot.html" />
         <option value="$PROJECT_DIR$/src/components/guidemenu/guidemenu.scss" />
         <option value="$PROJECT_DIR$/src/lib/umap-js.min.js" />
-        <option value="$PROJECT_DIR$/src/app/index.scss" />
-        <option value="$PROJECT_DIR$/src/app/main/main.html" />
-        <option value="$PROJECT_DIR$/bower_components/compassql/compassql.js" />
-        <option value="$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.scss" />
-        <option value="$PROJECT_DIR$/src/app/spec/spec.service.js" />
-        <option value="$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.js" />
         <option value="$PROJECT_DIR$/dist/index.html" />
+        <option value="$PROJECT_DIR$/bower.json" />
+        <option value="$PROJECT_DIR$/src/app/SpecProfile/specprofile.js" />
+        <option value="$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.scss" />
+        <option value="$PROJECT_DIR$/src/app/index.scss" />
         <option value="$PROJECT_DIR$/src/components/guidemenu/guideMenu.html" />
-        <option value="$PROJECT_DIR$/src/app/main/main.controller.js" />
+        <option value="$PROJECT_DIR$/bower_components/compassql/compassql.js" />
+        <option value="$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.js" />
+        <option value="$PROJECT_DIR$/src/components/d3-biplot/pca.js" />
         <option value="$PROJECT_DIR$/src/components/guidemenu/guiMenu.js" />
+        <option value="$PROJECT_DIR$/src/components/d3-biplot/bi-plot.html" />
+        <option value="$PROJECT_DIR$/src/app/spec/spec.service.js" />
+        <option value="$PROJECT_DIR$/src/app/index.js" />
+        <option value="$PROJECT_DIR$/src/app/auth/auth.service.js" />
+        <option value="$PROJECT_DIR$/src/app/main/main.html" />
+        <option value="$PROJECT_DIR$/src/lib/contextualbandits.min.js" />
+        <option value="$PROJECT_DIR$/src/index.html" />
+        <option value="$PROJECT_DIR$/src/app/userStudy.js" />
+        <option value="$PROJECT_DIR$/src/app/main/main.controller.js" />
+        <option value="$PROJECT_DIR$/src/app/PCAplot/recomendation.service.js" />
         <option value="$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js" />
       </list>
     </option>
@@ -315,6 +301,9 @@
         <gulpfile-path>$PROJECT_DIR$/gulpfile.js</gulpfile-path>
         <tasks>
           <GulpTaskState>
+            <task-name>video</task-name>
+          </GulpTaskState>
+          <GulpTaskState>
             <task-name>partials</task-name>
           </GulpTaskState>
           <GulpTaskState>
@@ -326,6 +315,9 @@
           </GulpTaskState>
           <GulpTaskState>
             <task-name>data</task-name>
+          </GulpTaskState>
+          <GulpTaskState>
+            <task-name>lib</task-name>
           </GulpTaskState>
           <GulpTaskState>
             <task-name>fonts</task-name>
@@ -345,6 +337,8 @@
               <dependency value="data" />
               <dependency value="misc" />
               <dependency value="zeroclipboard" />
+              <dependency value="video" />
+              <dependency value="lib" />
             </dependencies>
             <task-name>build</task-name>
           </GulpTaskState>
@@ -493,10 +487,10 @@
     </packageJsonPaths>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="820" />
-    <option name="y" value="109" />
-    <option name="width" value="1479" />
-    <option name="height" value="867" />
+    <option name="x" value="300" />
+    <option name="y" value="310" />
+    <option name="width" value="1940" />
+    <option name="height" value="1100" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -514,24 +508,19 @@
             <path>
               <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
               <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
-              <item name="bower_components" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
-              <item name="bower_components" type="462c0819:PsiDirectoryNode" />
-              <item name="vega" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
-              <item name="bower_components" type="462c0819:PsiDirectoryNode" />
-              <item name="vega-lite-ui" type="462c0819:PsiDirectoryNode" />
+              <item name="dist" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
               <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
               <item name="dist" type="462c0819:PsiDirectoryNode" />
+              <item name="scripts" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
+              <item name="dist" type="462c0819:PsiDirectoryNode" />
+              <item name="styles" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
@@ -561,6 +550,13 @@
               <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="app" type="462c0819:PsiDirectoryNode" />
+              <item name="auth" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="app" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -576,6 +572,26 @@
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="app" type="462c0819:PsiDirectoryNode" />
               <item name="spec" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="app" type="462c0819:PsiDirectoryNode" />
+              <item name="SpecProfile" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="assets" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="assets" type="462c0819:PsiDirectoryNode" />
+              <item name="images" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
@@ -603,6 +619,12 @@
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="components" type="462c0819:PsiDirectoryNode" />
               <item name="guidemenu" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pcagnosticsviz" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pcagnosticsviz" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="lib" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -693,10 +715,10 @@
   <component name="PropertiesComponent">
     <property name="HbShouldOpenHtmlAsHb" value="" />
     <property name="JavaScriptWeakerCompletionTypeGuess" value="true" />
-    <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file://E:/nvtng/Projects/GitHub/Ndraft/pcagnosticsviz/src/components/guidemenu/guiMenu.js" />
+    <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file://E:/nvtng/Projects/GitHub/Ndraft/pcagnosticsviz/src/app/spec/spec.service.js" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="js.buildTools.gulp.gulp_package_dir" value="$PROJECT_DIR$/node_modules/gulp" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../HMaViz" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../ContextualBandits" />
     <property name="nodejs.mocha.mocha_node_package_dir" value="$PROJECT_DIR$/node_modules/mocha" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_package_manager_path" value="npm" />
@@ -704,19 +726,19 @@
     <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\WebStorm 2018.2.7\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\src" />
-      <recent name="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\video" />
-      <recent name="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\src\data" />
-      <recent name="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\src\components" />
-      <recent name="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\src\app" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\src\lib" />
       <recent name="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\back_up" />
       <recent name="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\src" />
       <recent name="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\bower_components" />
       <recent name="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\src\data" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\src" />
+      <recent name="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\video" />
+      <recent name="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\src\data" />
+      <recent name="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\src\components" />
+      <recent name="E:\nvtng\Projects\GitHub\Ndraft\pcagnosticsviz\src\app" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -847,7 +869,26 @@
       <workItem from="1557961527890" duration="59953000" />
       <workItem from="1558306357055" duration="584000" />
       <workItem from="1558369706340" duration="47000" />
-      <workItem from="1558464807681" duration="1791000" />
+      <workItem from="1558464807681" duration="120687000" />
+      <workItem from="1558912590422" duration="6470000" />
+      <workItem from="1558981109493" duration="14879000" />
+      <workItem from="1559242942496" duration="2277000" />
+      <workItem from="1559445632861" duration="39000" />
+      <workItem from="1562197057437" duration="169000" />
+      <workItem from="1563827694884" duration="670000" />
+      <workItem from="1567116183429" duration="651000" />
+      <workItem from="1567358386086" duration="599000" />
+      <workItem from="1567783997986" duration="599000" />
+      <workItem from="1567804922229" duration="599000" />
+      <workItem from="1567965455832" duration="599000" />
+      <workItem from="1568004375713" duration="599000" />
+      <workItem from="1568175544074" duration="599000" />
+      <workItem from="1568331117236" duration="599000" />
+      <workItem from="1568567852198" duration="599000" />
+      <workItem from="1568590779331" duration="598000" />
+      <workItem from="1568661112442" duration="605000" />
+      <workItem from="1572372906142" duration="900000" />
+      <workItem from="1575328825460" duration="17174000" />
     </task>
     <servers />
   </component>
@@ -860,27 +901,27 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2111782000" />
+    <option name="totallyTimeSpent" value="2279902000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="820" y="109" width="1479" height="867" extended-state="0" />
+    <frame x="300" y="310" width="1940" height="1100" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49620637" visible="true" weight="0.24031007" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.83981335" visible="true" weight="0.3882979" />
       <window_info id="Structure" order="1" weight="0.25" />
-      <window_info id="Gulp" order="2" sideWeight="0.5037936" side_tool="true" weight="0.30695188" />
+      <window_info id="Gulp" order="2" sideWeight="0.16018662" side_tool="true" visible="true" weight="0.3882979" />
       <window_info id="npm" order="3" sideWeight="0.5005171" side_tool="true" weight="0.20119047" />
       <window_info id="Favorites" order="4" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.283857" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.33505687" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" weight="0.32833788" />
-      <window_info anchor="bottom" id="Terminal" order="9" weight="0.29019073" />
+      <window_info anchor="bottom" id="Terminal" order="9" weight="0.22440538" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="TypeScript" order="11" weight="0.3283237" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -939,53 +980,43 @@
           <option name="timeStamp" value="536" />
         </line-breakpoint>
         <line-breakpoint type="javascript">
-          <url>file://$PROJECT_DIR$/src/app/spec/spec.service.js</url>
-          <line>219</line>
-          <option name="timeStamp" value="593" />
-        </line-breakpoint>
-        <line-breakpoint type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1621</line>
+          <line>2070</line>
           <option name="timeStamp" value="626" />
         </line-breakpoint>
         <line-breakpoint type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1617</line>
+          <line>2066</line>
           <option name="timeStamp" value="645" />
         </line-breakpoint>
         <line-breakpoint type="javascript">
           <url>file://$PROJECT_DIR$/src/app/spec/spec.service.js</url>
-          <line>333</line>
+          <line>334</line>
           <option name="timeStamp" value="653" />
         </line-breakpoint>
         <line-breakpoint type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1355</line>
+          <line>1790</line>
           <option name="timeStamp" value="1006" />
         </line-breakpoint>
         <line-breakpoint type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>463</line>
+          <line>459</line>
           <option name="timeStamp" value="1014" />
-        </line-breakpoint>
-        <line-breakpoint type="javascript">
-          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>423</line>
-          <option name="timeStamp" value="1015" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/app/spec/spec.service.js</url>
-          <line>485</line>
+          <line>486</line>
           <option name="timeStamp" value="1126" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/dist/scripts/app.js</url>
-          <line>6263</line>
+          <line>6913</line>
           <option name="timeStamp" value="1134" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>1018</line>
+          <line>1037</line>
           <option name="timeStamp" value="1212" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
@@ -995,218 +1026,233 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>1001</line>
+          <line>1020</line>
           <option name="timeStamp" value="1299" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>2579</line>
+          <line>3033</line>
           <option name="timeStamp" value="1304" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>1000</line>
+          <line>1019</line>
           <option name="timeStamp" value="1349" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>793</line>
+          <line>812</line>
           <option name="timeStamp" value="1352" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js</url>
-          <line>747</line>
-          <option name="timeStamp" value="1353" />
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>946</line>
+          <option name="timeStamp" value="1402" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1964</line>
-          <option name="timeStamp" value="1355" />
+          <line>995</line>
+          <option name="timeStamp" value="1405" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1057</line>
-          <option name="timeStamp" value="1356" />
+          <line>858</line>
+          <option name="timeStamp" value="1408" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
-          <line>1571</line>
-          <option name="timeStamp" value="1357" />
+          <line>1147</line>
+          <option name="timeStamp" value="1409" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>1015</line>
+          <option name="timeStamp" value="1410" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>1936</line>
+          <option name="timeStamp" value="1414" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>967</line>
+          <option name="timeStamp" value="1433" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>1456</line>
+          <option name="timeStamp" value="1437" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>1453</line>
+          <option name="timeStamp" value="1438" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>1408</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1439" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/main/main.controller.js</url>
+          <line>168</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1440" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>1423</line>
+          <properties />
+          <option name="timeStamp" value="1441" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>1406</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1444" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>1401</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1445" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js</url>
+          <line>1369</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1453" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="JavascriptDebugType">
+        <watch expression="Dataset.currentDataset.description" />
+      </configuration>
+    </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/lib/plotly-latest.min.js" />
-    <entry file="file://$PROJECT_DIR$/src/lib/require.min.js" />
-    <entry file="file://$PROJECT_DIR$/src/lib/scagnostics.min.js" />
-    <entry file="file://$PROJECT_DIR$/node_modules/ordered-ast-traverse/ordered-ast-traverse.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="80">
-          <caret line="45" column="20" selection-start-line="45" selection-start-column="20" selection-end-line="45" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bower_components/lodash/lodash.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="143854">
-          <caret line="8462" column="8" selection-start-line="8462" selection-start-column="8" selection-end-line="8462" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bower_components/ng-webworker/src/worker_wrapper.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="9" column="29" selection-start-line="9" selection-start-column="29" selection-end-line="9" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gulp/build.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1700">
-          <caret line="100" column="3" selection-start-line="100" selection-start-column="3" selection-end-line="100" selection-end-column="3" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/lib/d3.min.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package-lock.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="173757">
-          <caret line="10221" column="9" selection-start-line="10221" selection-start-column="9" selection-end-line="10221" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bower_components/angular-animate/angular-animate.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="199">
-          <caret line="389" column="6" selection-start-line="389" selection-start-column="6" selection-end-line="389" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/components/d3-guideplot/guide-plot.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/lib/d3-3d.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="540">
-          <caret line="411" column="5" selection-start-line="411" selection-start-column="5" selection-end-line="411" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/back_up/ng-webworker.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1574" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/dist/lib/d3.min.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="33609">
-          <caret line="1" column="242683" selection-start-line="1" selection-start-column="242683" selection-end-line="1" selection-end-column="242683" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/lib/parcoords.css">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-901">
-          <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/node_modules/stringmap/stringmap.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1452">
-          <caret line="98" column="18" selection-start-line="98" selection-start-column="18" selection-end-line="98" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bower_components/d3/d3.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="138">
-          <caret line="966" column="6" selection-start-line="966" selection-start-column="6" selection-end-line="966" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="http://localhost:3000/lib/parcoords.standalone.js">
-      <provider selected="true" editor-type-id="httpFileEditor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/lib/parcoords.standalone.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/src/components/schemalist/schemalistitem.test.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-289">
-          <caret line="10" column="6" selection-start-line="10" selection-start-column="6" selection-end-line="10" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/dist/lib/parcoords.standalone.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="130">
-          <caret line="10946" column="50" selection-start-line="10946" selection-start-column="44" selection-end-line="10946" selection-end-column="50" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/lib/tf.min.js">
+    <entry file="file://$PROJECT_DIR$/bower_components/firebase/bower.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="34">
-          <caret line="2" column="34" selection-start-line="2" selection-start-column="34" selection-end-line="2" selection-end-column="34" />
+          <caret line="2" column="19" lean-forward="true" selection-start-line="2" selection-start-column="14" selection-end-line="2" selection-end-column="19" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/dist/scripts/app.js">
+    <entry file="file://$PROJECT_DIR$/.bower-postinstall">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/angular-sanitize/.bower.json">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/angular/.bower.json">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/angular-aria/.bower.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="4717" column="8" selection-start-line="4717" selection-start-column="8" selection-end-line="4717" selection-end-column="8" />
+        <state relative-caret-position="238">
+          <caret line="14" column="56" lean-forward="true" selection-start-line="14" selection-start-column="56" selection-end-line="14" selection-end-column="56" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/angular-animate/bower.json">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="408">
+          <caret line="24" column="24" selection-start-line="24" selection-start-column="24" selection-end-line="24" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/SpecProfile/specprofile.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="184">
+          <caret line="99" column="33" selection-start-line="99" selection-start-column="29" selection-end-line="99" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/vega/vega.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="107">
+          <caret line="6470" lean-forward="true" selection-start-line="6470" selection-end-line="6470" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/vega-lite/vega-lite.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="94">
+          <caret line="2" column="42" lean-forward="true" selection-start-line="2" selection-start-column="42" selection-end-line="2" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components/d3-guideplot/guide-plot.html">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components/d3-guideplot/gplot.html">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/bower_components/ng-webworker/src/ng-webworker.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="248">
-          <caret line="92" column="55" selection-start-line="92" selection-start-column="49" selection-end-line="92" selection-end-column="55" />
+          <caret line="193" column="39" selection-start-line="193" selection-start-column="39" selection-end-line="193" selection-end-column="39" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/lib/umap-js.min.js">
+    <entry file="file://$PROJECT_DIR$/bower_components/compassql/typings/datalib.d.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="73876" selection-start-column="73876" selection-end-column="73876" />
+        <state relative-caret-position="217">
+          <caret line="43" column="18" selection-start-line="43" selection-start-column="18" selection-end-line="43" selection-end-column="18" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/bower_components/angular/angular.js">
+    <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/karma.conf.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/LICENSE">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/package.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="130">
-          <caret line="16784" column="21" selection-start-line="16784" selection-start-column="21" selection-end-line="16784" selection-end-column="21" />
+        <state relative-caret-position="-905" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guideMenu.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="272">
+          <caret line="25" column="94" lean-forward="true" selection-start-line="25" selection-start-column="28" selection-end-line="25" selection-end-column="94" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/PCAplot/scag.service.js">
+    <entry file="file://$PROJECT_DIR$/bower_components/vega-lite/typings/d3.d.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="47">
-          <caret line="9" column="18" lean-forward="true" selection-start-line="9" selection-start-column="18" selection-end-line="9" selection-end-column="18" />
+        <state relative-caret-position="186">
+          <caret line="1481" column="18" selection-start-line="1481" selection-start-column="18" selection-end-line="1481" selection-end-column="18" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guidemenu.scss">
+    <entry file="file://$PROJECT_DIR$/bower_components/tether/dist/js/tether.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="918">
-          <caret line="54" column="26" selection-start-line="54" selection-start-column="26" selection-end-line="54" selection-end-column="26" />
+        <state relative-caret-position="186">
+          <caret line="231" column="6" selection-start-line="231" selection-start-column="6" selection-end-line="231" selection-end-column="6" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/components/d3-biplot/bi-plot.html">
+    <entry file="http://localhost:3000/lib/scagnostics.min.js">
+      <provider selected="true" editor-type-id="httpFileEditor" />
+    </entry>
+    <entry file="http://localhost:3000/lib/plotly-latest.min.js">
+      <provider selected="true" editor-type-id="httpFileEditor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components/d3-biplot/pca.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="425">
-          <caret line="29" column="30" selection-start-line="29" selection-start-column="17" selection-end-line="29" selection-end-column="30" />
+        <state relative-caret-position="6715">
+          <caret line="395" column="25" selection-start-line="395" selection-start-column="25" selection-end-line="395" selection-end-column="25" />
         </state>
       </provider>
     </entry>
@@ -1217,141 +1263,176 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/index.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="506" column="15" lean-forward="true" selection-start-line="506" selection-start-column="15" selection-end-line="506" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/src/dataset/dataset.service.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="109" column="35" selection-start-line="109" selection-start-column="35" selection-end-line="109" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="252">
-          <caret line="1301" column="9" selection-start-line="1301" selection-start-column="3" selection-end-line="1301" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/bower_components/compassql/compassql.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="140">
-          <caret line="1616" column="97" selection-start-line="1616" selection-start-column="90" selection-end-line="1616" selection-end-column="97" />
+        <state relative-caret-position="144653">
+          <caret line="8509" column="24" selection-start-line="8509" selection-start-column="24" selection-end-line="8509" selection-end-column="24" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/index.html">
+    <entry file="file://$PROJECT_DIR$/src/components/d3-biplot/bi-plot.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="15" column="54" selection-start-line="15" selection-start-column="54" selection-end-line="15" selection-end-column="54" />
+        <state relative-caret-position="374">
+          <caret line="26" lean-forward="true" selection-start-line="26" selection-end-line="26" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/bower_components/vega/vega.js">
+    <entry file="file://$PROJECT_DIR$/bower_components/d3/d3.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="149">
-          <caret line="6471" column="69" selection-start-line="6471" selection-start-column="61" selection-end-line="6471" selection-end-column="69" />
+        <state relative-caret-position="170">
+          <caret line="799" column="41" selection-start-line="799" selection-start-column="41" selection-end-line="799" selection-end-column="41" />
         </state>
       </provider>
     </entry>
-    <entry file="http://localhost:3000/app/PCAplot/PCAplot.service.js">
-      <provider selected="true" editor-type-id="httpFileEditor" />
-    </entry>
-    <entry file="http://localhost:3000/components/guidemenu/guiMenu.js">
-      <provider selected="true" editor-type-id="httpFileEditor" />
-    </entry>
-    <entry file="http://localhost:3000/browser-sync/browser-sync-client.2.11.2.js">
+    <entry file="http://localhost:3000/lib/d3.min.js">
       <provider selected="true" editor-type-id="httpFileEditor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/bower_components/jquery/dist/jquery.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="203">
-          <caret line="5043" column="64" selection-start-line="5043" selection-start-column="64" selection-end-line="5043" selection-end-column="64" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="26673">
-          <caret line="1569" column="26" selection-start-line="1569" selection-start-column="16" selection-end-line="1569" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/main/main.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1020">
-          <caret line="60" column="21" selection-start-line="60" selection-start-column="16" selection-end-line="60" selection-end-column="21" />
-          <folding>
-            <element signature="n#style#0;n#div#0;n#div#1;n#div#0;n#div#0;n#div#1;n#div#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#h3#0;n#div#0;n#div#0;n#div#1;n#div#0;n#div#0;n#div#1;n#div#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#0;n#div#0;n#div#0;n#div#1;n#div#0;n#div#0;n#div#1;n#div#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guideMenu.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="88" column="93" selection-start-line="88" selection-start-column="93" selection-end-line="88" selection-end-column="93" />
-          <folding>
-            <element signature="n#div#1;n#div#0;n#!!top" />
-            <element signature="n#g#0;n#svg#0;n#div#1;n#div#0;n#!!top" />
-            <element signature="n#style#0;n#div#2;n#div#0;n#!!top" expanded="true" />
-          </folding>
+          <caret line="5960" column="4" selection-start-line="5960" selection-start-column="4" selection-end-line="5960" selection-end-column="4" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/dist/index.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="51">
-          <caret line="3" column="52" selection-end-line="3" selection-end-column="344" />
+          <caret line="3" column="53" selection-end-line="3" selection-end-column="424" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/spec/spec.service.js">
+    <entry file="file://$PROJECT_DIR$/bower_components/angular/angular.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2312">
-          <caret line="136" column="23" selection-start-line="136" selection-start-column="23" selection-end-line="136" selection-end-column="23" />
+        <state relative-caret-position="198016">
+          <caret line="11648" column="31" selection-start-line="11648" selection-start-column="31" selection-end-line="11648" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/index.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="6137">
+          <caret line="361" column="8" selection-start-line="361" selection-start-column="8" selection-end-line="361" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="22032">
+          <caret line="1296" selection-start-line="1296" selection-end-line="1308" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="108341">
+          <caret line="6354" selection-start-line="6354" selection-end-line="6354" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/components/guidemenu/guiMenu.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-9">
-          <caret line="246" column="64" selection-start-line="246" selection-start-column="64" selection-end-line="246" selection-end-column="64" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="258">
-          <caret line="53" column="32" lean-forward="true" selection-start-line="53" selection-start-column="30" selection-end-line="53" selection-end-column="37" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/app/main/main.controller.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
-          <caret line="3" column="111" lean-forward="true" selection-start-line="3" selection-start-column="111" selection-end-line="3" selection-end-column="111" />
+        <state relative-caret-position="16677">
+          <caret line="981" column="16" selection-start-line="981" selection-start-column="16" selection-end-line="981" selection-end-column="16" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/src/services/logger/logger.service.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="442">
-          <caret line="92" column="57" selection-start-line="92" selection-start-column="41" selection-end-line="92" selection-end-column="57" />
+          <caret line="109" column="52" selection-start-line="109" selection-start-column="34" selection-end-line="109" selection-end-column="52" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/vlui.js">
+    <entry file="file://$PROJECT_DIR$/dist/scripts/app.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="91">
-          <caret line="8876" column="58" selection-start-line="8876" selection-start-column="52" selection-end-line="8876" selection-end-column="58" />
+        <state relative-caret-position="114104">
+          <caret line="6712" column="29" selection-start-line="6712" selection-start-column="17" selection-end-line="6712" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bower_components/vega-lite-ui/src/components/vlplot/vlplot.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="665">
+          <caret line="82" column="26" selection-start-line="82" selection-start-column="26" selection-end-line="82" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/auth/auth.service.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="8" column="18" selection-start-line="8" selection-start-column="12" selection-end-line="8" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1150">
+          <caret line="91" column="40" selection-start-line="91" selection-start-column="40" selection-end-line="91" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="510">
+          <caret line="39" column="68" selection-start-line="39" selection-start-column="68" selection-end-line="39" selection-end-column="68" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/userStudy.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="18" selection-start-line="2" selection-start-column="3" selection-end-line="2" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/lib/contextualbandits.min.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/PCAplot/scag.service.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="http://localhost:3000/app/PCAplot/PCAplot.service.js">
+      <provider selected="true" editor-type-id="httpFileEditor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/alternatives/alternatives.service.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="3" column="24" selection-start-line="3" selection-start-column="12" selection-end-line="3" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/spec/spec.service.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="189">
+          <caret line="200" column="25" selection-start-line="200" selection-start-column="13" selection-end-line="200" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/PCAplot/recomendation.service.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="9" column="21" selection-start-line="9" selection-start-column="12" selection-end-line="9" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/main/main.controller.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="189">
+          <caret line="168" column="31" selection-start-line="168" selection-start-column="31" selection-end-line="168" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/PCAplot/PCAplot.service.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-173">
+          <caret line="134" column="44" lean-forward="true" selection-start-line="134" selection-start-column="44" selection-end-line="134" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/app/main/main.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="248">
+          <caret line="77" column="26" lean-forward="true" selection-start-line="77" selection-start-column="18" selection-end-line="77" selection-end-column="26" />
         </state>
       </provider>
     </entry>

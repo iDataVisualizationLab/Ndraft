@@ -134,7 +134,7 @@ angular.module('pcagnosticsviz')
             }
         });
         dim = (dim<1)?0:(dim-1);
-        PCAplot.requestupdate(dim);
+        PCAplot.requestupdate(dim,undefined,spec,fields);
         if(fields.length)
           spec = PCAplot.checkRender(spec,fields);
         spec = _.cloneDeep(spec || Spec.spec);
@@ -243,6 +243,7 @@ angular.module('pcagnosticsviz')
 
 
     Spec.preview = function(enable, chart, listTitle) {
+        Spec.isSelected = false;
       if (enable) {
         if (!chart) return;
         var spec = chart.vlSpec;

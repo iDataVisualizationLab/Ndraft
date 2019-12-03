@@ -43,8 +43,16 @@ $fa-font-path: "../../bower_components/fontawesome/fonts";
   height: 33px;
   margin-right: 0px; /* This margin further pushes the menu to the right */
 }
+.light #logo {
+  background: url("../assets/images/logov2.png") center no-repeat;
+  background-size: contain;
+  display: block;
+  width: 150px;
+  height: 33px;
+  margin-right: 0px; /* This margin further pushes the menu to the right */
+}
 
-#video {
+.headerBtn, #video {
   display: block;
   color: var(--fontColor);
   font-size: 12px;
