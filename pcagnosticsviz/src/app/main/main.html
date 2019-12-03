@@ -50,7 +50,7 @@
 
   <div class="hflex full-width main-panel grow-1">
     <div class="pane data-pane noselect">
-      <div class="card no-top-margin data-card abs-100 modifedside">
+      <div class="card no-ctop-margin data-card abs-100 modifedside">
         <div class="sidebar-header" ng-if="!embedded">
           <dataset-selector class="right"></dataset-selector>
           <div class="current-dataset" title="{{Dataset.currentDataset.name}}">
@@ -75,7 +75,7 @@
                   ng-if="PCAplot.chart"
                   class="main-vl-plot-group card no-shrink guideplot"
                   ng-repeat="chart in PCAplot.charts"
-                  ng-click="PCAplot.prop2spec(chart.prop)"
+                  ng-click="PCAplot.prop2spec(chart.prop);PCAplot.timelog(chart.prop);"
                   chart="chart"
                   show-bookmark="false"
                   show-debug="false"

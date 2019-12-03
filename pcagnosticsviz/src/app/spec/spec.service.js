@@ -135,6 +135,7 @@ angular.module('pcagnosticsviz')
         });
         dim = (dim<1)?0:(dim-1);
         PCAplot.requestupdate(dim,undefined,spec,fields);
+        PCAplot.timelog();
         if(fields.length)
           spec = PCAplot.checkRender(spec,fields);
         spec = _.cloneDeep(spec || Spec.spec);

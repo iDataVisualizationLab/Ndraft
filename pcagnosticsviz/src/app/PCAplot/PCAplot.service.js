@@ -1298,10 +1298,20 @@ angular.module('pcagnosticsviz')
                     return 0;
             }
         }
-        PCAplot.collection =[]; // for recomendation
-        PCAplot.collectionList =[]; // for recomendation
+        PCAplot.recommendObj={
+            collection :[], // for recomendation
+            collectionList:[],
+            reward:[0,0,0,0]
+        }; // for recomendation
         PCAplot.estimate = function(PCAresult,dim,dataref) {
             // choose main axis
+            if(PCAplot.recommendObj.target){
+                updateAgentReward();
+                if (PCAplot.recommendObj.startTime)
+                    PCAplot.agent.update(PCAplot.recommendObj.collection, PCAplot.recommendObj.recommended, PCAplot.recommendObj.reward);
+                PCAplot.recommendObj.target = undefined;
+                console.log("-----------------TRIAL END---------------------")
+            }
             if (dim===0) {
                 PCAplot.charts.length=0;
                 Dataset.schema._fieldSchemas_selected.forEach(function (d) {
@@ -1340,9 +1350,10 @@ angular.module('pcagnosticsviz')
                 // TODO: recomendation RL
 
                 // generate matrix
-                PCAplot.collection = [];
-                PCAplot.collectionList = [];
-                PCAplot.recommended = [];
+                PCAplot.recommendObj.collection = [];
+                PCAplot.recommendObj.collectionList = [];
+                PCAplot.recommendObj.recommended = [];
+                PCAplot.recommendObj.recommended = [0,0,0,0];
 
 
                 support[dim].types.forEach((d)=>{
@@ -1363,8 +1374,8 @@ angular.module('pcagnosticsviz')
                         vec_m.push(0);
                     }
                     abtractionLevel.forEach((a,abstractLevel)=> {
-                        PCAplot.collection.push(_.flatten([vector_h,abstractLevel,vec_m]));
-                        PCAplot.collectionList.push({obj: rec, mainfeature: d});
+                        PCAplot.recommendObj.collection.push(_.flatten([vector_h,abstractLevel,vec_m]));
+                        PCAplot.recommendObj.collectionList.push({obj: rec, mainfeature: d});
                     })
                 });
                 for (let i=support[dim].types.length;i<MAXRECOMMENDATION_FEATURE;i++) {
@@ -1395,14 +1406,14 @@ angular.module('pcagnosticsviz')
                         vec_m.push(0);
                     }
                     abtractionLevel.forEach((a,abstractLevel)=> {
-                        PCAplot.collection.push(_.flatten([vector_h,abstractLevel,vec_m]));
-                        PCAplot.collectionList.push({obj: rec, mainfeature: d});
+                        PCAplot.recommendObj.collection.push(_.flatten([vector_h,abstractLevel,vec_m]));
+                        PCAplot.recommendObj.collectionList.push({obj: rec, mainfeature: d});
                     })
                 }
-                PCAplot.recommended = PCAplot.agent.recommend(PCAplot.collection,4);
-                PCAplot.recommended.forEach(d=>{
-                    const currentRec = PCAplot.collectionList[d];
-                    drawGuideplot([currentRec.obj],currentRec.mainfeature);
+                PCAplot.recommendObj.recommended = PCAplot.agent.recommend(PCAplot.recommendObj.collection,4);
+                PCAplot.recommendObj.recommended.forEach((d,i)=>{
+                    const currentRec = PCAplot.recommendObj.collectionList[d];
+                    drawGuideplot([currentRec.obj],currentRec.mainfeature,undefined,i);
                 })
                 // support[dim].types.forEach((d)=>{
                 //     if (results[d])
@@ -1458,6 +1469,24 @@ angular.module('pcagnosticsviz')
 
             }
         };
+        PCAplot.timelog = function(prop){
+            if(prop) {
+                if (PCAplot.recommendObj.trigger){
+                    updateAgentReward()
+                }
+                PCAplot.recommendObj.startTime = +new Date();
+                PCAplot.recommendObj.target = prop.recomendID;
+                PCAplot.recommendObj.trigger = true;
+            }else if(!PCAplot.recommendObj.trigger && PCAplot.recommendObj.startTime){
+                PCAplot.recommendObj.trigger = false;
+                updateAgentReward()
+                PCAplot.recommendObj.startTime = undefined;
+            }
+        };
+        function updateAgentReward(){
+            PCAplot.recommendObj.reward[PCAplot.recommendObj.target] += (+new Date()-PCAplot.recommendObj.startTime)/1000/60;
+            PCAplot.recommendObj.reward[PCAplot.recommendObj.target] = Math.min(20,PCAplot.recommendObj.reward[PCAplot.recommendObj.target]);
+        }
         function mark2plot (mark,spec,object){
             switch (mark) {
                 case 'bar': barplot(spec, object); break;
@@ -1599,7 +1628,7 @@ angular.module('pcagnosticsviz')
         //     return data;
         // }
 
-        function drawGuideplot (object,type,dataref) {
+        function drawGuideplot (object,type,dataref,recomendID) {
             if (dataref === undefined)
                 dataref = Dataset.schema._fieldSchemas_selected;
             var spec = spec = _.cloneDeep(instantiate() || PCAplot.spec);
@@ -1641,6 +1670,7 @@ angular.module('pcagnosticsviz')
                 ranking: getranking(type),
                 plot: drawGuideexplore,
                 dim: PCAplot.dim,
+                recomendID:recomendID, //new atrribute
                 fieldDefs: object,};
             PCAplot.chart.guideon = guideon;
                 PCAplot.charts.push(PCAplot.chart);
